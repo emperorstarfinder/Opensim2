@@ -239,14 +239,16 @@ public abstract class BSPhysObject : PhysicsActor
     public virtual OMV.Vector3 RawVelocity { get; set; }
     public abstract OMV.Vector3 ForceVelocity { get; set; }
 
+    // RawForce is a constant force applied to object (see Force { set; } )
     public OMV.Vector3 RawForce { get; set; }
     public OMV.Vector3 RawTorque { get; set; }
+
     public override void AddAngularForce(OMV.Vector3 force, bool pushforce)
     {
-        AddAngularForce(force, pushforce, false);
+        AddAngularForce(false, force);
     }
-    public abstract void AddAngularForce(OMV.Vector3 force, bool pushforce, bool inTaintTime);
-    public abstract void AddForce(OMV.Vector3 force, bool pushforce, bool inTaintTime);
+    public abstract void AddAngularForce(bool inTaintTime, OMV.Vector3 force);
+    public abstract void AddForce(bool inTaintTime, OMV.Vector3 force);
 
     public abstract OMV.Vector3 ForceRotationalVelocity { get; set; }
 
@@ -452,18 +454,24 @@ public abstract class BSPhysObject : PhysicsActor
     private long CollisionsLastTickStep = -1;
 
     // The simulation step is telling this object about a collision.
+    // I'm the 'collider', the thing I'm colliding with is the 'collidee'.
     // Return 'true' if a collision was processed and should be sent up.
     // Return 'false' if this object is not enabled/subscribed/appropriate for or has already seen this collision.
     // Called at taint time from within the Step() function
-    public delegate bool CollideCall(uint collidingWith, BSPhysObject collidee, OMV.Vector3 contactPoint, OMV.Vector3 contactNormal, float pentrationDepth);
-    public virtual bool Collide(uint collidingWith, BSPhysObject collidee,
-                    OMV.Vector3 contactPoint, OMV.Vector3 contactNormal, float pentrationDepth)
+    public virtual bool Collide(BSPhysObject collidee, OMV.Vector3 contactPoint, OMV.Vector3 contactNormal, float pentrationDepth)
     {
         bool ret = false;
 
+        // if 'collidee' is null, that means it is terrain
+        uint collideeLocalID = (collidee == null) ? BSScene.TERRAIN_ID : collidee.LocalID;
+        // All terrain goes by the TERRAIN_ID id when passed up as a collision
+        if (collideeLocalID <= PhysScene.TerrainManager.HighestTerrainID) {
+            collideeLocalID = BSScene.TERRAIN_ID;
+        }
+
         // The following lines make IsColliding(), CollidingGround() and CollidingObj work
         CollidingStep = PhysScene.SimulationStep;
-        if (collidingWith <= PhysScene.TerrainManager.HighestTerrainID)
+        if (collideeLocalID == BSScene.TERRAIN_ID)
         {
             CollidingGroundStep = PhysScene.SimulationStep;
         }
@@ -474,9 +482,12 @@ public abstract class BSPhysObject : PhysicsActor
 
         CollisionAccumulation++;
 
-        // For movement tests, remember if we are colliding with an object that is moving.
-        ColliderIsMoving = collidee != null ? (collidee.RawVelocity != OMV.Vector3.Zero) : false;
+        // For movement tests, if the collider is me, remember if we are colliding with an object that is moving.
+        // Here the 'collider'/'collidee' thing gets messed up. In the larger context, when something is checking
+        //     if the thing it is colliding with is moving, for instance, it asks if the its collider is moving.
+        ColliderIsMoving = collidee != null ? (collidee.RawVelocity != OMV.Vector3.Zero || collidee.RotationalVelocity != OMV.Vector3.Zero) : false;
         ColliderIsVolumeDetect = collidee != null ? (collidee.IsVolumeDetect) : false;
+
 
         // Make a collection of the collisions that happened the last simulation tick.
         // This is different than the collection created for sending up to the simulator as it is cleared every tick.
@@ -485,16 +496,29 @@ public abstract class BSPhysObject : PhysicsActor
             CollisionsLastTick = new CollisionEventUpdate();
             CollisionsLastTickStep = PhysScene.SimulationStep;
         }
-        CollisionsLastTick.AddCollider(collidingWith, new ContactPoint(contactPoint, contactNormal, pentrationDepth));
+        CollisionsLastTick.AddCollider(collideeLocalID, new ContactPoint(contactPoint, contactNormal, pentrationDepth));
 
         // If someone has subscribed for collision events log the collision so it will be reported up
         if (SubscribedEvents()) {
+            ContactPoint newContact = new ContactPoint(contactPoint, contactNormal, pentrationDepth);
+
+            // Collision sound requires a velocity to know it should happen. This is a lot of computation for a little used feature.
+            OMV.Vector3 relvel = OMV.Vector3.Zero;
+            if (IsPhysical)
+                relvel = RawVelocity;
+            if (collidee != null && collidee.IsPhysical)
+                relvel -= collidee.RawVelocity;
+            newContact.RelativeSpeed = OMV.Vector3.Dot(relvel, contactNormal);
+            // DetailLog("{0},{1}.Collision.AddCollider,vel={2},contee.vel={3},relvel={4},relspeed={5}",
+            //         LocalID, TypeName, RawVelocity, (collidee == null ? OMV.Vector3.Zero : collidee.RawVelocity), relvel, newContact.RelativeSpeed);
+                    
             lock (PhysScene.CollisionLock)
             {
-                CollisionCollection.AddCollider(collidingWith, new ContactPoint(contactPoint, contactNormal, pentrationDepth));
+                CollisionCollection.AddCollider(collideeLocalID, newContact);
             }
-            DetailLog("{0},{1}.Collision.AddCollider,call,with={2},point={3},normal={4},depth={5},colliderMoving={6}",
-                            LocalID, TypeName, collidingWith, contactPoint, contactNormal, pentrationDepth, ColliderIsMoving);
+            DetailLog("{0},{1}.Collision.AddCollider,call,with={2},point={3},normal={4},depth={5},speed={6},colliderMoving={7}",
+                            LocalID, TypeName, collideeLocalID, contactPoint, contactNormal, pentrationDepth,
+                            newContact.RelativeSpeed, ColliderIsMoving);
 
             ret = true;
         }
@@ -555,7 +579,11 @@ public abstract class BSPhysObject : PhysicsActor
             PhysScene.TaintedObject(LocalID, TypeName+".SubscribeEvents", delegate()
             {
                 if (PhysBody.HasPhysicalBody)
+                {
                     CurrentCollisionFlags = PhysScene.PE.AddToCollisionFlags(PhysBody, CollisionFlags.BS_SUBSCRIBE_COLLISION_EVENTS);
+                    DetailLog("{0},{1}.SubscribeEvents,setting collision. ms={2}, collisionFlags={3:x}",
+                            LocalID, TypeName, ms, CurrentCollisionFlags);
+                }
             });
         }
         else

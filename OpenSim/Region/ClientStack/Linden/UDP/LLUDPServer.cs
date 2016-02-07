@@ -286,7 +286,7 @@ namespace OpenSim.Region.ClientStack.LindenUDP
         /// <summary>Incoming packets that are awaiting handling</summary>
         //private OpenMetaverse.BlockingQueue<IncomingPacket> packetInbox = new OpenMetaverse.BlockingQueue<IncomingPacket>();
 
-        private DoubleQueue<IncomingPacket> packetInbox = new DoubleQueue<IncomingPacket>();
+        private OpenSim.Framework.BlockingQueue<IncomingPacket> packetInbox = new OpenSim.Framework.BlockingQueue<IncomingPacket>();
 
         /// <summary>Bandwidth throttle for this UDP server</summary>
         public TokenBucket Throttle { get; private set; }
@@ -522,8 +522,9 @@ namespace OpenSim.Region.ClientStack.LindenUDP
             Random rnd = new Random(Util.EnvironmentTickCount());
             m_animationSequenceNumber = rnd.Next(11474826);
 
-            if (usePools)
-                EnablePools();
+//            if (usePools)
+//                EnablePools();
+            DisablePools();
         }
 
         public void Start()
@@ -716,7 +717,7 @@ namespace OpenSim.Region.ClientStack.LindenUDP
                     scene.Name,
                     StatType.Pull,
                     MeasuresOfInterest.AverageChangeOverTime,
-                    stat => stat.Value = packetInbox.Count,
+                    stat => stat.Value = packetInbox.Count(),
                     StatVerbosity.Debug));
 
             // XXX: These stats are also pool stats but we register them separately since they are currently not
@@ -1552,9 +1553,9 @@ namespace OpenSim.Region.ClientStack.LindenUDP
 //            if (incomingPacket.Packet.Type == PacketType.AgentUpdate ||
 //                incomingPacket.Packet.Type == PacketType.ChatFromViewer)
             if (incomingPacket.Packet.Type == PacketType.ChatFromViewer)
-                packetInbox.EnqueueHigh(incomingPacket);
+                packetInbox.PriorityEnqueue(incomingPacket);
             else
-                packetInbox.EnqueueLow(incomingPacket);
+                packetInbox.Enqueue(incomingPacket);
 
         }
 
@@ -2012,7 +2013,7 @@ namespace OpenSim.Region.ClientStack.LindenUDP
         private void IncomingPacketHandler()
         {
             Thread.CurrentThread.Priority = ThreadPriority.Highest;
-
+            IncomingPacket incomingPacket;
             // Set this culture for the thread that incoming packets are received
             // on to en-US to avoid number parsing issues
             Culture.SetCurrentCulture();
@@ -2022,24 +2023,18 @@ namespace OpenSim.Region.ClientStack.LindenUDP
                 Scene.ThreadAlive(1);
                 try
                 {
-                    IncomingPacket incomingPacket = null;
-
-                    /*
-                    // HACK: This is a test to try and rate limit packet handling on Mono.
-                    // If it works, a more elegant solution can be devised
-                    if (Util.FireAndForgetCount() < 2)
+                    incomingPacket = packetInbox.Dequeue(250);
+                    
+                    if (incomingPacket != null && IsRunningInbound)
                     {
-                        //m_log.Debug("[LLUDPSERVER]: Incoming packet handler is sleeping");
-                        Thread.Sleep(30);
-                    }
-                     */
-
-                    if (packetInbox.Dequeue(100, ref incomingPacket))
-                    {
-                        ProcessInPacket(incomingPacket);//, incomingPacket); Util.FireAndForget(ProcessInPacket, incomingPacket);
-
+                        ProcessInPacket(incomingPacket);
+                        
                         if (UsePools)
+                        {
+                            incomingPacket.Client = null;
                             m_incomingPacketPool.ReturnObject(incomingPacket);
+                        }
+                        incomingPacket = null;
                     }
                 }
                 catch(Exception ex)
@@ -2050,8 +2045,8 @@ namespace OpenSim.Region.ClientStack.LindenUDP
                 Watchdog.UpdateThread();
             }
 
-            if (packetInbox.Count > 0)
-                m_log.Warn("[LLUDPSERVER]: IncomingPacketHandler is shutting down, dropping " + packetInbox.Count + " packets");
+            if (packetInbox.Count() > 0)
+                m_log.Warn("[LLUDPSERVER]: IncomingPacketHandler is shutting down, dropping " + packetInbox.Count() + " packets");
             packetInbox.Clear();
 
             Watchdog.RemoveThread();
@@ -2306,41 +2301,35 @@ namespace OpenSim.Region.ClientStack.LindenUDP
             Packet packet = incomingPacket.Packet;
             LLClientView client = incomingPacket.Client;
 
-//            if (client.IsActive)
-//            {
-                m_currentIncomingClient = client;
+            if(!client.IsActive)
+                return;
 
-                try
-                {
-                    // Process this packet
-                    client.ProcessInPacket(packet);
-                }
-                catch (ThreadAbortException)
-                {
-                    // If something is trying to abort the packet processing thread, take that as a hint that it's time to shut down
-                    m_log.Info("[LLUDPSERVER]: Caught a thread abort, shutting down the LLUDP server");
-                    Stop();
-                }
-                catch (Exception e)
-                {
-                    // Don't let a failure in an individual client thread crash the whole sim.
-                    m_log.Error(
-                        string.Format(
-                            "[LLUDPSERVER]: Client packet handler for {0} for packet {1} threw ",
-                            client.Name, packet.Type),
-                        e);
-                }
-                finally
-                {
-                    m_currentIncomingClient = null;
-                }
-//            }
-//            else
-//            {
-//                m_log.DebugFormat(
-//                    "[LLUDPSERVER]: Dropped incoming {0} for dead client {1} in {2}",
-//                    packet.Type, client.Name, m_scene.RegionInfo.RegionName);
-//            }
+            m_currentIncomingClient = client;
+
+            try
+            {
+                // Process this packet
+                client.ProcessInPacket(packet);
+            }
+            catch(ThreadAbortException)
+            {
+                // If something is trying to abort the packet processing thread, take that as a hint that it's time to shut down
+                m_log.Info("[LLUDPSERVER]: Caught a thread abort, shutting down the LLUDP server");
+                Stop();
+            }
+            catch(Exception e)
+            {
+                // Don't let a failure in an individual client thread crash the whole sim.
+                m_log.Error(
+                    string.Format(
+                        "[LLUDPSERVER]: Client packet handler for {0} for packet {1} threw ",
+                        client.Name,packet.Type),
+                    e);
+            }
+            finally
+            {
+                m_currentIncomingClient = null;
+            }
 
             IncomingPacketsProcessed++;
         }

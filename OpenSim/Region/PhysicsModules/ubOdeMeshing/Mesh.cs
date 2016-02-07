@@ -234,9 +234,12 @@ namespace OpenSim.Region.PhysicsModule.ubODEMeshing
             triangle.v3.Y = (float)Math.Round(triangle.v3.Y, 6);
             triangle.v3.Z = (float)Math.Round(triangle.v3.Z, 6);
 
-            if ((triangle.v1.X == triangle.v2.X && triangle.v1.Y == triangle.v2.Y && triangle.v1.Z == triangle.v2.Z)
-                || (triangle.v1.X == triangle.v3.X && triangle.v1.Y == triangle.v3.Y && triangle.v1.Z == triangle.v3.Z)
-                || (triangle.v2.X == triangle.v3.X && triangle.v2.Y == triangle.v3.Y && triangle.v2.Z == triangle.v3.Z)
+            if ((triangle.v1.X == triangle.v2.X && triangle.v1.Y == triangle.v2.Y && triangle.v1.Z ==
+                    triangle.v2.Z)
+                || (triangle.v1.X == triangle.v3.X && triangle.v1.Y == triangle.v3.Y && triangle.v1.Z ==
+                    triangle.v3.Z)
+                || (triangle.v2.X == triangle.v3.X && triangle.v2.Y == triangle.v3.Y && triangle.v2.Z ==
+                    triangle.v3.Z)
                 )               
             {               
                 return;
@@ -399,12 +402,14 @@ namespace OpenSim.Region.PhysicsModule.ubODEMeshing
             if (m_verticesPtr != IntPtr.Zero)
             {
                 vhandler.Free();
+                GC.RemoveMemoryPressure(Buffer.ByteLength(vertices));
                 vertices = null;
                 m_verticesPtr = IntPtr.Zero;
             }
             if (m_indicesPtr != IntPtr.Zero)
             {
                 ihandler.Free();
+                GC.RemoveMemoryPressure(Buffer.ByteLength(indexes));
                 indexes = null;
                 m_indicesPtr = IntPtr.Zero;
             }

@@ -41,6 +41,7 @@ using OpenSim.Region.CoreModules.ServiceConnectorsOut.Simulation;
 using OpenSim.Region.Framework.Scenes;
 using OpenSim.Services.Interfaces;
 using OpenSim.Tests.Common;
+using System.Threading;
 
 namespace OpenSim.Region.CoreModules.Avatar.Chat.Tests
 {
@@ -166,7 +167,11 @@ namespace OpenSim.Region.CoreModules.Avatar.Chat.Tests
 
             sp1Position = new Vector3(30, 128, 20);
             sp1.AbsolutePosition = sp1Position;
+            sceneWest.Update(1);
             sceneEast.Update(1);
+            Thread.Sleep(12000); // child updates are now time limited
+            sceneWest.Update(5);
+            sceneEast.Update(5);
 
             // Check child position is correct.
             Assert.AreEqual(
@@ -254,6 +259,10 @@ namespace OpenSim.Region.CoreModules.Avatar.Chat.Tests
             sp1Position = new Vector3(30, 128, 20);
             sp1.AbsolutePosition = sp1Position;
             sceneNorth.Update(1);
+            sceneSouth.Update(1);
+            Thread.Sleep(12000); // child updates are now time limited
+            sceneNorth.Update(5);
+            sceneSouth.Update(5);
 
             // Check child position is correct.
             Assert.AreEqual(

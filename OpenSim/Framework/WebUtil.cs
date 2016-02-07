@@ -287,7 +287,6 @@ namespace OpenSim.Framework
                     }
                     else
                     {
-                        tickcompressdata = tickJsondata;
                         compsize = buffer.Length;
 
                         request.ContentLength = buffer.Length;   //Count bytes to send

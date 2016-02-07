@@ -179,7 +179,7 @@ namespace OpenSim.Region.CoreModules.World.Permissions
             m_RegionManagerIsGod = Util.GetConfigVarFromSections<bool>(config, "region_manager_is_god",
                 new string[] { "Startup", "Permissions" }, false); 
             m_ParcelOwnerIsGod = Util.GetConfigVarFromSections<bool>(config, "parcel_owner_is_god",
-                new string[] { "Startup", "Permissions" }, true);
+                new string[] { "Startup", "Permissions" }, false);
 
             m_SimpleBuildPermissions = Util.GetConfigVarFromSections<bool>(config, "simple_build_permissions",
                 new string[] { "Startup", "Permissions" }, false); 
@@ -271,6 +271,7 @@ namespace OpenSim.Region.CoreModules.World.Permissions
             m_scene.Permissions.OnIsGod += IsGod;
             m_scene.Permissions.OnIsGridGod += IsGridGod;
             m_scene.Permissions.OnIsAdministrator += IsAdministrator;
+            m_scene.Permissions.OnIsEstateManager += IsEstateManager;
             m_scene.Permissions.OnDuplicateObject += CanDuplicateObject;
             m_scene.Permissions.OnDeleteObject += CanDeleteObject; 
             m_scene.Permissions.OnEditObject += CanEditObject; 

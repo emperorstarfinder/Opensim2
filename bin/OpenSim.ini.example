@@ -400,9 +400,9 @@
     ;; Allow region managers to assume god powers in regions they manage
     ; region_manager_is_god = false
 
-    ;# {parcel_owner_is_god} {} {Allow parcel owner gods} {true false} true
+    ;# {parcel_owner_is_god} {} {Allow parcel owner gods} {true false} false
     ;; Allow parcel owners to assume god powers in their parcels
-    ; parcel_owner_is_god = true
+    ; parcel_owner_is_god = false
 
     ;# {simple_build_permissions} {} {Allow building in parcel by access list (no groups)} {true false} false
     ;; More control over permissions
@@ -871,6 +871,9 @@
     ;; Time a thread must be idle (in seconds) before it dies
     ; IdleTimeout = 60
 
+	;; llSetTimerEvent minimum value. Default 0.5s, 0.05s whould be more resonable
+	; MinTimerInterval = 0.5
+	
     ;# {Priority} {Enabled:true} {Priority for script engine threads?} {Lowest BelowNormal Normal AboveNormal Highest} BelowNormal
     ;; Thread priority ("Lowest", "BelowNormal", "Normal", "AboveNormal",
     ;; "Highest")
@@ -1133,7 +1136,10 @@
     ;# {InitialTerrain} {} {Initial terrain type} {pinhead-island flat} pinhead-island
     ; InitialTerrain = "pinhead-island"
 
-
+[LandManagement]
+	;; set this to false to not display parcel ban lines
+	;ShowParcelBansLines = true
+	
 [UserProfiles]
   ;# {ProfileServiceURL} {} {Set url to UserProfilesService} {}
   ;; Set the value of the url to your UserProfilesService

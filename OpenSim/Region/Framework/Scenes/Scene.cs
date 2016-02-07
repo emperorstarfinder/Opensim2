@@ -174,6 +174,13 @@ namespace OpenSim.Region.Framework.Scenes
 
         public SynchronizeSceneHandler SynchronizeScene;
 
+        public bool ClampNegativeZ
+        {
+            get { return m_clampNegativeZ; }
+        }
+
+        private bool m_clampNegativeZ = false;
+
         /// <summary>
         /// Used to prevent simultaneous calls to code that adds and removes agents.
         /// </summary>
@@ -287,6 +294,12 @@ namespace OpenSim.Region.Framework.Scenes
         public float MaxDrawDistance
         {
             get { return m_maxDrawDistance; }
+        }
+
+        protected float m_maxRegionViewDistance = 255f;
+        public float MaxRegionViewDistance
+        {
+            get { return m_maxRegionViewDistance; }
         }
 
         private List<string> m_AllowedViewers = new List<string>();
@@ -524,11 +537,11 @@ namespace OpenSim.Region.Framework.Scenes
 //        private int m_lastUpdate;
         private bool m_firstHeartbeat = true;
         
-        private UpdatePrioritizationSchemes m_priorityScheme = UpdatePrioritizationSchemes.Time;
-        private bool m_reprioritizationEnabled = true;
-        private double m_reprioritizationInterval = 5000.0;
-        private double m_rootReprioritizationDistance = 10.0;
-        private double m_childReprioritizationDistance = 20.0;
+//        private UpdatePrioritizationSchemes m_priorityScheme = UpdatePrioritizationSchemes.Time;
+//        private bool m_reprioritizationEnabled = true;
+//        private double m_reprioritizationInterval = 5000.0;
+//        private double m_rootReprioritizationDistance = 10.0;
+//        private double m_childReprioritizationDistance = 20.0;
 
 
         private Timer m_mapGenerationTimer = new Timer();
@@ -794,9 +807,10 @@ namespace OpenSim.Region.Framework.Scenes
 
         public UpdatePrioritizationSchemes UpdatePrioritizationScheme { get; set; }
         public bool IsReprioritizationEnabled { get; set; }
-        public double ReprioritizationInterval { get; set; }
-        public double RootReprioritizationDistance { get; set; }
-        public double ChildReprioritizationDistance { get; set; }
+        public float ReprioritizationInterval { get; set; }
+        public float RootReprioritizationDistance { get; set; }
+        public float ChildReprioritizationDistance { get; set; }
+        private float m_minReprioritizationDistance = 32f;
 
         public AgentCircuitManager AuthenticateHandler
         {
@@ -964,11 +978,15 @@ namespace OpenSim.Region.Framework.Scenes
 
                 m_defaultDrawDistance = startupConfig.GetFloat("DefaultDrawDistance", m_defaultDrawDistance);
                 m_maxDrawDistance = startupConfig.GetFloat("MaxDrawDistance", m_maxDrawDistance);
+                m_maxRegionViewDistance = startupConfig.GetFloat("MaxRegionsViewDistance", m_maxRegionViewDistance);
 
                 LegacySitOffsets = startupConfig.GetBoolean("LegacyOpenSimSitOffsets", LegacySitOffsets);
 
                 if (m_defaultDrawDistance > m_maxDrawDistance)
                     m_defaultDrawDistance = m_maxDrawDistance;
+
+                if (m_maxRegionViewDistance > m_maxDrawDistance)
+                    m_maxRegionViewDistance = m_maxDrawDistance;
 
                 UseBackup = startupConfig.GetBoolean("UseSceneBackup", UseBackup);
                 if (!UseBackup)
@@ -1028,6 +1046,8 @@ namespace OpenSim.Region.Framework.Scenes
                 {
                     m_clampPrimSize = true;
                 }
+
+                m_clampNegativeZ = startupConfig.GetBoolean("ClampNegativeZ", m_clampNegativeZ);
 
                 m_useTrashOnDelete = startupConfig.GetBoolean("UseTrashOnDelete",m_useTrashOnDelete);
                 m_trustBinaries = startupConfig.GetBoolean("TrustBinaries", m_trustBinaries);
@@ -1172,11 +1192,16 @@ namespace OpenSim.Region.Framework.Scenes
                 IsReprioritizationEnabled
                     = interestConfig.GetBoolean("ReprioritizationEnabled", IsReprioritizationEnabled);
                 ReprioritizationInterval
-                    = interestConfig.GetDouble("ReprioritizationInterval", ReprioritizationInterval);
+                    = interestConfig.GetFloat("ReprioritizationInterval", ReprioritizationInterval);
                 RootReprioritizationDistance
-                    = interestConfig.GetDouble("RootReprioritizationDistance", RootReprioritizationDistance);
+                    = interestConfig.GetFloat("RootReprioritizationDistance", RootReprioritizationDistance);
                 ChildReprioritizationDistance
-                    = interestConfig.GetDouble("ChildReprioritizationDistance", ChildReprioritizationDistance);
+                    = interestConfig.GetFloat("ChildReprioritizationDistance", ChildReprioritizationDistance);
+
+                if(RootReprioritizationDistance < m_minReprioritizationDistance)
+                    RootReprioritizationDistance = m_minReprioritizationDistance;
+                if(ChildReprioritizationDistance < m_minReprioritizationDistance)
+                    ChildReprioritizationDistance = m_minReprioritizationDistance;
 
                 RootTerseUpdatePeriod = interestConfig.GetInt("RootTerseUpdatePeriod", RootTerseUpdatePeriod);
                 ChildTerseUpdatePeriod = interestConfig.GetInt("ChildTerseUpdatePeriod", ChildTerseUpdatePeriod);
@@ -1235,8 +1260,8 @@ namespace OpenSim.Region.Framework.Scenes
             RootRotationUpdateTolerance = 0.1f;
             RootVelocityUpdateTolerance = 0.001f;
             RootPositionUpdateTolerance = 0.05f;
-            RootReprioritizationDistance = 10.0;
-            ChildReprioritizationDistance = 20.0;
+            RootReprioritizationDistance = m_minReprioritizationDistance;
+            ChildReprioritizationDistance = m_minReprioritizationDistance;
 
             m_eventManager = new EventManager();
 
@@ -1294,7 +1319,7 @@ namespace OpenSim.Region.Framework.Scenes
 
         protected virtual void RegisterDefaultSceneEvents()
         {
-            m_eventManager.OnSignificantClientMovement += HandleOnSignificantClientMovement;
+//            m_eventManager.OnSignificantClientMovement += HandleOnSignificantClientMovement;
         }
 
         public override string GetSimulatorVersion()
@@ -1472,10 +1497,13 @@ namespace OpenSim.Region.Framework.Scenes
 
             m_log.InfoFormat("[SCENE]: Closing down the single simulator: {0}", RegionInfo.RegionName);
 
-            StatsReporter.Close();
 
+            StatsReporter.Close();
             m_restartTimer.Stop();
             m_restartTimer.Close();
+
+            if (!GridService.DeregisterRegion(RegionInfo.RegionID))
+                m_log.WarnFormat("[SCENE]: Deregister from grid failed for region {0}", Name);
 
             // Kick all ROOT agents with the message, 'The simulator is going down'
             ForEachScenePresence(delegate(ScenePresence avatar)
@@ -1503,12 +1531,9 @@ namespace OpenSim.Region.Framework.Scenes
             EventManager.TriggerSceneShuttingDown(this);
 
             m_log.Debug("[SCENE]: Persisting changed objects");
+            Backup(true);
 
-            Backup(false);
             m_sceneGraph.Close();
-
-            if (!GridService.DeregisterRegion(RegionInfo.RegionID))
-                m_log.WarnFormat("[SCENE]: Deregister from grid failed for region {0}", Name);
 
             base.Close();
 
@@ -1568,6 +1593,7 @@ namespace OpenSim.Region.Framework.Scenes
                 m_heartbeatThread = null;
             }
 
+            GC.Collect();
             // tell physics to finish building actor
             m_sceneGraph.ProcessPhysicsPreSimulation();
 
@@ -1619,6 +1645,8 @@ namespace OpenSim.Region.Framework.Scenes
             Watchdog.GetCurrentThreadInfo().AlarmIfTimeout = true;
             m_lastFrameTick = Util.EnvironmentTickCount();
             Update(-1);
+
+            Watchdog.RemoveThread();
 		}
 
         private void Maintenance()
@@ -2787,7 +2815,11 @@ namespace OpenSim.Region.Framework.Scenes
             if (!silent)
                 SendKillObject(new List<uint>() { group.LocalId });
 
-            // m_log.DebugFormat("[SCENE]: Exit DeleteSceneObject() for {0} {1}", group.Name, group.UUID);            
+            // use this to mean also full delete
+            if (removeScripts)
+                group.Clear();
+            partList = null;
+            // m_log.DebugFormat("[SCENE]: Exit DeleteSceneObject() for {0} {1}", group.Name, group.UUID);          
         }
 
         /// <summary>
@@ -3015,7 +3047,7 @@ namespace OpenSim.Region.Framework.Scenes
             if (sceneObject.IsAttachmentCheckFull()) // Attachment
             {
                 sceneObject.RootPart.AddFlag(PrimFlags.TemporaryOnRez);
-                sceneObject.RootPart.AddFlag(PrimFlags.Phantom);
+//                sceneObject.RootPart.AddFlag(PrimFlags.Phantom);
 
                 // Don't sent a full update here because this will cause full updates to be sent twice for 
                 // attachments on region crossings, resulting in viewer glitches.
@@ -3047,8 +3079,8 @@ namespace OpenSim.Region.Framework.Scenes
                 else
                 {
                     m_log.DebugFormat("[SCENE]: Attachment {0} arrived and scene presence was not found, setting to temp", sceneObject.UUID);
-                    RootPrim.RemFlag(PrimFlags.TemporaryOnRez);
-                    RootPrim.AddFlag(PrimFlags.TemporaryOnRez);
+//                    RootPrim.RemFlag(PrimFlags.TemporaryOnRez);
+//                    RootPrim.AddFlag(PrimFlags.TemporaryOnRez);
                 }
                 if (sceneObject.OwnerID == UUID.Zero)
                 {
@@ -4044,7 +4076,6 @@ namespace OpenSim.Region.Framework.Scenes
                 return false;
             }
 
-            ILandObject land;
             ScenePresence sp;
 
             lock (m_removeClientLock)
@@ -4150,27 +4181,18 @@ namespace OpenSim.Region.Framework.Scenes
                 // If the checks fail, we remove the circuit.
                 acd.teleportFlags = teleportFlags;
 
-                // Remove any preexisting circuit - we don't want duplicates
-                // This is a stab at preventing avatar "ghosting"
-                if (vialogin)
-                    m_authenticateHandler.RemoveCircuit(acd.AgentID);
-
-                m_authenticateHandler.AddNewCircuit(acd.circuitcode, acd);
-
-                land = LandChannel.GetLandObject(acd.startpos.X, acd.startpos.Y);
-
-                // On login test land permisions
                 if (vialogin)
                 {
                     IUserAccountCacheModule cache = RequestModuleInterface<IUserAccountCacheModule>();
                     if (cache != null)
                         cache.Remove(acd.firstname + " " + acd.lastname);
-                    if (land != null && !TestLandRestrictions(acd.AgentID, out reason, ref acd.startpos.X, ref acd.startpos.Y))
-                    {
-                        m_authenticateHandler.RemoveCircuit(acd.circuitcode);
-                        return false;
-                    }
+
+                    // Remove any preexisting circuit - we don't want duplicates
+                    // This is a stab at preventing avatar "ghosting"
+                    m_authenticateHandler.RemoveCircuit(acd.AgentID);
                 }
+
+                m_authenticateHandler.AddNewCircuit(acd.circuitcode, acd);
 
                 if (sp == null) // We don't have an [child] agent here already
                 {
@@ -4255,92 +4277,41 @@ namespace OpenSim.Region.Framework.Scenes
                 CapsModule.ActivateCaps(acd.circuitcode);
             }
 
-            if (vialogin)
-            {
+//            if (vialogin)
+//            {
 //                CleanDroppedAttachments();
+//            }
 
-                // Make sure avatar position is in the region (why it wouldn't be is a mystery but do sanity checking)
-                if (acd.startpos.X < 0) acd.startpos.X = 1f;
-                if (acd.startpos.X >= RegionInfo.RegionSizeX) acd.startpos.X = RegionInfo.RegionSizeX - 1f;
-                if (acd.startpos.Y < 0) acd.startpos.Y = 1f;
-                if (acd.startpos.Y >= RegionInfo.RegionSizeY) acd.startpos.Y = RegionInfo.RegionSizeY - 1f;
+            // Make sure avatar position is in the region (why it wouldn't be is a mystery but do sanity checking)
+            if (acd.startpos.X < 0)
+                acd.startpos.X = 1f;
+            else if (acd.startpos.X >= RegionInfo.RegionSizeX)
+                acd.startpos.X = RegionInfo.RegionSizeX - 1f;
+            if (acd.startpos.Y < 0)
+                acd.startpos.Y = 1f;
+            else if (acd.startpos.Y >= RegionInfo.RegionSizeY)
+                acd.startpos.Y = RegionInfo.RegionSizeY - 1f;
 
-//                m_log.DebugFormat(
-//                    "[SCENE]: Found telehub object {0} for new user connection {1} to {2}", 
-//                    RegionInfo.RegionSettings.TelehubObject, acd.Name, Name);
+            // only check access, actual relocations will happen later on ScenePresence MakeRoot
+            // allow child agents creation
+            if(!godlike && teleportFlags != (uint) TPFlags.Default)
+            {   
+                bool checkTeleHub;
 
-                // Honor Estate teleport routing via Telehubs excluding ViaHome and GodLike TeleportFlags
-                if (RegionInfo.RegionSettings.TelehubObject != UUID.Zero &&
-                    RegionInfo.EstateSettings.AllowDirectTeleport == false &&
-                    !viahome && !godlike)
+                // don't check hubs if via home or via lure
+                if((teleportFlags & (uint) TPFlags.ViaHome) != 0
+                        || (teleportFlags & (uint) TPFlags.ViaLure) != 0)
+                        checkTeleHub = false;
+                else
+                    checkTeleHub = vialogin
+                        || (TelehubAllowLandmarks == true ? false : ((teleportFlags & (uint)TPFlags.ViaLandmark) != 0 ))
+                        || (teleportFlags & (uint) TPFlags.ViaLocation) != 0;
+                 
+                if(!CheckLandPositionAccess(acd.AgentID, true, checkTeleHub, acd.startpos, out reason))
                 {
-                    SceneObjectGroup telehub = GetSceneObjectGroup(RegionInfo.RegionSettings.TelehubObject);
-
-                    if (telehub != null)
-                    {
-                        // Can have multiple SpawnPoints
-                        List<SpawnPoint> spawnpoints = RegionInfo.RegionSettings.SpawnPoints();
-                        if (spawnpoints.Count > 1)
-                        {
-                            // We have multiple SpawnPoints, Route the agent to a random or sequential one
-                            if (SpawnPointRouting == "random")
-                                acd.startpos = spawnpoints[Util.RandomClass.Next(spawnpoints.Count) - 1].GetLocation(
-                                    telehub.AbsolutePosition,
-                                    telehub.GroupRotation
-                                );
-                            else
-                                acd.startpos = spawnpoints[SpawnPoint()].GetLocation(
-                                    telehub.AbsolutePosition,
-                                    telehub.GroupRotation
-                                );
-                        }
-                        else if (spawnpoints.Count == 1)
-                        {
-                            // We have a single SpawnPoint and will route the agent to it
-                            acd.startpos = spawnpoints[0].GetLocation(telehub.AbsolutePosition, telehub.GroupRotation);
-                        }
-                        else
-                        {
-                            m_log.DebugFormat(
-                                "[SCENE]: No spawnpoints defined for telehub {0} for {1} in {2}.  Continuing.",
-                                RegionInfo.RegionSettings.TelehubObject, acd.Name, Name);
-                        }
-                    }
-                    else
-                    {
-                        m_log.DebugFormat(
-                            "[SCENE]: No telehub {0} found to direct {1} in {2}.  Continuing.",
-                            RegionInfo.RegionSettings.TelehubObject, acd.Name, Name);
-                    }
-
-                    // Final permissions check; this time we don't allow changing the position
-                    if (!IsPositionAllowed(acd.AgentID, acd.startpos, ref reason))
-                    {
-                        m_authenticateHandler.RemoveCircuit(acd.circuitcode);
-                        return false;
-                    }
-
-                    return true;
+                    m_authenticateHandler.RemoveCircuit(acd.circuitcode);
+                    return false;
                 }
-
-                // Honor parcel landing type and position.
-                /*
-                ILandObject land = LandChannel.GetLandObject(agent.startpos.X, agent.startpos.Y);
-                if (land != null)
-                {
-                    if (land.LandData.LandingType == (byte)1 && land.LandData.UserLocation != Vector3.Zero)
-                    {
-                        acd.startpos = land.LandData.UserLocation;
-
-                        // Final permissions check; this time we don't allow changing the position
-                        if (!IsPositionAllowed(acd.AgentID, acd.startpos, ref reason))
-                        {
-                            m_authenticateHandler.RemoveCircuit(acd.circuitcode);
-                            return false;
-                        }
-                    }
-                }
-                */// This is now handled properly in ScenePresence.MakeRootAgent
             }
 
             return true;
@@ -4390,7 +4361,7 @@ namespace OpenSim.Region.Framework.Scenes
                 if (nearestParcel != null)
                 {
                     //Move agent to nearest allowed
-                    Vector3 newPosition = GetParcelCenterAtGround(nearestParcel);
+                    Vector2 newPosition = GetParcelSafeCorner(nearestParcel);
                     posX = newPosition.X;
                     posY = newPosition.Y;
                 }
@@ -4452,8 +4423,10 @@ namespace OpenSim.Region.Framework.Scenes
         {
             reason = String.Empty;
 
-            if (!m_strictAccessControl) return true;
-            if (Permissions.IsGod(agent.AgentID)) return true;
+            if (!m_strictAccessControl)
+                return true;
+            if (Permissions.IsGod(agent.AgentID))
+                return true;
 
             if (AuthorizationService != null)
             {
@@ -4473,98 +4446,84 @@ namespace OpenSim.Region.Framework.Scenes
             // the root is done elsewhere (QueryAccess)
             if (!bypassAccessControl)
             {
-                if (RegionInfo.EstateSettings != null)
+                if(RegionInfo.EstateSettings == null)
                 {
-                    int flags = GetUserFlags(agent.AgentID);
-                    if (RegionInfo.EstateSettings.IsBanned(agent.AgentID, flags))
-                    {
-                        m_log.WarnFormat("[CONNECTION BEGIN]: Denied access to: {0} ({1} {2}) at {3} because the user is on the banlist",
-                                         agent.AgentID, agent.firstname, agent.lastname, RegionInfo.RegionName);
-                        reason = String.Format("Denied access to region {0}: You have been banned from that region.",
-                                               RegionInfo.RegionName);
-                        return false;
-                    }
-                }
-                else
-                {
+                    // something is broken?  let it get in
                     m_log.ErrorFormat("[CONNECTION BEGIN]: Estate Settings is null!");
+                    return true;
                 }
 
-                List<UUID> agentGroups = new List<UUID>();
-
-                if (m_groupsModule != null)
+                // check estate ban
+                int flags = GetUserFlags(agent.AgentID);
+                if (RegionInfo.EstateSettings.IsBanned(agent.AgentID, flags))
                 {
-                    GroupMembershipData[] GroupMembership = m_groupsModule.GetMembershipData(agent.AgentID);
-
-                    if (GroupMembership != null)
-                    {
-                        for (int i = 0; i < GroupMembership.Length; i++)
-                            agentGroups.Add(GroupMembership[i].GroupID);
-                    }
-                    else
-                    {
-                        m_log.ErrorFormat("[CONNECTION BEGIN]: GroupMembership is null!");
-                    }
+                    m_log.WarnFormat("[CONNECTION BEGIN]: Denied access to: {0} ({1} {2}) at {3} because the user is on the banlist",
+                            agent.AgentID, agent.firstname, agent.lastname, RegionInfo.RegionName);
+                    reason = String.Format("Denied access to region {0}: You have been banned from that region.",
+                            RegionInfo.RegionName);
+                    return false;
                 }
 
+                // public access
+                if (RegionInfo.EstateSettings.PublicAccess)
+                    return true;
+
+                // in access list / owner / manager
+                if (RegionInfo.EstateSettings.HasAccess(agent.AgentID))
+                    return true;
+                
+                // finally test groups
                 bool groupAccess = false;
+
+                // some say GOTO is ugly
+                if(m_groupsModule == null) // if no groups refuse
+                    goto Label_GroupsDone;
+
                 UUID[] estateGroups = RegionInfo.EstateSettings.EstateGroups;
 
-                if (estateGroups != null)
+                if(estateGroups == null)
                 {
-                    foreach (UUID group in estateGroups)
-                    {
-                        if (agentGroups.Contains(group))
-                        {
-                            groupAccess = true;
-                            break;
-                        }
-                    }
-                }
-                else
-                {
-                    m_log.ErrorFormat("[CONNECTION BEGIN]: EstateGroups is null!");
+                    m_log.ErrorFormat("[CONNECTION BEGIN]: Estate GroupMembership is null!");
+                    goto Label_GroupsDone;
                 }
 
-                if (!RegionInfo.EstateSettings.PublicAccess &&
-                    !RegionInfo.EstateSettings.HasAccess(agent.AgentID) &&
-                    !groupAccess)
+                if(estateGroups.Length == 0)
+                    goto Label_GroupsDone;
+
+                List<UUID> agentGroups = new List<UUID>();
+                GroupMembershipData[] GroupMembership = m_groupsModule.GetMembershipData(agent.AgentID);
+
+                if(GroupMembership == null)
+                {
+                    m_log.ErrorFormat("[CONNECTION BEGIN]: GroupMembership is null!");
+                    goto Label_GroupsDone;
+                }
+
+                if(GroupMembership.Length == 0)
+                    goto Label_GroupsDone;
+
+                for(int i = 0;i < GroupMembership.Length;i++)
+                    agentGroups.Add(GroupMembership[i].GroupID);
+
+                foreach(UUID group in estateGroups)
+                {
+                    if(agentGroups.Contains(group))
+                    {
+                        groupAccess = true;
+                        break;
+                    }
+                }
+
+Label_GroupsDone:
+                if (!groupAccess)
                 {
                     m_log.WarnFormat("[CONNECTION BEGIN]: Denied access to: {0} ({1} {2}) at {3} because the user does not have access to the estate",
                                      agent.AgentID, agent.firstname, agent.lastname, RegionInfo.RegionName);
-                    reason = String.Format("Denied access to private region {0}: You are not on the access list for that region.",
-                                           RegionInfo.RegionName);
+                    reason = String.Format("Denied access to private region {0}: You are do not have access to that region.",
+                                     RegionInfo.RegionName);
                     return false;
                 }
             }
-
-            // TODO: estate/region settings are not properly hooked up
-            // to ILandObject.isRestrictedFromLand()
-            // if (null != LandChannel)
-            // {
-            //     // region seems to have local Id of 1
-            //     ILandObject land = LandChannel.GetLandObject(1);
-            //     if (null != land)
-            //     {
-            //         if (land.isBannedFromLand(agent.AgentID))
-            //         {
-            //             m_log.WarnFormat("[CONNECTION BEGIN]: Denied access to: {0} ({1} {2}) at {3} because the user has been banned from land",
-            //                              agent.AgentID, agent.firstname, agent.lastname, RegionInfo.RegionName);
-            //             reason = String.Format("Denied access to private region {0}: You are banned from that region.",
-            //                                    RegionInfo.RegionName);
-            //             return false;
-            //         }
-
-            //         if (land.isRestrictedFromLand(agent.AgentID))
-            //         {
-            //             m_log.WarnFormat("[CONNECTION BEGIN]: Denied access to: {0} ({1} {2}) at {3} because the user does not have access to the region",
-            //                              agent.AgentID, agent.firstname, agent.lastname, RegionInfo.RegionName);
-            //             reason = String.Format("Denied access to private region {0}: You are not on the access list for that region.",
-            //                                    RegionInfo.RegionName);
-            //             return false;
-            //         }
-            //     }
-            // }
 
             return true;
         }
@@ -5840,27 +5799,26 @@ Environment.Exit(1);
 
         public Vector3 GetNearestAllowedPosition(ScenePresence avatar, ILandObject excludeParcel)
         {
-            ILandObject nearestParcel = GetNearestAllowedParcel(avatar.UUID, avatar.AbsolutePosition.X, avatar.AbsolutePosition.Y, excludeParcel);
+            Vector3 pos = avatar.AbsolutePosition;
+
+            ILandObject nearestParcel = GetNearestAllowedParcel(avatar.UUID, pos.X, pos.Y, excludeParcel);
 
             if (nearestParcel != null)
             {
-                Vector3 dir = Vector3.Normalize(Vector3.Multiply(avatar.Velocity, -1));
-                //Try to get a location that feels like where they came from
-                Vector3? nearestPoint = GetNearestPointInParcelAlongDirectionFromPoint(avatar.AbsolutePosition, dir, nearestParcel);
-                if (nearestPoint != null)
-                {
-                    m_log.Debug("Found a sane previous position based on velocity, sending them to: " + nearestPoint.ToString());
-                    return nearestPoint.Value;
-                }
+                Vector2? nearestPoint = null;
+                Vector3 dir = -avatar.Velocity;
+                float dirlen = dir.Length();
+                if(dirlen > 1.0f)
+                    //Try to get a location that feels like where they came from
+                    nearestPoint = nearestParcel.GetNearestPointAlongDirection(pos, dir);
 
-                //Sometimes velocity might be zero (local teleport), so try finding point along path from avatar to center of nearest parcel
-                Vector3 directionToParcelCenter = Vector3.Subtract(GetParcelCenterAtGround(nearestParcel), avatar.AbsolutePosition);
-                dir = Vector3.Normalize(directionToParcelCenter);
-                nearestPoint = GetNearestPointInParcelAlongDirectionFromPoint(avatar.AbsolutePosition, dir, nearestParcel);
+                if (nearestPoint == null)
+                    nearestPoint = nearestParcel.GetNearestPoint(pos);
+
                 if (nearestPoint != null)
                 {
-                    m_log.Debug("They had a zero velocity, sending them to: " + nearestPoint.ToString());
-                    return nearestPoint.Value;
+                    return GetPositionAtAvatarHeightOrGroundHeight(avatar,
+                            nearestPoint.Value.X, nearestPoint.Value.Y);
                 }
 
                 ILandObject dest = LandChannel.GetLandObject(avatar.lastKnownAllowedPosition.X, avatar.lastKnownAllowedPosition.Y);
@@ -5884,23 +5842,8 @@ Environment.Exit(1);
 
         private Vector3 GetParcelCenterAtGround(ILandObject parcel)
         {
-            Vector2 center = GetParcelCenter(parcel);
+            Vector2 center = parcel.CenterPoint;
             return GetPositionAtGround(center.X, center.Y);
-        }
-
-        private Vector3? GetNearestPointInParcelAlongDirectionFromPoint(Vector3 pos, Vector3 direction, ILandObject parcel)
-        {
-            Vector3 unitDirection = Vector3.Normalize(direction);
-            //Making distance to search go through some sane limit of distance
-            for (float distance = 0; distance < Math.Max(RegionInfo.RegionSizeX, RegionInfo.RegionSizeY) * 2; distance += .5f)
-            {
-                Vector3 testPos = Vector3.Add(pos, Vector3.Multiply(unitDirection, distance));
-                if (parcel.ContainsPoint((int)testPos.X, (int)testPos.Y))
-                {
-                    return testPos;
-                }
-            }
-            return null;
         }
 
         public ILandObject GetNearestAllowedParcel(UUID avatarId, float x, float y)
@@ -5910,18 +5853,30 @@ Environment.Exit(1);
 
         public ILandObject GetNearestAllowedParcel(UUID avatarId, float x, float y, ILandObject excludeParcel)
         {
-            List<ILandObject> all = AllParcels();
-            float minParcelDistance = float.MaxValue;
+            if(LandChannel == null)
+                return null;
+
+            List<ILandObject> all = LandChannel.AllParcels();
+
+            if(all == null || all.Count == 0)
+                return null;
+
+            float minParcelDistanceSQ = float.MaxValue;
             ILandObject nearestParcel = null;
+            Vector2 curCenter;
+            float parcelDistanceSQ;
 
             foreach (var parcel in all)
             {
-                if (!parcel.IsEitherBannedOrRestricted(avatarId) && parcel != excludeParcel)
+                if (parcel != excludeParcel && !parcel.IsEitherBannedOrRestricted(avatarId))
                 {
-                    float parcelDistance = GetParcelDistancefromPoint(parcel, x, y);
-                    if (parcelDistance < minParcelDistance)
+                    curCenter = parcel.CenterPoint;
+                    curCenter.X -= x;
+                    curCenter.Y -= y;
+                    parcelDistanceSQ = curCenter.LengthSquared();
+                    if (parcelDistanceSQ < minParcelDistanceSQ)
                     {
-                        minParcelDistance = parcelDistance;
+                        minParcelDistanceSQ = parcelDistanceSQ;
                         nearestParcel = parcel;
                     }
                 }
@@ -5930,82 +5885,52 @@ Environment.Exit(1);
             return nearestParcel;
         }
 
-        private List<ILandObject> AllParcels()
+        private Vector2 GetParcelSafeCorner(ILandObject parcel)
         {
-            return LandChannel.AllParcels();
-        }
-
-        private float GetParcelDistancefromPoint(ILandObject parcel, float x, float y)
-        {
-            return Vector2.Distance(new Vector2(x, y), GetParcelCenter(parcel));
-        }
-
-        //calculate the average center point of a parcel
-        private Vector2 GetParcelCenter(ILandObject parcel)
-        {
-            int count = 0;
-            int avgx = 0;
-            int avgy = 0;
-            for (int x = 0; x < RegionInfo.RegionSizeX; x++)
-            {
-                for (int y = 0; y < RegionInfo.RegionSizeY; y++)
-                {
-                    //Just keep a running average as we check if all the points are inside or not
-                    if (parcel.ContainsPoint(x, y))
-                    {
-                        if (count == 0)
-                        {
-                            avgx = x;
-                            avgy = y;
-                        }
-                        else
-                        {
-                            avgx = (avgx * count + x) / (count + 1);
-                            avgy = (avgy * count + y) / (count + 1);
-                        }
-                        count += 1;
-                    }
-                }
-            }
-            return new Vector2(avgx, avgy);
+            Vector2 place = parcel.StartPoint;
+            place.X += 2f;
+            place.Y += 2f;
+            return place;
         }
 
         private Vector3 GetNearestRegionEdgePosition(ScenePresence avatar)
         {
-            float xdistance = avatar.AbsolutePosition.X < RegionInfo.RegionSizeX / 2
-                                ? avatar.AbsolutePosition.X : RegionInfo.RegionSizeX - avatar.AbsolutePosition.X;
-            float ydistance = avatar.AbsolutePosition.Y < RegionInfo.RegionSizeY / 2
-                                ? avatar.AbsolutePosition.Y : RegionInfo.RegionSizeY - avatar.AbsolutePosition.Y;
+            float posX = avatar.AbsolutePosition.X;
+            float posY = avatar.AbsolutePosition.Y;
+            float regionSizeX = RegionInfo.RegionSizeX;
+            float halfRegionSizeX = regionSizeX * 0.5f;
+            float regionSizeY = RegionInfo.RegionSizeY;
+            float halfRegionSizeY = regionSizeY * 0.5f;
+
+            float xdistance = posX < halfRegionSizeX ? posX : regionSizeX - posX;
+            float ydistance = posY < halfRegionSizeY ? posY : regionSizeY - posY;
 
             //find out what vertical edge to go to
             if (xdistance < ydistance)
             {
-                if (avatar.AbsolutePosition.X < RegionInfo.RegionSizeX / 2)
-                {
-                    return GetPositionAtAvatarHeightOrGroundHeight(avatar, 0.0f, avatar.AbsolutePosition.Y);
-                }
+                if (posX < halfRegionSizeX)
+                    return GetPositionAtAvatarHeightOrGroundHeight(avatar, 0.5f, posY);
                 else
-                {
-                    return GetPositionAtAvatarHeightOrGroundHeight(avatar, RegionInfo.RegionSizeY, avatar.AbsolutePosition.Y);
-                }
+                    return GetPositionAtAvatarHeightOrGroundHeight(avatar, regionSizeX - 0.5f, posY);
             }
             //find out what horizontal edge to go to
             else
             {
-                if (avatar.AbsolutePosition.Y < RegionInfo.RegionSizeY / 2)
-                {
-                    return GetPositionAtAvatarHeightOrGroundHeight(avatar, avatar.AbsolutePosition.X, 0.0f);
-                }
+                if (posY < halfRegionSizeY)
+                    return GetPositionAtAvatarHeightOrGroundHeight(avatar, posX, 0.5f);
                 else
-                {
-                    return GetPositionAtAvatarHeightOrGroundHeight(avatar, avatar.AbsolutePosition.X, RegionInfo.RegionSizeY);
-                }
+                    return GetPositionAtAvatarHeightOrGroundHeight(avatar, posX, regionSizeY - 0.5f);
             }
         }
 
         private Vector3 GetPositionAtAvatarHeightOrGroundHeight(ScenePresence avatar, float x, float y)
         {
             Vector3 ground = GetPositionAtGround(x, y);
+            if(avatar.Appearance != null)
+                ground.Z += avatar.Appearance.AvatarHeight * 0.5f;
+            else
+                ground.Z += 0.8f;
+
             if (avatar.AbsolutePosition.Z > ground.Z)
             {
                 ground.Z = avatar.AbsolutePosition.Z;
@@ -6214,13 +6139,16 @@ Environment.Exit(1);
             reason = string.Empty;
 
             if (Permissions.IsGod(agentID))
-            {
-                reason = String.Empty;
                 return true;
-            }
 
             if (!AllowAvatarCrossing && !viaTeleport)
+            {
+                reason = "Region Crossing not allowed";
                 return false;
+            }
+
+            bool isAdmin = Permissions.IsAdministrator(agentID);
+            bool isManager = Permissions.IsEstateManager(agentID);
 
             // FIXME: Root agent count is currently known to be inaccurate.  This forces a recount before we check.
             // However, the long term fix is to make sure root agent count is always accurate.
@@ -6230,7 +6158,7 @@ Environment.Exit(1);
 
             if (num >= RegionInfo.RegionSettings.AgentLimit)
             {
-                if (!Permissions.IsAdministrator(agentID))
+                if (!(isAdmin || isManager))
                 {
                     reason = "The region is full";
 
@@ -6268,6 +6196,7 @@ Environment.Exit(1);
                 if (!AuthorizeUser(aCircuit, false, out reason))
                 {
                     //m_log.DebugFormat("[SCENE]: Denying access for {0}", agentID);
+//                    reason = "Region authorization fail";
                     return false;
                 }
             }
@@ -6277,53 +6206,101 @@ Environment.Exit(1);
                 reason = "Error authorizing agent: " + e.Message;
                 return false;
             }
+            
+            // last check aditional land access restrictions and relocations
+            // if crossing (viaTeleport false) check only the specified parcel
+            return CheckLandPositionAccess(agentID, viaTeleport, true, position, out reason);
+        }            
 
-            if (viaTeleport)
+        // check access to land.
+        public bool CheckLandPositionAccess(UUID agentID, bool NotCrossing, bool checkTeleHub, Vector3 position, out string reason)
+        {
+            reason = string.Empty;
+
+            if (Permissions.IsGod(agentID))
+                return true;
+
+            bool isAdmin = Permissions.IsAdministrator(agentID);
+            if(isAdmin)
+                return true;
+                
+            // also honor estate managers access rights
+            bool isManager = Permissions.IsEstateManager(agentID);
+            if(isManager)
+                return true;
+
+            if (NotCrossing)
             {
                 if (!RegionInfo.EstateSettings.AllowDirectTeleport)
                 {
                     SceneObjectGroup telehub;
-                    if (RegionInfo.RegionSettings.TelehubObject != UUID.Zero && (telehub = GetSceneObjectGroup(RegionInfo.RegionSettings.TelehubObject)) != null)
-                    {
-                        List<SpawnPoint> spawnPoints = RegionInfo.RegionSettings.SpawnPoints();
+                    if (RegionInfo.RegionSettings.TelehubObject != UUID.Zero && (telehub = GetSceneObjectGroup  (RegionInfo.RegionSettings.TelehubObject)) != null && checkTeleHub)
+                    {   
                         bool banned = true;
-                        foreach (SpawnPoint sp in spawnPoints)
+                        bool validTelehub = false;
+                        List<SpawnPoint> spawnPoints = RegionInfo.RegionSettings.SpawnPoints();
+                        Vector3 spawnPoint;
+                        ILandObject land = null;
+                        Vector3 telehubPosition = telehub.AbsolutePosition;
+                        
+                        if(spawnPoints.Count == 0)
                         {
-                            Vector3 spawnPoint = sp.GetLocation(telehub.AbsolutePosition, telehub.GroupRotation);
-                            ILandObject land = LandChannel.GetLandObject(spawnPoint.X, spawnPoint.Y);
-                            if (land == null)
-                                continue;
-                            if (land.IsEitherBannedOrRestricted(agentID))
-                                continue;
-                            banned = false;
-                            break;
+                            // will this ever happen?
+                            // if so use the telehub object position
+                            spawnPoint = telehubPosition;
+                            land = LandChannel.GetLandObject(spawnPoint.X, spawnPoint.Y);
+                            if(land != null && !land.IsEitherBannedOrRestricted(agentID))
+                            {
+                                banned = false;
+                                validTelehub = true;
+                            }
+                        }
+                        else
+                        {   
+                            Quaternion telehubRotation = telehub.GroupRotation;
+                            foreach (SpawnPoint spawn in spawnPoints)
+                            {
+                                spawnPoint = spawn.GetLocation(telehubPosition, telehubRotation);
+                                land = LandChannel.GetLandObject(spawnPoint.X, spawnPoint.Y);
+                                if (land == null)
+                                    continue;
+                                validTelehub = true;
+                                if (!land.IsEitherBannedOrRestricted(agentID))
+                                {
+                                    banned = false;
+                                    break;
+                                }
+                            }
                         }
 
-                        if (banned)
+                        if(validTelehub)
                         {
-                            if (Permissions.IsAdministrator(agentID) == false || Permissions.IsGridGod(agentID) == false)
+                            if (banned)
                             {
                                 reason = "No suitable landing point found";
                                 return false;
                             }
-                            reason = "Administrative access only";
-                            return true;
+                            else
+                                return true;
                         }
+                       // possible broken telehub, fall into normal check
                     }
                 }
 
-                float posX = 128.0f;
-                float posY = 128.0f;
+                float posX = position.X;
+                float posY = position.Y;
 
+                // allow position relocation
                 if (!TestLandRestrictions(agentID, out reason, ref posX, ref posY))
                 {
                     // m_log.DebugFormat("[SCENE]: Denying {0} because they are banned on all parcels", agentID);
-                    reason = "You are banned from the region on all parcels";
+                    reason = "You dont have access to the region parcels";
                     return false;
                 }
             }
-            else // Walking
+            else // check for query region crossing only
             {
+                // no relocation allowed on crossings
                 ILandObject land = LandChannel.GetLandObject(position.X, position.Y);
                 if (land == null)
                 {
@@ -6344,7 +6321,6 @@ Environment.Exit(1);
                 }
             }
 
-            reason = String.Empty;
             return true;
         }
 
@@ -6368,6 +6344,7 @@ Environment.Exit(1);
         /// This is not intended as a permament location for this method.
         /// </remarks>
         /// <param name="presence"></param>
+/* move to target is now done on presence update
         private void HandleOnSignificantClientMovement(ScenePresence presence)
         {
             if (presence.MovingToTarget)
@@ -6424,7 +6401,7 @@ Environment.Exit(1);
                 }
             }
         }
-
+*/
         // manage and select spawn points in sequence
         public int SpawnPoint()
         {

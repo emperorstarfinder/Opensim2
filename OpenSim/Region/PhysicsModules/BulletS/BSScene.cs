@@ -679,7 +679,6 @@ namespace OpenSim.Region.PhysicsModule.BulletS
             try
             {
                 numSubSteps = PE.PhysicsStep(World, timeStep, m_maxSubSteps, m_fixedTimeStep, out updatedEntityCount, out collidersCount);
-
             }
             catch (Exception e)
             {
@@ -880,7 +879,7 @@ namespace OpenSim.Region.PhysicsModule.BulletS
 
             if (collider.IsInitialized)
             {
-                if (collider.Collide(collidingWith, collidee, collidePoint, collideNormal, penetration))
+                if (collider.Collide(collidee, collidePoint, collideNormal, penetration))
                 {
                     // If a collision was 'good', remember to send it to the simulator
                     lock (CollisionLock)

@@ -89,6 +89,7 @@ public sealed class BSCharacter : BSPhysObject
         _buoyancy = ComputeBuoyancyFromFlying(isFlying);
         Friction = BSParam.AvatarStandingFriction;
         Density = BSParam.AvatarDensity;
+        _isPhysical = true;
 
         // Old versions of ScenePresence passed only the height. If width and/or depth are zero,
         //     replace with the default values.
@@ -457,7 +458,7 @@ public sealed class BSCharacter : BSPhysObject
         get { return RawVelocity; }
         set {
             RawVelocity = value;
-                OMV.Vector3 vel = RawVelocity;
+            OMV.Vector3 vel = RawVelocity;
 
             DetailLog("{0}: set Velocity = {1}", LocalID, value);
 
@@ -652,14 +653,24 @@ public sealed class BSCharacter : BSPhysObject
     public override void AddForce(OMV.Vector3 force, bool pushforce)
     {
         // Since this force is being applied in only one step, make this a force per second.
-        OMV.Vector3 addForce = force / PhysScene.LastTimeStep;
-        AddForce(addForce, pushforce, false);
+        OMV.Vector3 addForce = force;
+
+        // The interaction of this force with the simulator rate and collision occurance is tricky.
+        // ODE multiplies the force by 100
+        // ubODE multiplies the force by 5.3
+        // BulletSim, after much in-world testing, thinks it gets a similar effect by multiplying mass*0.315f
+        //    This number could be a feature of friction or timing, but it seems to move avatars the same as ubODE
+        addForce *= Mass * BSParam.AvatarAddForcePushFactor;
+
+        DetailLog("{0},BSCharacter.addForce,call,force={1},addForce={2},push={3},mass={4}", LocalID, force, addForce, pushforce, Mass);
+        AddForce(false, addForce);
     }
-    public override void AddForce(OMV.Vector3 force, bool pushforce, bool inTaintTime) {
+
+    public override void AddForce(bool inTaintTime, OMV.Vector3 force) {
         if (force.IsFinite())
         {
             OMV.Vector3 addForce = Util.ClampV(force, BSParam.MaxAddForceMagnitude);
-            // DetailLog("{0},BSCharacter.addForce,call,force={1}", LocalID, addForce);
+            // DetailLog("{0},BSCharacter.addForce,call,force={1},push={2},inTaint={3}", LocalID, addForce, pushforce, inTaintTime);
 
             PhysScene.TaintedObject(inTaintTime, LocalID, "BSCharacter.AddForce", delegate()
             {
@@ -667,7 +678,15 @@ public sealed class BSCharacter : BSPhysObject
                 // DetailLog("{0},BSCharacter.addForce,taint,force={1}", LocalID, addForce);
                 if (PhysBody.HasPhysicalBody)
                 {
+                    // Bullet adds this central force to the total force for this tick.
+                    // Deep down in Bullet:
+                    //      linearVelocity += totalForce / mass * timeStep;
                     PhysScene.PE.ApplyCentralForce(PhysBody, addForce);
+                    PhysScene.PE.Activate(PhysBody, true);
+                }
+                if (m_moveActor != null)
+                {
+                    m_moveActor.SuppressStationayCheckUntilLowVelocity();
                 }
             });
         }
@@ -678,7 +697,7 @@ public sealed class BSCharacter : BSPhysObject
         }
     }
 
-    public override void AddAngularForce(OMV.Vector3 force, bool pushforce, bool inTaintTime) {
+    public override void AddAngularForce(bool inTaintTime, OMV.Vector3 force) {
     }
     public override void SetMomentum(OMV.Vector3 momentum) {
     }

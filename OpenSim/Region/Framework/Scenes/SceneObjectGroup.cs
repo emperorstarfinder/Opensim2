@@ -148,7 +148,7 @@ namespace OpenSim.Region.Framework.Scenes
                 if (value)
                 {
                     
-                    if (m_isBackedUp)
+                    if (Backup)
                     {
                         m_scene.SceneGraph.FireChangeBackup(this);
                     }
@@ -329,6 +329,7 @@ namespace OpenSim.Region.Framework.Scenes
             get { return (RootPart.Flags & PrimFlags.Physics) != 0; }
         }
 
+
         /// <summary>
         /// Is this scene object temporary?
         /// </summary>
@@ -352,13 +353,6 @@ namespace OpenSim.Region.Framework.Scenes
         /// Is this entity set to be saved in persistent storage?
         /// </summary>
         public bool Backup { get; private set; }
-
-        private bool m_isBackedUp;
-
-        public bool IsBackedUp
-        {
-            get { return m_isBackedUp; }
-        }
 
         protected MapAndArray<UUID, SceneObjectPart> m_parts = new MapAndArray<UUID, SceneObjectPart>();
 
@@ -763,6 +757,7 @@ namespace OpenSim.Region.Framework.Scenes
                 }
                 avsToCross.Clear();
                 sog.RemoveScriptInstances(true);
+                sog.Clear();
                 return sog;
             }
             else // cross failed, put avas back ??
@@ -2244,7 +2239,6 @@ namespace OpenSim.Region.Framework.Scenes
                         { 
                             part.Inventory.ProcessInventoryBackup(datastore); 
 
-                            // take the change to delete things 
                             if(part.KeyframeMotion != null)
                             {
                                 part.KeyframeMotion.Delete();
@@ -2252,7 +2246,7 @@ namespace OpenSim.Region.Framework.Scenes
                             }
                         });
 
-
+                        backup_group.Clear();
                         backup_group = null;
                     }
 //                    else
@@ -2304,13 +2298,12 @@ namespace OpenSim.Region.Framework.Scenes
         {
             m_dupeInProgress = true;
             SceneObjectGroup dupe = (SceneObjectGroup)MemberwiseClone();
-            dupe.m_isBackedUp = false;
+  
             dupe.m_parts = new MapAndArray<OpenMetaverse.UUID, SceneObjectPart>();
 
             // a copy isnt backedup
             dupe.Backup = false;
-            dupe.m_isBackedUp = false;
-
+  
             // a copy is not in transit hopefully
             dupe.inTransit = false;
             
@@ -2535,47 +2528,59 @@ namespace OpenSim.Region.Framework.Scenes
                 RootPart.ScheduleTerseUpdate(); // send a stop information
             }
         }
-        
-        public void rotLookAt(Quaternion target, float strength, float damping)
+
+        public void RotLookAt(Quaternion target, float strength, float damping)
         {
+            if(IsDeleted)
+                return;
+
+            // non physical is handle in LSL api
+            if(!UsesPhysics || IsAttachment)
+                return;
+
             SceneObjectPart rootpart = m_rootPart;
             if (rootpart != null)
             {
-                if (IsAttachment)
+/* physics still doesnt suport this
+                if (rootpart.PhysActor != null)
                 {
-                /*
-                    ScenePresence avatar = m_scene.GetScenePresence(rootpart.AttachedAvatar);
-                    if (avatar != null)
-                    {
-                    Rotate the Av?
-                    } */
+                    rootpart.PhysActor.APIDTarget = new Quaternion(target.X, target.Y, target.Z, target.W);
+                    rootpart.PhysActor.APIDStrength = strength;
+                    rootpart.PhysActor.APIDDamping = damping;
+                    rootpart.PhysActor.APIDActive = true;
                 }
-                else
-                {
-                    if (rootpart.PhysActor != null)
-                    {									// APID must be implemented in your physics system for this to function.
-                        rootpart.PhysActor.APIDTarget = new Quaternion(target.X, target.Y, target.Z, target.W);
-                        rootpart.PhysActor.APIDStrength = strength;
-                        rootpart.PhysActor.APIDDamping = damping;
-                        rootpart.PhysActor.APIDActive = true;
-                    }
-                }
+*/
+                // so do it in rootpart
+                rootpart.RotLookAt(target, strength, damping);
             }
         }
 
-        public void stopLookAt()
+       public void StartLookAt(Quaternion target, float strength, float damping)
+        {
+            if(IsDeleted)
+                return;
+
+            // non physical is done by LSL APi
+            if(!UsesPhysics || IsAttachment)
+                return;
+
+            if (m_rootPart != null)
+                m_rootPart.RotLookAt(target, strength, damping);
+        }
+
+        public void StopLookAt()
         {
             SceneObjectPart rootpart = m_rootPart;
             if (rootpart != null)
             {
                 if (rootpart.PhysActor != null)
-                {							// APID must be implemented in your physics system for this to function.
+                {
                     rootpart.PhysActor.APIDActive = false;
                 }
-            }
-        
-        }
 
+                rootpart.StopLookAt();
+            }
+        }
         /// <summary>
         /// Uses a PID to attempt to clamp the object on the Z axis at the given height over tau seconds.
         /// </summary>
@@ -2726,12 +2731,14 @@ namespace OpenSim.Region.Framework.Scenes
                 }
             }
 
+            // while physics doesn't suports LookAt, we do it in RootPart
+            if (!IsSelected)
+                RootPart.UpdateLookAt();
+
             SceneObjectPart[] parts = m_parts.GetArray();
             for (int i = 0; i < parts.Length; i++)
             {
                 SceneObjectPart part = parts[i];
-                if (!IsSelected)
-                    part.UpdateLookAt();
                 part.SendScheduledUpdates();
             }
         }
@@ -3290,7 +3297,7 @@ namespace OpenSim.Region.Framework.Scenes
         {
             if (m_scene != null)
                 m_scene.SceneGraph.FireDetachFromBackup(this);
-            if (m_isBackedUp && Scene != null)
+            if (Backup && Scene != null)
                 m_scene.EventManager.OnBackup -= ProcessBackup;
             
             Backup = false;
@@ -3915,7 +3922,7 @@ namespace OpenSim.Region.Framework.Scenes
 
                 HasGroupChanged = true;
                 m_rootPart.TriggerScriptChangedEvent(Changed.SCALE);
-                ScheduleGroupForTerseUpdate();
+                ScheduleGroupForFullUpdate();
             }
         }
 
@@ -4831,6 +4838,20 @@ namespace OpenSim.Region.Framework.Scenes
             });
         }
 
+        // clear some references to easy cg
+        public void Clear()
+        {
+            m_parts.Clear();
+            m_sittingAvatars.Clear();
+//            m_rootPart = null;
+
+            m_PlaySoundMasterPrim = null;
+            m_PlaySoundSlavePrims.Clear();
+            m_LoopSoundMasterPrim = null;
+            m_targets.Clear();
+        }
+
         #endregion
     }
+
 }

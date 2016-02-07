@@ -50,17 +50,24 @@ namespace OpenSim.Framework
         IPrimCounts PrimCounts { get; set; }
         
         /// <summary>
-        /// The start point for the land object.  This is the western-most point as one scans land working from 
-        /// north to south.
+        /// The start point for the land object.  This is the northern-most point as one scans land working from 
+        /// west to east.
         /// </summary>
-        Vector3 StartPoint { get; }
+        Vector2 StartPoint { get; }
         
         /// <summary>
-        /// The end point for the land object.  This is the eastern-most point as one scans land working from 
-        /// south to north.
+        /// The end point for the land object.  This is the southern-most point as one scans land working from 
+        /// west to east.
         /// </summary>        
-        Vector3 EndPoint { get; }
+        Vector2 EndPoint { get; }
+
+        // a estimation of a parcel center. 
+        Vector2 CenterPoint { get; }
         
+        // get positions
+        Vector2? GetNearestPoint(Vector3 pos);
+        Vector2? GetNearestPointAlongDirection(Vector3 pos, Vector3 pdirection);
+
         bool ContainsPoint(int x, int y);
         
         ILandObject Copy();

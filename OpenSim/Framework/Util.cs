@@ -741,7 +741,7 @@ namespace OpenSim.Framework
             int oldsizex, int oldsizey, int newsizex, int newsizey)
         {
             // we still need to make sure we see new region  1stNeighbors
-
+            drawdist--;
             oldx *= Constants.RegionSize;
             newx *= Constants.RegionSize;
             if (oldx + oldsizex + drawdist < newx)
@@ -753,7 +753,7 @@ namespace OpenSim.Framework
             newy *= Constants.RegionSize;
             if (oldy + oldsizey + drawdist < newy)
                 return true;
-            if (newy + newsizey + drawdist< oldy)
+            if (newy + newsizey + drawdist < oldy)
                 return true;
 
             return false;
@@ -2315,7 +2315,7 @@ namespace OpenSim.Framework
 
                     // It's possible that the thread won't abort. To make sure the thread pool isn't
                     // depleted, increase the pool size.
-                    m_ThreadPool.MaxThreads++;
+//                    m_ThreadPool.MaxThreads++;
                 }
             }
         }
@@ -2430,6 +2430,7 @@ namespace OpenSim.Framework
             long numQueued = Interlocked.Increment(ref numQueuedThreadFuncs);
             try
             {
+/*
                 long numRunning = numRunningThreadFuncs;
 
                 if (m_ThreadPool != null && LogOverloads)
@@ -2462,6 +2463,7 @@ namespace OpenSim.Framework
                     }
                 }
                 else
+*/
                 {
                     // Since we didn't log "Queue threadfunc", don't log "Run threadfunc" or "End threadfunc" either.
                     // Those log lines aren't useful when we don't know which function is running in the thread.
@@ -3124,6 +3126,7 @@ namespace OpenSim.Framework
 
     }
 
+/*  don't like this code
     public class DoubleQueue<T> where T:class
     {
         private Queue<T> m_lowQueue = new Queue<T>();
@@ -3235,7 +3238,7 @@ namespace OpenSim.Framework
             }
         }
     }
-
+*/
     public class BetterRandom
     {
         private const int BufferSize = 1024;  // must be a multiple of 4

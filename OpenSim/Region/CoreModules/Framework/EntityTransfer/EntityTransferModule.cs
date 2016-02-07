@@ -801,7 +801,7 @@ namespace OpenSim.Region.CoreModules.Framework.EntityTransfer
             int newSizeX = finalDestination.RegionSizeX;
             int newSizeY = finalDestination.RegionSizeY;
 
-            bool OutSideViewRange = NeedsNewAgent(sp.DrawDistance, oldRegionX, newRegionX, oldRegionY, newRegionY,
+            bool OutSideViewRange = NeedsNewAgent(sp.RegionViewDistance, oldRegionX, newRegionX, oldRegionY, newRegionY,
                 oldSizeX, oldSizeY, newSizeX, newSizeY);
 
             if (OutSideViewRange)
@@ -1049,6 +1049,8 @@ namespace OpenSim.Region.CoreModules.Framework.EntityTransfer
 
             sp.HasMovedAway(!(OutSideViewRange || logout));
             
+//            ulong sourceRegionHandle = sp.RegionHandle;
+
              // Now let's make it officially a child agent
             sp.MakeChildAgent(destinationHandle);
 
@@ -1066,8 +1068,8 @@ namespace OpenSim.Region.CoreModules.Framework.EntityTransfer
                 // This sleep can be increased if necessary.  However, whilst it's active,
                 // an agent cannot teleport back to this region if it has teleported away.
                 Thread.Sleep(2000);
-                if (m_eqModule != null && !sp.DoNotCloseAfterTeleport)
-                    m_eqModule.DisableSimulator(sp.RegionHandle,sp.UUID);
+//                if (m_eqModule != null && !sp.DoNotCloseAfterTeleport)
+//                    m_eqModule.DisableSimulator(sourceRegionHandle,sp.UUID);
                 Thread.Sleep(500);
                 sp.Scene.CloseAgent(sp.UUID, false);
             }
@@ -1194,10 +1196,10 @@ namespace OpenSim.Region.CoreModules.Framework.EntityTransfer
             //HG hook
             AgentHasMovedAway(sp, logout);
 
+//            ulong sourceRegionHandle = sp.RegionHandle;
+
             // Now let's make it officially a child agent
             sp.MakeChildAgent(destinationHandle);
-
-
 
             // Finally, let's close this previously-known-as-root agent, when the jump is outside the view zone
             // go by HG hook
@@ -1213,10 +1215,10 @@ namespace OpenSim.Region.CoreModules.Framework.EntityTransfer
                 // DECREASING THE WAIT TIME HERE WILL EITHER RESULT IN A VIEWER CRASH OR
                 // IN THE AVIE BEING PLACED IN INFINITY FOR A COUPLE OF SECONDS.
 
-                Thread.Sleep(14000);
-                if (m_eqModule != null && !sp.DoNotCloseAfterTeleport)
-                    m_eqModule.DisableSimulator(sp.RegionHandle,sp.UUID);
-                Thread.Sleep(1000);
+                Thread.Sleep(15000);
+//                if (m_eqModule != null && !sp.DoNotCloseAfterTeleport)
+//                    m_eqModule.DisableSimulator(sourceRegionHandle,sp.UUID);
+//                Thread.Sleep(1000);
 
                 // OK, it got this agent. Let's close everything
                 // If we shouldn't close the agent due to some other region renewing the connection 
@@ -1336,7 +1338,7 @@ namespace OpenSim.Region.CoreModules.Framework.EntityTransfer
         // This returns 'true' if the new region already has a child agent for our
         //    incoming agent. The implication is that, if 'false', we have to create  the
         //    child and then teleport into the region.
-        protected virtual bool NeedsNewAgent(float drawdist, uint oldRegionX, uint newRegionX, uint oldRegionY, uint newRegionY,
+        protected virtual bool NeedsNewAgent(float viewdist, uint oldRegionX, uint newRegionX, uint oldRegionY, uint newRegionY,
             int oldsizeX, int oldsizeY, int newsizeX, int newsizeY)
         {
             if (m_regionCombinerModule != null && m_regionCombinerModule.IsRootForMegaregion(Scene.RegionInfo.RegionID))
@@ -1351,7 +1353,7 @@ namespace OpenSim.Region.CoreModules.Framework.EntityTransfer
                 return !(newRegionX >= swCorner.X && newRegionX <= neCorner.X && newRegionY >= swCorner.Y && newRegionY <= neCorner.Y);
             }
 
-            return Util.IsOutsideView(drawdist, oldRegionX, newRegionX, oldRegionY, newRegionY,
+            return Util.IsOutsideView(viewdist, oldRegionX, newRegionX, oldRegionY, newRegionY,
                     oldsizeX, oldsizeY, newsizeX, newsizeY);
         }
 
@@ -1802,6 +1804,8 @@ namespace OpenSim.Region.CoreModules.Framework.EntityTransfer
             // Unlike a teleport, here we do not wait for the destination region to confirm the receipt.
             m_entityTransferStateMachine.UpdateInTransit(agent.UUID, AgentTransferState.CleaningUp);
 
+            agent.CloseChildAgents(false, neighbourRegion.RegionHandle, neighbourRegion.RegionSizeX, neighbourRegion.RegionSizeY);
+
             // this may need the attachments
 
             agent.HasMovedAway(true);
@@ -1812,7 +1816,6 @@ namespace OpenSim.Region.CoreModules.Framework.EntityTransfer
             // but not sure yet what the side effects would be.
             m_entityTransferStateMachine.ResetFromTransit(agent.UUID);
 
-            agent.CloseChildAgents(false, neighbourRegion.RegionHandle, neighbourRegion.RegionSizeX, neighbourRegion.RegionSizeY);
 
             // TODO: Check since what version this wasn't needed anymore. May be as old as 0.6
 /*
@@ -1956,7 +1959,6 @@ namespace OpenSim.Region.CoreModules.Framework.EntityTransfer
                 UUID scope = sp.Scene.RegionInfo.ScopeID;
                 foreach (ulong handler in oldregions)
                 {
-                    // crap code
                     Utils.LongToUInts(handler, out neighbourx, out neighboury);
                     GridRegion neighbour = sp.Scene.GridService.GetRegionByPosition(scope, (int)neighbourx, (int)neighboury);
                     sp.Scene.SimulationService.UpdateAgent(neighbour, agentpos);
@@ -2395,10 +2397,13 @@ namespace OpenSim.Region.CoreModules.Framework.EntityTransfer
                     m_log.DebugFormat("[ENTITY TRANSFER MODULE]: Completed inform {0} {1} about neighbour {2}", sp.Name, sp.UUID, endPoint);
                 }
 
-                if (!regionAccepted)
+                else
+                {
+                    sp.RemoveNeighbourRegion(reg.RegionHandle);
                     m_log.WarnFormat(
                         "[ENTITY TRANSFER MODULE]: Region {0} did not accept {1} {2}: {3}",
                         reg.RegionName, sp.Name, sp.UUID, reason);
+                }
             }
  
         }
@@ -2444,7 +2449,7 @@ namespace OpenSim.Region.CoreModules.Framework.EntityTransfer
             // view to include everything in the megaregion
             if (m_regionCombinerModule == null || !m_regionCombinerModule.IsRootForMegaregion(Scene.RegionInfo.RegionID))
             {
-                uint dd = (uint)avatar.DrawDistance;
+                uint dd = (uint)avatar.RegionViewDistance;
 
                 // until avatar movement updates client connections, we need to seend at least this current region imediate Neighbors
                 uint ddX = Math.Max(dd, Constants.RegionSize);

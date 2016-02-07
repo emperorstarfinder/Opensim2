@@ -458,6 +458,7 @@ namespace OpenSim.Region.Framework.Scenes
             Velocity = Vector3.Zero;
             AngularVelocity = Vector3.Zero;
             Acceleration = Vector3.Zero;
+            APIDActive = false;
             Flags = 0;
             CreateSelected = true;
 
@@ -1713,12 +1714,9 @@ namespace OpenSim.Region.Framework.Scenes
                     {
                         if (PhysActor != null)
                         {
-                            Velocity = new Vector3(0, 0, 0);
-                            Acceleration = new Vector3(0, 0, 0);
-                            if (ParentGroup.RootPart == this)
-                                AngularVelocity = new Vector3(0, 0, 0);
                             ParentGroup.Scene.RemovePhysicalPrim(1);
                             RemoveFromPhysics();
+                            Stop();
                         }
                     }
                     else if (PhysActor == null)
@@ -2350,9 +2348,7 @@ namespace OpenSim.Region.Framework.Scenes
                     ParentGroup.Scene.PhysicsScene.RequestJointDeletion(Name); // FIXME: what if the name changed?
 
                     // make sure client isn't interpolating the joint proxy object
-                    Velocity = Vector3.Zero;
-                    AngularVelocity = Vector3.Zero;
-                    Acceleration = Vector3.Zero;
+                    Stop();
                 }
             }
         }
@@ -2391,8 +2387,8 @@ namespace OpenSim.Region.Framework.Scenes
 
                                 Velocity = new Vector3(0, 0, 0);
                                 Acceleration = new Vector3(0, 0, 0);
-                                if (ParentGroup.RootPart == this)
-                                    AngularVelocity = new Vector3(0, 0, 0);
+                                AngularVelocity = new Vector3(0, 0, 0);
+                                APIDActive = false;
 
                                 if (pa.Phantom && !VolumeDetectActive)
                                 {
@@ -2994,7 +2990,7 @@ namespace OpenSim.Region.Framework.Scenes
                 }
                 //ParentGroup.RootPart.m_groupPosition = newpos;
             }
-/* ubit:  there are no flexible links 
+/*
             if (pa != null && ParentID != 0 && ParentGroup != null)
             {
                 // Special case where a child object is requesting property updates.
@@ -3095,29 +3091,31 @@ namespace OpenSim.Region.Framework.Scenes
         
         public void RotLookAt(Quaternion target, float strength, float damping)
         {
-            if (ParentGroup.IsAttachment)
-            {
-                /*
-                    ScenePresence avatar = m_scene.GetScenePresence(rootpart.AttachedAvatar);
-                    if (avatar != null)
-                    {
-                    Rotate the Av?
-                    } */
-            }
-            else
-            {
-                APIDDamp = damping;
-                APIDStrength = strength;
-                APIDTarget = target;
+            if(ParentGroup.IsDeleted)
+                return;
 
-                if (APIDStrength <= 0)
-                {
-                    m_log.WarnFormat("[SceneObjectPart] Invalid rotation strength {0}",APIDStrength);
-                    return;
-                }
-                
-                APIDActive = true;
+            // for now we only handle physics case
+            if(!ParentGroup.UsesPhysics || ParentGroup.IsAttachment)
+                return;
+
+            // physical is SOG
+            if(ParentGroup.RootPart != this)
+            {
+                ParentGroup.RotLookAt(target, strength, damping);
+                return;
             }
+
+            APIDDamp = damping;
+            APIDStrength = strength;
+            APIDTarget = target;
+
+            if (APIDStrength <= 0)
+            {
+                m_log.WarnFormat("[SceneObjectPart] Invalid rotation strength {0}",APIDStrength);
+                return;
+            }
+                
+            APIDActive = true;
 
             // Necessary to get the lookat deltas applied
             ParentGroup.QueueForUpdateCheck();
@@ -3125,15 +3123,34 @@ namespace OpenSim.Region.Framework.Scenes
 
         public void StartLookAt(Quaternion target, float strength, float damping)
         {
-            RotLookAt(target,strength,damping);
+            if(ParentGroup.IsDeleted)
+                return;
+
+            // non physical is done on LSL
+            if(ParentGroup.IsAttachment || !ParentGroup.UsesPhysics)
+                return;
+
+            // physical is SOG
+            if(ParentGroup.RootPart != this)
+                ParentGroup.RotLookAt(target, strength, damping);
+            else
+                RotLookAt(target,strength,damping);
         }
 
         public void StopLookAt()
         {
+            if(ParentGroup.IsDeleted)
+                return;
+
+            if(ParentGroup.RootPart != this && ParentGroup.UsesPhysics)
+                 ParentGroup.StopLookAt();
+
+            // just in case do this always
+            if(APIDActive)
+                AngularVelocity = Vector3.Zero;
+
             APIDActive = false;
         }
-
-
 
         public void ScheduleFullUpdateIfNone()
         {
@@ -3542,7 +3559,6 @@ SendFullUpdateToClient(remoteClient, Position) ignores position parameter
                 m_vehicleParams = value;
             }
         }
-
 
         public int VehicleType
         {
@@ -4733,10 +4749,7 @@ SendFullUpdateToClient(remoteClient, Position) ignores position parameter
                     RemoveFromPhysics();
                 }
 
-                Velocity = new Vector3(0, 0, 0);
-                Acceleration = new Vector3(0, 0, 0);
-                if (ParentGroup.RootPart == this)
-                    AngularVelocity = new Vector3(0, 0, 0);
+                Stop();
             }
             
             else 
@@ -4909,17 +4922,15 @@ SendFullUpdateToClient(remoteClient, Position) ignores position parameter
                     }
                 }
 
-                if (applyDynamics) 
+                if (applyDynamics && LocalId == ParentGroup.RootPart.LocalId) 
                     // do independent of isphysical so parameters get setted (at least some)                   
                 {
                     Velocity = velocity;
                     AngularVelocity = rotationalVelocity;
-//                    pa.Velocity = velocity;
                     pa.RotationalVelocity = rotationalVelocity;
 
                     // if not vehicle and root part apply force and torque
-                    if ((m_vehicleParams == null || m_vehicleParams.Type == Vehicle.TYPE_NONE)
-                            && LocalId == ParentGroup.RootPart.LocalId)
+                    if ((m_vehicleParams == null || m_vehicleParams.Type == Vehicle.TYPE_NONE))
                     {
                         pa.Force = Force;
                         pa.Torque = Torque;
@@ -5628,6 +5639,14 @@ SendFullUpdateToClient(remoteClient, Position) ignores position parameter
                 else
                     return m_sittingAvatars.Count;
             }
+        }
+
+        public void Stop()
+        {
+            Velocity = Vector3.Zero;
+            AngularVelocity = Vector3.Zero;
+            Acceleration = Vector3.Zero;
+            APIDActive = false;
         }
     }
 }

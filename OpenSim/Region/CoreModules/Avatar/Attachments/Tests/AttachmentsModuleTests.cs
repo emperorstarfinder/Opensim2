@@ -556,6 +556,7 @@ namespace OpenSim.Region.CoreModules.Avatar.Attachments.Tests
             // In the future, we need to be able to do this programatically more predicably.
             scene.EventManager.OnChatFromWorld += OnChatFromWorld;
 
+            m_chatEvent.Reset();
             scene.AttachmentsModule.RezSingleAttachmentFromInventory(sp, userItem.ID, (uint)AttachmentPoint.Chest);
 
             m_chatEvent.WaitOne(60000);
@@ -669,6 +670,7 @@ namespace OpenSim.Region.CoreModules.Avatar.Attachments.Tests
             // In the future, we need to be able to do this programatically more predicably.
             scene.EventManager.OnChatFromWorld += OnChatFromWorld;
 
+            m_chatEvent.Reset();
             SceneObjectGroup rezzedSo
                 = (SceneObjectGroup)(scene.AttachmentsModule.RezSingleAttachmentFromInventory(sp, userItem.ID, (uint)AttachmentPoint.Chest));
 
@@ -719,13 +721,13 @@ namespace OpenSim.Region.CoreModules.Avatar.Attachments.Tests
             acd.Appearance.SetAttachment((int)AttachmentPoint.Chest, attItem.ID, attItem.AssetID);
             ScenePresence presence = SceneHelpers.AddScenePresence(scene, acd);
 
-            SceneObjectGroup rezzedAtt = presence.GetAttachments()[0];
+            UUID rezzedAttID = presence.GetAttachments()[0].UUID;
 
             m_numberOfAttachEventsFired = 0;
             scene.CloseAgent(presence.UUID, false);
 
             // Check that we can't retrieve this attachment from the scene.
-            Assert.That(scene.GetSceneObjectGroup(rezzedAtt.UUID), Is.Null);
+            Assert.That(scene.GetSceneObjectGroup(rezzedAttID), Is.Null);
 
             // Check events
             Assert.That(m_numberOfAttachEventsFired, Is.EqualTo(0));

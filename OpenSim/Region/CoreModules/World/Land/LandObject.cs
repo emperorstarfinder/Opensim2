@@ -90,45 +90,177 @@ namespace OpenSim.Region.CoreModules.World.Land
             get { return m_scene.RegionInfo.RegionID; }
         }
 
-        public Vector3 StartPoint
+        private Vector2 m_startPoint = Vector2.Zero;
+        private Vector2 m_endPoint = Vector2.Zero;
+        private Vector2 m_centerPoint = Vector2.Zero;
+        private Vector2 m_AABBmin = Vector2.Zero;
+        private Vector2 m_AABBmax = Vector2.Zero;
+
+        public Vector2 StartPoint
         {
             get
             {
-                for (int y = 0; y < LandBitmap.GetLength(1); y++)
-                {
-                    for (int x = 0; x < LandBitmap.GetLength(0); x++)
-                    {
-                        if (LandBitmap[x, y])
-                            return new Vector3(x * landUnit, y * landUnit, 0);
-                    }
-                }
-
-                m_log.ErrorFormat("{0} StartPoint. No start point found. bitmapSize=<{1},{2}>",
-                                    LogHeader, LandBitmap.GetLength(0), LandBitmap.GetLength(1));
-                return new Vector3(-1, -1, -1);
+                return m_startPoint;
             }
         }
 
-        public Vector3 EndPoint
+        public Vector2 EndPoint
         {
             get
             {
-                for (int y = LandBitmap.GetLength(1) - 1; y >= 0; y--)
-                {
-                    for (int x = LandBitmap.GetLength(0) - 1; x >= 0; x--)
-                    {
-                        if (LandBitmap[x, y])
-                        {
-                            return new Vector3(x * landUnit + landUnit, y * landUnit + landUnit, 0);
-                        }
-                    }
-                }
-
-                m_log.ErrorFormat("{0} EndPoint. No end point found. bitmapSize=<{1},{2}>",
-                                    LogHeader, LandBitmap.GetLength(0), LandBitmap.GetLength(1));
-                return new Vector3(-1, -1, -1);
+                return m_endPoint;
             }
         }
+
+        //estimate a center point of a parcel
+        public Vector2 CenterPoint
+        {
+            get
+            {
+                return m_centerPoint;
+            }
+        }
+
+        public Vector2? GetNearestPoint(Vector3 pos)
+        {
+            Vector3 direction = new Vector3(m_centerPoint.X - pos.X, m_centerPoint.Y - pos.Y, 0f );
+            return GetNearestPointAlongDirection(pos, direction);
+        }
+
+        public Vector2? GetNearestPointAlongDirection(Vector3 pos, Vector3 pdirection)
+        {
+            Vector2 testpos;
+            Vector2 direction;
+
+            testpos.X = pos.X / landUnit;
+            testpos.Y = pos.Y / landUnit;
+
+            if(LandBitmap[(int)testpos.X, (int)testpos.Y])
+                return new Vector2(pos.X, pos.Y); // we are already here
+
+            direction.X = pdirection.X;
+            direction.Y = pdirection.Y;
+
+            if(direction.X == 0f && direction.Y == 0f)
+                return null; // we can't look anywhere
+
+            direction.Normalize();
+
+            int minx = (int)(m_AABBmin.X / landUnit);
+            int maxx = (int)(m_AABBmax.X / landUnit);
+
+            // check against AABB
+            if(direction.X > 0f)
+            {
+                if(testpos.X >= maxx)
+                    return null;  // will never get there
+                if(testpos.X < minx)
+                    testpos.X = minx;
+            }
+            else if(direction.X < 0f)
+            {
+                if(testpos.X < minx)
+                    return null;  // will never get there
+                if(testpos.X >= maxx)
+                    testpos.X = maxx - 1;
+            }
+            else
+            {
+                if(testpos.X < minx)
+                    return null;  // will never get there
+                else if(testpos.X >= maxx)
+                    return null;  // will never get there
+            }
+
+            int miny = (int)(m_AABBmin.Y / landUnit);
+            int maxy = (int)(m_AABBmax.Y / landUnit);
+
+            if(direction.Y > 0f)
+            {
+                if(testpos.Y >= maxy)
+                    return null;  // will never get there
+                if(testpos.Y < miny)
+                    testpos.Y = miny;
+            }
+            else if(direction.Y < 0f)
+            {
+                if(testpos.Y < miny)
+                    return null;  // will never get there
+                if(testpos.Y >= maxy)
+                    testpos.Y = maxy - 1;
+            }
+            else
+            {
+                if(testpos.Y < miny)
+                    return null;  // will never get there
+                else if(testpos.Y >= maxy)
+                    return null;  // will never get there
+            }
+            
+            while(!LandBitmap[(int)testpos.X, (int)testpos.Y])
+            {
+                testpos += direction;
+
+                if(testpos.X < minx)
+                    return null;
+                if (testpos.X >= maxx)
+                    return null;
+                if(testpos.Y < miny)
+                    return null;
+                if (testpos.Y >= maxy)
+                    return null;
+            }
+
+            testpos *= landUnit;
+            float ftmp;
+
+            if(Math.Abs(direction.X) > Math.Abs(direction.Y))
+            {
+                if(direction.X < 0)
+                    testpos.X += landUnit - 0.5f;
+                else
+                    testpos.X += 0.5f;
+                ftmp = testpos.X - pos.X;
+                ftmp /= direction.X;
+                ftmp = Math.Abs(ftmp);
+                ftmp *= direction.Y;
+                ftmp += pos.Y;
+
+                if(ftmp < testpos.Y + .5f)
+                    ftmp = testpos.Y + .5f;
+                else
+                {
+                    testpos.Y += landUnit - 0.5f;
+                    if(ftmp > testpos.Y)
+                        ftmp = testpos.Y;
+                }
+                testpos.Y = ftmp;
+            }
+            else
+            {
+                if(direction.Y < 0)
+                    testpos.Y += landUnit - 0.5f;
+                else
+                    testpos.Y += 0.5f;
+                ftmp = testpos.Y - pos.Y;
+                ftmp /= direction.Y;
+                ftmp = Math.Abs(ftmp);
+                ftmp *= direction.X;
+                ftmp += pos.X;
+
+                if(ftmp < testpos.X + .5f)
+                    ftmp = testpos.X + .5f;
+                else
+                {
+                    testpos.X += landUnit - 0.5f;
+                    if(ftmp > testpos.X)
+                        ftmp = testpos.X;
+                }
+                testpos.X = ftmp;
+            }
+            return testpos;
+        }
+
 
         #region Constructors
 
@@ -478,7 +610,7 @@ namespace OpenSim.Region.CoreModules.World.Land
 
         public bool CanBeOnThisLand(UUID avatar, float posHeight)
         {
-            if (posHeight < LandChannel.BAN_LINE_SAFETY_HIEGHT && IsBannedFromLand(avatar))
+            if (posHeight < LandChannel.BAN_LINE_SAFETY_HEIGHT && IsBannedFromLand(avatar))
             {
                 return false;
             }
@@ -679,13 +811,13 @@ namespace OpenSim.Region.CoreModules.World.Land
                                    IClientAPI remote_client)
         {
 
-            if (flags == (uint) AccessList.Access || flags == (uint) AccessList.Both)
+            if ((flags & (uint) AccessList.Access) != 0)
             {
                 List<LandAccessEntry> accessEntries = CreateAccessListArrayByFlag(AccessList.Access);
                 remote_client.SendLandAccessListData(accessEntries,(uint) AccessList.Access,LandData.LocalID);
             }
 
-            if (flags == (uint) AccessList.Ban || flags == (uint) AccessList.Both)
+            if ((flags & (uint) AccessList.Ban) != 0)
             {
                 List<LandAccessEntry> accessEntries = CreateAccessListArrayByFlag(AccessList.Ban);
                 remote_client.SendLandAccessListData(accessEntries, (uint)AccessList.Ban, LandData.LocalID);
@@ -740,6 +872,17 @@ namespace OpenSim.Region.CoreModules.World.Land
                 newData.ParcelAccessList.Add(temp);
             }
 
+            // update use lists flags
+            // rights already checked or we wont be here
+            uint parcelflags = newData.Flags;
+            
+            if((flags & (uint)AccessList.Access) != 0)
+                    parcelflags |= (uint)ParcelFlags.UseAccessList;
+            if((flags & (uint)AccessList.Ban) != 0)
+                parcelflags |= (uint)ParcelFlags.UseBanList;
+
+            newData.Flags = parcelflags;
+
             m_scene.LandChannel.UpdateLandObject(LandData.LocalID, newData);
         }
 
@@ -757,7 +900,7 @@ namespace OpenSim.Region.CoreModules.World.Land
         /// </summary>
         public void ForceUpdateLandInfo()
         {
-            UpdateAABBAndAreaValues();
+            UpdateGeometryValues();
             UpdateLandBitmapByteArray();
         }
 
@@ -767,22 +910,29 @@ namespace OpenSim.Region.CoreModules.World.Land
         }
 
         /// <summary>
-        /// Updates the AABBMin and AABBMax values after area/shape modification of the land object
+        /// Updates geomtric values after area/shape modification of the land object
         /// </summary>
-        private void UpdateAABBAndAreaValues()
+        private void UpdateGeometryValues()
         {
-
             int min_x = Int32.MaxValue;
             int min_y = Int32.MaxValue;
             int max_x = Int32.MinValue;
             int max_y = Int32.MinValue;
             int tempArea = 0;
             int x, y;
+
+            int lastX = 0;
+            int lastY = 0;
+            float avgx = 0f;
+            float avgy = 0f;
+
+            bool needFirst = true;
+
             for (x = 0; x < LandBitmap.GetLength(0); x++)
             {
                 for (y = 0; y < LandBitmap.GetLength(1); y++)
                 {
-                    if (LandBitmap[x, y] == true)
+                    if (LandBitmap[x, y])
                     {
                         if (min_x > x)
                             min_x = x;
@@ -792,51 +942,85 @@ namespace OpenSim.Region.CoreModules.World.Land
                             max_x = x;
                         if (max_y < y)
                             max_y = y;
-                        tempArea += landUnit * landUnit; //16sqm peice of land
+
+                        if(needFirst)
+                        {
+                            avgx = x;
+                            avgy = y;
+                            m_startPoint.X = x * landUnit;
+                            m_startPoint.Y = y * landUnit;
+                            needFirst = false;
+                        }
+                        else
+                        {
+                            // keeping previus odd average
+                            avgx = (avgx * tempArea + x) / (tempArea + 1);
+                            avgy = (avgy * tempArea + y) / (tempArea + 1);
+                        }
+
+                        tempArea++;
+
+                        lastX = x;
+                        lastY = y;
                     }
                 }
             }
+
+            int halfunit = landUnit/2;
+
+            m_centerPoint.X = avgx * landUnit + halfunit;
+            m_centerPoint.Y = avgy * landUnit + halfunit;
+
+            m_endPoint.X = lastX * landUnit + landUnit;
+            m_endPoint.Y = lastY * landUnit + landUnit;
+
+            // next tests should not be needed
+            // if they fail, something is wrong
+
+            int regionSizeX = (int)Constants.RegionSize;
+            int regionSizeY = (int)Constants.RegionSize;
+
+            if(m_scene != null)
+            {
+                regionSizeX = (int)m_scene.RegionInfo.RegionSizeX;
+                regionSizeY = (int)m_scene.RegionInfo.RegionSizeX;
+            }
+
             int tx = min_x * landUnit;
-            if (tx > ((int)m_scene.RegionInfo.RegionSizeX - 1))
-                tx = ((int)m_scene.RegionInfo.RegionSizeX - 1);
-            int htx;
-            if (tx >= ((int)m_scene.RegionInfo.RegionSizeX))
-                htx = (int)m_scene.RegionInfo.RegionSizeX - 1;
-            else
-                htx = tx;
-            
+            if (tx >= regionSizeX)
+                tx = regionSizeX - 1;
+
             int ty = min_y * landUnit;
-            int hty;
+            if (ty >= regionSizeY)
+                ty = regionSizeY - 1;
 
-            if (ty >= ((int)m_scene.RegionInfo.RegionSizeY))
-                hty = (int)m_scene.RegionInfo.RegionSizeY - 1;
+            m_AABBmin.X = tx;
+            m_AABBmin.Y = ty;
+
+            if(m_scene == null || m_scene.Heightmap == null)
+                LandData.AABBMin = new Vector3(tx, ty, 0f);
             else
-                hty = ty;
-
-            LandData.AABBMin =
-                new Vector3(
-                    (float)(tx), (float)(ty), m_scene != null ? (float)m_scene.Heightmap[htx, hty] : 0);
-
+                LandData.AABBMin = new Vector3(tx, ty, (float)m_scene.Heightmap[tx, ty]);
+               
             max_x++;
             tx = max_x * landUnit;
-            if (tx >= ((int)m_scene.RegionInfo.RegionSizeX))
-                htx = (int)m_scene.RegionInfo.RegionSizeX - 1;
-            else
-                htx = tx;
+            if (tx > regionSizeX)
+                tx = regionSizeX;
 
             max_y++;
-            ty = max_y * 4;
-           
-            if (ty >= ((int)m_scene.RegionInfo.RegionSizeY))
-                hty = (int)m_scene.RegionInfo.RegionSizeY - 1;
+            ty = max_y * landUnit;
+            if (ty > regionSizeY)
+                ty = regionSizeY;
+
+            m_AABBmax.X = tx;
+            m_AABBmax.Y = ty;
+
+            if(m_scene == null || m_scene.Heightmap == null)
+                LandData.AABBMax = new Vector3(tx, ty, 0f);
             else
-                hty = ty;
-
-            LandData.AABBMax 
-                = new Vector3(
-                    (float)(tx), (float)(ty), m_scene != null ? (float)m_scene.Heightmap[htx, hty] : 0);
-
-            LandData.Area = tempArea;
+                LandData.AABBMax = new Vector3(tx, ty, (float)m_scene.Heightmap[tx - 1, ty - 1]);
+                
+            LandData.Area = tempArea * landUnit * landUnit;
         }
 
         #endregion
@@ -1188,23 +1372,6 @@ namespace OpenSim.Region.CoreModules.World.Land
             if(tempByte != 0 && byteNum < 512)
                 tempConvertArr[byteNum] = (byte)tempByte;
 
-
-/*
-                    tempByte = Convert.ToByte(tempByte | Convert.ToByte(LandBitmap[x, y]) << (i++ % 8));
-                    if (i % 8 == 0)
-                    {
-                        tempConvertArr[byteNum] = tempByte;
-                        tempByte = (byte) 0;
-                        i = 0;
-                        byteNum++;
-                    }
-<<<<<<< HEAD
-                }
-            }
-            // m_log.DebugFormat("{0} ConvertLandBitmapToBytes. BitmapSize=<{1},{2}>",
-            //                         LogHeader, LandBitmap.GetLength(0), LandBitmap.GetLength(1));
-=======
- */
             return tempConvertArr;
         }
 
