@@ -145,15 +145,15 @@ namespace OpenSim.Region.CoreModules.World.Sound
                 if (!m_scene.TryGetScenePresence(grp.AttachedAvatar, out ssp))
                     return;
 
-                if (!ssp.ParcelAllowThisAvatarSounds)
-                    return;
-
                 if (grp.HasPrivateAttachmentPoint)
                 {
                     ssp.ControllingClient.SendPlayAttachedSound(soundID, objectID,
                         ownerID, (float)gain, flags);
                     return;
                 }
+
+                if (!ssp.ParcelAllowThisAvatarSounds)
+                    return;
             }
 
             m_scene.ForEachRootScenePresence(delegate(ScenePresence sp)
@@ -187,6 +187,7 @@ namespace OpenSim.Region.CoreModules.World.Sound
                     if (!ssp.ParcelAllowThisAvatarSounds)
                         return;
 
+/* mantis 7942: coment out to allow trigger in HUDs to send sounds to all
                     if (grp.HasPrivateAttachmentPoint)
                     {
                         ssp.ControllingClient.SendTriggeredSound(soundId, ownerID,
@@ -194,6 +195,7 @@ namespace OpenSim.Region.CoreModules.World.Sound
                                 (float)gain);
                         return;
                     }
+*/
                 }
             }
 

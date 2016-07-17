@@ -43,6 +43,10 @@ namespace OpenSim.Region.OptionalModules.World.NPC
     public class NPCAvatar : IClientAPI, INPC
     {
         public bool SenseAsAgent { get; set; }
+        public UUID Owner
+        {
+            get { return m_ownerID;}
+        }
 
         public delegate void ChatToNPC(
             string message, byte type, Vector3 fromPos, string fromName, 
@@ -294,6 +298,7 @@ namespace OpenSim.Region.OptionalModules.World.NPC
         public event SetAlwaysRun OnSetAlwaysRun;
 
         public event DeRezObject OnDeRezObject;
+        public event RezRestoreToWorld OnRezRestoreToWorld;
         public event Action<IClientAPI> OnRegionHandShakeReply;
         public event GenericCall1 OnRequestWearables;
         public event Action<IClientAPI, bool> OnCompleteMovementToRegion;
@@ -1247,6 +1252,18 @@ namespace OpenSim.Region.OptionalModules.World.NPC
         }
 
         public void RefreshGroupMembership()
+        {
+        }
+
+        public void UpdateGroupMembership(GroupMembershipData[] data)
+        {
+        }
+
+        public void GroupMembershipRemove(UUID GroupID)
+        {
+        }
+
+        public void GroupMembershipAddReplace(UUID GroupID,ulong GroupPowers)
         {
         }
 

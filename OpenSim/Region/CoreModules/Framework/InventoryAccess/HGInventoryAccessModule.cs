@@ -209,7 +209,14 @@ namespace OpenSim.Region.CoreModules.Framework.InventoryAccess
             }
         }
 
-        public void PostInventoryAsset(UUID avatarID, AssetType type, UUID assetID, string name, int userlevel)
+        private void PostInventoryAsset(InventoryItemBase item, int userlevel)
+        {
+            InventoryFolderBase f = m_Scene.InventoryService.GetFolderForType(item.Owner, FolderType.Trash);
+            if (f == null || (f != null && item.Folder != f.ID))
+                PostInventoryAsset(item.Owner, (AssetType)item.AssetType, item.AssetID, item.Name, userlevel);
+        }
+
+        private void PostInventoryAsset(UUID avatarID, AssetType type, UUID assetID, string name, int userlevel)
         {
             if (type == AssetType.Link)
                 return;
@@ -248,7 +255,15 @@ namespace OpenSim.Region.CoreModules.Framework.InventoryAccess
         {
             UUID newAssetID = base.CapsUpdateInventoryItemAsset(remoteClient, itemID, data);
 
-            PostInventoryAsset(remoteClient.AgentId, AssetType.Unknown, newAssetID, "", 0);
+            // We need to construct this here to satisfy the calling convention.
+            // Better this in two places than five formal params in all others.
+            InventoryItemBase item = new InventoryItemBase();
+            item.Owner = remoteClient.AgentId;
+            item.AssetType = (int)AssetType.Unknown;
+            item.AssetID = newAssetID;
+            item.Name = String.Empty;
+
+            PostInventoryAsset(item, 0);
 
             return newAssetID;
         }
@@ -260,7 +275,7 @@ namespace OpenSim.Region.CoreModules.Framework.InventoryAccess
         {
             if (base.UpdateInventoryItemAsset(ownerID, item, asset))
             {
-                PostInventoryAsset(ownerID, (AssetType)asset.Type, asset.FullID, asset.Name, 0);
+                PostInventoryAsset(item, 0);
                 return true;
             }
 
@@ -273,9 +288,19 @@ namespace OpenSim.Region.CoreModules.Framework.InventoryAccess
         protected override void ExportAsset(UUID agentID, UUID assetID)
         {
             if (!assetID.Equals(UUID.Zero))
-                PostInventoryAsset(agentID, AssetType.Unknown, assetID, "", 0);
+            {
+                InventoryItemBase item = new InventoryItemBase();
+                item.Owner = agentID;
+                item.AssetType = (int)AssetType.Unknown;
+                item.AssetID = assetID;
+                item.Name = String.Empty;
+
+                PostInventoryAsset(item, 0);
+            }
             else
+            {
                 m_log.Debug("[HGScene]: Scene.Inventory did not create asset");
+            }
         }
 
         ///
@@ -289,9 +314,7 @@ namespace OpenSim.Region.CoreModules.Framework.InventoryAccess
 
             //if (fromTaskID.Equals(UUID.Zero))
             //{
-            InventoryItemBase item = new InventoryItemBase(itemID);
-            item.Owner = remoteClient.AgentId;
-            item = m_Scene.InventoryService.GetItem(item);
+            InventoryItemBase item = m_Scene.InventoryService.GetItem(remoteClient.AgentId, itemID);
             //if (item == null)
             //{ // Fetch the item
             //    item = new InventoryItemBase();

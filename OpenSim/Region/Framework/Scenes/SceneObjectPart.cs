@@ -482,7 +482,7 @@ namespace OpenSim.Region.Framework.Scenes
         private uint _ownerMask = (uint)(PermissionMask.All | PermissionMask.Export);
         private uint _groupMask = (uint)PermissionMask.None;
         private uint _everyoneMask = (uint)PermissionMask.None;
-        private uint _nextOwnerMask = (uint)(PermissionMask.Move | PermissionMask.Modify | PermissionMask.Transfer);
+        private uint _nextOwnerMask = (uint)(PermissionMask.Move | PermissionMask.Transfer);
         private PrimFlags _flags = PrimFlags.None;
         private DateTime m_expires;
         private DateTime m_rezzed;
@@ -867,6 +867,9 @@ namespace OpenSim.Region.Framework.Scenes
 
                 if (ParentGroup != null && !ParentGroup.IsDeleted)
                 {
+                    if((oldpos - m_offsetPosition).LengthSquared() > 1.0f)
+                        ParentGroup.InvalidBoundsRadius();
+
                     PhysicsActor actor = PhysActor;
                     if (ParentID != 0 && actor != null)
                     {
@@ -1163,9 +1166,10 @@ namespace OpenSim.Region.Framework.Scenes
             {
                 if (m_shape != null)
                 {
-
+                    Vector3 oldscale = m_shape.Scale;
                     m_shape.Scale = value;
-
+                    if (ParentGroup != null && ((value - oldscale).LengthSquared() >1.0f))
+                        ParentGroup.InvalidBoundsRadius();
                     PhysicsActor actor = PhysActor;
                     if (actor != null)
                     {
@@ -1174,11 +1178,7 @@ namespace OpenSim.Region.Framework.Scenes
                             if (ParentGroup.Scene.PhysicsScene != null)
                             {
                                 actor.Size = m_shape.Scale;
-
-//                                if (Shape.SculptEntry)
-//                                    CheckSculptAndLoad();
-//                                else
-                                    ParentGroup.Scene.PhysicsScene.AddPhysicsActorTaint(actor);
+                                ParentGroup.Scene.PhysicsScene.AddPhysicsActorTaint(actor);
                             }
                         }
                     }
@@ -3795,7 +3795,7 @@ SendFullUpdateToClient(remoteClient, Position) ignores position parameter
             }
             else if ((Shape.ProfileCurve & 0x07) == (byte)ProfileShape.Circle)
             {
-                if (Shape.PathCurve == (byte)Extrusion.Straight)
+                if (Shape.PathCurve == (byte)Extrusion.Straight || Shape.PathCurve == (byte)Extrusion.Flexible)
                     return PrimType.CYLINDER;
                 // ProfileCurve seems to combine hole shape and profile curve so we need to only compare against the lower 3 bits
                 else if (Shape.PathCurve == (byte)Extrusion.Curve1)
@@ -3808,7 +3808,7 @@ SendFullUpdateToClient(remoteClient, Position) ignores position parameter
             }
             else if ((Shape.ProfileCurve & 0x07) == (byte)ProfileShape.EquilateralTriangle)
             {
-                if (Shape.PathCurve == (byte)Extrusion.Straight)
+                if (Shape.PathCurve == (byte)Extrusion.Straight || Shape.PathCurve == (byte)Extrusion.Flexible)
                     return PrimType.PRISM;
                 else if (Shape.PathCurve == (byte)Extrusion.Curve1)
                     return PrimType.RING;
@@ -5390,9 +5390,6 @@ SendFullUpdateToClient(remoteClient, Position) ignores position parameter
 
         public void SendTerseUpdateToClient(IClientAPI remoteClient)
         {
-            if (ParentGroup.IsDeleted)
-                return;
-
             if (ParentGroup.IsAttachment
                 && (ParentGroup.RootPart != this
                     || ParentGroup.AttachedAvatar != remoteClient.AgentId && ParentGroup.HasPrivateAttachmentPoint))

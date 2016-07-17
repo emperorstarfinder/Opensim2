@@ -135,6 +135,7 @@ namespace OpenSim.Region.ScriptEngine.Shared.Api.Interfaces
         void osTerrainFlush();
 
         int osRegionRestart(double seconds);
+        int osRegionRestart(double seconds, string msg);
         void osRegionNotice(string msg);
         bool osConsoleCommand(string Command);
         void osSetParcelMediaURL(string url);
@@ -261,6 +262,7 @@ namespace OpenSim.Region.ScriptEngine.Shared.Api.Interfaces
         string osGetSimulatorVersion();
         LSL_Integer osCheckODE();
         string osGetPhysicsEngineType();
+        string osGetPhysicsEngineName();
         Object osParseJSONNew(string JSON);
         Hashtable osParseJSON(string JSON);
 
@@ -468,5 +470,8 @@ namespace OpenSim.Region.ScriptEngine.Shared.Api.Interfaces
         /// <param name="regex">string to use as pattern</param>
         /// <returns>boolean</returns>
         LSL_Integer osRegexIsMatch(string input, string pattern);
+
+        LSL_String osRequestURL(LSL_List options);
+        LSL_String osRequestSecureURL(LSL_List options);
     }
 }

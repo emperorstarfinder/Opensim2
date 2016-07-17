@@ -32,6 +32,8 @@ using OpenMetaverse.Packets;
 using OpenMetaverse.StructuredData;
 using OpenMetaverse.Messages.Linden;
 
+using OpenSim.Framework;
+
 namespace OpenSim.Region.ClientStack.Linden
 {
     public class EventQueueHelper
@@ -331,40 +333,42 @@ namespace OpenSim.Region.ClientStack.Linden
             return chatterBoxSessionAgentListUpdates;
         }
 
-        public static OSD GroupMembership(AgentGroupDataUpdatePacket groupUpdatePacket)
+        public static OSD GroupMembershipData(UUID receiverAgent, GroupMembershipData[] data)
         {
-            OSDMap groupUpdate = new OSDMap();
-            groupUpdate.Add("message", OSD.FromString("AgentGroupDataUpdate"));
+            OSDArray AgentData = new OSDArray(1);
+            OSDMap AgentDataMap = new OSDMap(1);
+            AgentDataMap.Add("AgentID", OSD.FromUUID(receiverAgent));
+            AgentData.Add(AgentDataMap);
 
-            OSDMap body = new OSDMap();
-            OSDArray agentData = new OSDArray();
-            OSDMap agentDataMap = new OSDMap();
-            agentDataMap.Add("AgentID", OSD.FromUUID(groupUpdatePacket.AgentData.AgentID));
-            agentData.Add(agentDataMap);
-            body.Add("AgentData", agentData);
+            OSDArray GroupData = new OSDArray(data.Length);
+            OSDArray NewGroupData = new OSDArray(data.Length);
 
-            OSDArray groupData = new OSDArray();
-
-            foreach (AgentGroupDataUpdatePacket.GroupDataBlock groupDataBlock in groupUpdatePacket.GroupData)
+            foreach (GroupMembershipData membership in data)
             {
-                OSDMap groupDataMap = new OSDMap();
-                groupDataMap.Add("ListInProfile", OSD.FromBoolean(false));
-                groupDataMap.Add("GroupID", OSD.FromUUID(groupDataBlock.GroupID));
-                groupDataMap.Add("GroupInsigniaID", OSD.FromUUID(groupDataBlock.GroupInsigniaID));
-                groupDataMap.Add("Contribution", OSD.FromInteger(groupDataBlock.Contribution));
-                groupDataMap.Add("GroupPowers", OSD.FromBinary(ulongToByteArray(groupDataBlock.GroupPowers)));
-                groupDataMap.Add("GroupName", OSD.FromString(Utils.BytesToString(groupDataBlock.GroupName)));
-                groupDataMap.Add("AcceptNotices", OSD.FromBoolean(groupDataBlock.AcceptNotices));
+                OSDMap GroupDataMap = new OSDMap(6);
+                OSDMap NewGroupDataMap = new OSDMap(1);
 
-                groupData.Add(groupDataMap);
+                GroupDataMap.Add("GroupID", OSD.FromUUID(membership.GroupID));
+                GroupDataMap.Add("GroupPowers", OSD.FromULong(membership.GroupPowers));
+                GroupDataMap.Add("AcceptNotices", OSD.FromBoolean(membership.AcceptNotices));
+                GroupDataMap.Add("GroupInsigniaID", OSD.FromUUID(membership.GroupPicture));
+                GroupDataMap.Add("Contribution", OSD.FromInteger(membership.Contribution));
+                GroupDataMap.Add("GroupName", OSD.FromString(membership.GroupName));
+                NewGroupDataMap.Add("ListInProfile", OSD.FromBoolean(membership.ListInProfile));
 
+                GroupData.Add(GroupDataMap);
+                NewGroupData.Add(NewGroupDataMap);
             }
-            body.Add("GroupData", groupData);
-            groupUpdate.Add("body", body);
 
-            return groupUpdate;
+            OSDMap llDataStruct = new OSDMap(3);
+            llDataStruct.Add("AgentData", AgentData);
+            llDataStruct.Add("GroupData", GroupData);
+            llDataStruct.Add("NewGroupData", NewGroupData);
+
+            return BuildEvent("AgentGroupDataUpdate", llDataStruct);
+
         }
-        
+
         public static OSD PlacesQuery(PlacesReplyPacket PlacesReply)
         {
             OSDMap placesReply = new OSDMap();

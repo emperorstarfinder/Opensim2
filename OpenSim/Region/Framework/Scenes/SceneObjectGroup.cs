@@ -556,6 +556,7 @@ namespace OpenSim.Region.Framework.Scenes
                         && !Scene.PositionIsInCurrentRegion(val)
                         && !IsAttachmentCheckFull()
                         && !Scene.LoadingPrims
+                        && !Scene.DisableObjectTransfer
                     )
                 {
                     if (!inTransit)
@@ -1161,7 +1162,7 @@ namespace OpenSim.Region.Framework.Scenes
                     }
                     else
                     {
-                        m_log.WarnFormat("[SCENE OBJECT GROUP]: SavedScriptState element had no UUID in object {0}", Name);
+                        m_log.WarnFormat("[SCENE OBJECT GROUP]: SavedScriptState element had no UUID in object {0} id: {1}", Name,UUID);
                     }
                 }
                 else
@@ -1565,6 +1566,62 @@ namespace OpenSim.Region.Framework.Scenes
         }
 
         #endregion
+
+        private float? m_boundsRadius = null;
+        public void InvalidBoundsRadius()
+        {
+            m_boundsRadius = null;
+        }
+
+        private Vector3 m_boundsCenter;
+        public Vector3 getBoundsCenter()
+        {
+            // math is done in GetBoundsRadius();
+            if(m_boundsRadius == null)
+                GetBoundsRadius();
+            return m_boundsCenter;
+        }
+
+        public float GetBoundsRadius()
+        {
+        // this may need more threading work
+            if(m_boundsRadius == null)
+            {
+                float res = 0;
+                SceneObjectPart p;
+                SceneObjectPart[] parts;
+                float partR;
+                Vector3 offset = Vector3.Zero;
+                lock (m_parts)
+                {
+                    parts = m_parts.GetArray();
+                }
+
+                int nparts = parts.Length;
+                for (int i = 0; i < nparts; i++)
+                {
+                    p = parts[i];
+                    partR = 0.5f * p.Scale.Length();
+                    if(p != RootPart)
+                    {
+                        partR += p.OffsetPosition.Length();
+                        offset += p.OffsetPosition;
+                    }
+                    if(partR > res)
+                        res = partR;
+                }
+                if(parts.Length > 1)
+                {
+                    offset /= parts.Length; // basicly geometric center
+                    offset = offset * RootPart.RotationOffset;
+                }
+                m_boundsCenter = offset;
+                m_boundsRadius = res;
+                return res;
+            }
+
+            return m_boundsRadius.Value;
+        }
 
         public void GetResourcesCosts(SceneObjectPart apart,
             out float linksetResCost, out float linksetPhysCost, out float partCost, out float partPhysCost)
@@ -1987,6 +2044,7 @@ namespace OpenSim.Region.Framework.Scenes
         {
             // We need to keep track of this state in case this group is still queued for backup.
             IsDeleted = true;
+            HasGroupChanged = true;
 
             DetachFromBackup();
 
@@ -1997,9 +2055,9 @@ namespace OpenSim.Region.Framework.Scenes
 
                 if (Scene != null)
                 {
-                    Scene.ForEachRootScenePresence(delegate(ScenePresence avatar)
+                    Scene.ForEachScenePresence(delegate(ScenePresence avatar)
                     {
-                        if (avatar.ParentID == LocalId)
+                        if (!avatar.IsChildAgent && avatar.ParentID == LocalId)
                             avatar.StandUp();
 
                         if (!silent)
@@ -2010,7 +2068,13 @@ namespace OpenSim.Region.Framework.Scenes
                                 if (!IsAttachment
                                     || AttachedAvatar == avatar.ControllingClient.AgentId
                                     || !HasPrivateAttachmentPoint)
+                                {
+                                    // Send a kill object immediately
                                     avatar.ControllingClient.SendKillObject(new List<uint> { part.LocalId });
+                                    // Also, send a terse update; in case race conditions make the object pop again in the client,
+                                    // this update will send another kill object
+                                    m_rootPart.SendTerseUpdateToClient(avatar.ControllingClient);
+                                }
                             }
                         }
                     });
@@ -2116,11 +2180,13 @@ namespace OpenSim.Region.Framework.Scenes
 
         public void SetOwnerId(UUID userId)
         {
-                ForEachPart(delegate(SceneObjectPart part) 
+                ForEachPart(delegate(SceneObjectPart part)
                 {
-                    
-                    part.OwnerID = userId;
-                    
+                    if (part.OwnerID != userId)
+                    {
+                        part.LastOwnerID = part.OwnerID;
+                        part.OwnerID = userId;
+                    }
                 });
         }
 
@@ -2178,6 +2244,20 @@ namespace OpenSim.Region.Framework.Scenes
                             if ((DateTime.UtcNow - RootPart.Rezzed).TotalMinutes >
                                     parcel.LandData.OtherCleanTime)
                             {
+                                // don't autoreturn if we have a sitting avatar
+                                // mantis 7828 (but none the provided patchs)
+
+                                if(GetSittingAvatarsCount() > 0)
+                                {
+                                    // do not respect npcs
+                                    List<ScenePresence> sitters = GetSittingAvatars();
+                                    foreach(ScenePresence sp in sitters)
+                                    {
+                                        if(!sp.IsDeleted && !sp.isNPC && sp.IsSatOnObject)
+                                            return;
+                                    }
+                                }
+
                                 DetachFromBackup();
                                 m_log.DebugFormat(
                                     "[SCENE OBJECT GROUP]: Returning object {0} due to parcel autoreturn", 
@@ -2303,6 +2383,7 @@ namespace OpenSim.Region.Framework.Scenes
 
             // a copy isnt backedup
             dupe.Backup = false;
+            dupe.InvalidBoundsRadius();
   
             // a copy is not in transit hopefully
             dupe.inTransit = false;
@@ -3132,6 +3213,8 @@ namespace OpenSim.Region.Framework.Scenes
             // unmoved prims!
             ResetChildPrimPhysicsPositions();
 
+            InvalidBoundsRadius();
+
             if (m_rootPart.PhysActor != null)
                 m_rootPart.PhysActor.Building = false;
 
@@ -3282,6 +3365,8 @@ namespace OpenSim.Region.Framework.Scenes
                 m_rootPart.PhysActor.Building = false;
 
             objectGroup.HasGroupChangedDueToDelink = true;
+
+            InvalidBoundsRadius();
 
             if (sendEvents)
                 linkPart.TriggerScriptChangedEvent(Changed.LINK);
@@ -3789,6 +3874,7 @@ namespace OpenSim.Region.Framework.Scenes
                 if (pa != null)
                     m_scene.PhysicsScene.AddPhysicsActorTaint(pa);
             }
+            InvalidBoundsRadius();
         }
 
         #endregion
@@ -3919,11 +4005,13 @@ namespace OpenSim.Region.Framework.Scenes
                     obPart.Scale = newSize;
                     obPart.UpdateOffSet(currentpos);
                 }
-
-                HasGroupChanged = true;
-                m_rootPart.TriggerScriptChangedEvent(Changed.SCALE);
-                ScheduleGroupForFullUpdate();
             }
+
+            InvalidBoundsRadius();
+            HasGroupChanged = true;
+            m_rootPart.TriggerScriptChangedEvent(Changed.SCALE);
+            ScheduleGroupForFullUpdate();
+
         }
 
         #endregion
@@ -4577,34 +4665,19 @@ namespace OpenSim.Region.Framework.Scenes
             
             Vector3 gc = Vector3.Zero;
 
-            int nparts = m_parts.Count;
-            if (nparts <= 1)
-                return gc;
-
             SceneObjectPart[] parts = m_parts.GetArray();
-            nparts = parts.Length; // just in case it changed
-            if (nparts <= 1)
+            int nparts = parts.Length;
+            if (nparts < 2)
                 return gc;
-
-            Quaternion parentRot = RootPart.RotationOffset;
-            Vector3 pPos;
 
             // average all parts positions
             for (int i = 0; i < nparts; i++)
             {
-                // do it directly
-                //                gc += parts[i].GetWorldPosition();
                 if (parts[i] != RootPart)
-                {
-                    pPos = parts[i].OffsetPosition;
-                    gc += pPos;
-                }
-
+                    gc += parts[i].OffsetPosition;
             }
             gc /= nparts;
 
-            // relative to root:
-//            gc -= AbsolutePosition;
             return gc;
         }
 
@@ -4651,30 +4724,6 @@ namespace OpenSim.Region.Framework.Scenes
             return Ptot;
         }
 
-        /// <summary>
-        /// If the object is a sculpt/mesh, retrieve the mesh data for each part and reinsert it into each shape so that
-        /// the physics engine can use it.
-        /// </summary>
-        /// <remarks>
-        /// When the physics engine has finished with it, the sculpt data is discarded to save memory.
-        /// </remarks>
-/*        
-        public void CheckSculptAndLoad()
-        {
-            if (IsDeleted)
-                return;
-
-            if ((RootPart.GetEffectiveObjectFlags() & (uint)PrimFlags.Phantom) != 0)
-                return;
-
-//            m_log.Debug("Processing CheckSculptAndLoad for {0} {1}", Name, LocalId);
-
-            SceneObjectPart[] parts = m_parts.GetArray();
-
-            for (int i = 0; i < parts.Length; i++)
-                parts[i].CheckSculptAndLoad();
-        }
-*/
         /// <summary>
         /// Set the user group to which this scene object belongs.
         /// </summary>

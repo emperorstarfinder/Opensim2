@@ -26,6 +26,7 @@
  */
 
 using System;
+using System.Text;
 using System.Xml;
 using System.IO;
 using System.Collections.Generic;
@@ -47,6 +48,8 @@ namespace OpenSim.Region.Framework.Scenes
         private static readonly ILog m_log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         private byte[] m_inventoryFileData = new byte[0];
+        private byte[] m_inventoryFileNameBytes = new byte[0];
+        private string m_inventoryFileName = "";
         private uint m_inventoryFileNameSerial = 0;
         private bool m_inventoryPrivileged = false;
         private object m_inventoryFileLock = new object();
@@ -1111,17 +1114,33 @@ namespace OpenSim.Region.Framework.Scenes
         /// <param name="xferManager"></param>
         public void RequestInventoryFile(IClientAPI client, IXfer xferManager)
         {
-
             lock (m_inventoryFileLock)
             {
-                string filename = "inventory_" + UUID.Random().ToString() + ".tmp";
-
                 bool changed = false;
-                if (m_inventoryFileNameSerial < m_inventorySerial)
+
+                Items.LockItemsForRead(true);
+
+                if (m_inventorySerial == 0) // No inventory
+                {
+                    Items.LockItemsForRead(false);
+                    client.SendTaskInventory(m_part.UUID, 0, new byte[0]);
+                    return;
+                }
+
+                if (m_items.Count == 0) // No inventory
+                {
+                    Items.LockItemsForRead(false);
+                    client.SendTaskInventory(m_part.UUID, 0, new byte[0]);
+                    return;
+                }
+
+                if (m_inventoryFileNameSerial != m_inventorySerial)
                 {
                     m_inventoryFileNameSerial = m_inventorySerial;
                     changed = true;
                 }
+
+                Items.LockItemsForRead(false);
 
                 if (m_inventoryFileData.Length < 2)
                     changed = true;
@@ -1133,32 +1152,11 @@ namespace OpenSim.Region.Framework.Scenes
                 if (m_inventoryPrivileged != includeAssets)
                     changed = true;
 
-
-                Items.LockItemsForRead(true);
-
-                if (m_inventorySerial == 0) // No inventory
-                {
-                    Items.LockItemsForRead(false);
-                    client.SendTaskInventory(m_part.UUID, 0, new byte[0]);
-                   
-                    return;
-                }
-
-                if (m_items.Count == 0) // No inventory
-                {
-                    Items.LockItemsForRead(false);
-                    client.SendTaskInventory(m_part.UUID, 0, new byte[0]);
-                    return;
-                }
-
                 if (!changed)
                 {
-                    Items.LockItemsForRead(false);
-
-                    xferManager.AddNewFile(filename,
-                            m_inventoryFileData);
+                    xferManager.AddNewFile(m_inventoryFileName, m_inventoryFileData);
                     client.SendTaskInventory(m_part.UUID, (short)m_inventoryFileNameSerial,
-                            Util.StringToBytes256(filename));
+                            m_inventoryFileNameBytes);
 
                     return;
                 }
@@ -1166,6 +1164,8 @@ namespace OpenSim.Region.Framework.Scenes
                 m_inventoryPrivileged = includeAssets;
 
                 InventoryStringBuilder invString = new InventoryStringBuilder(m_part.UUID, UUID.Zero);
+
+                Items.LockItemsForRead(true);
 
                 foreach (TaskInventoryItem item in m_items.Values)
                 {
@@ -1217,13 +1217,14 @@ namespace OpenSim.Region.Framework.Scenes
 
                 Items.LockItemsForRead(false);
 
-                m_inventoryFileData = Utils.StringToBytes(invString.BuildString);
+                m_inventoryFileData = Utils.StringToBytes(invString.GetString());
 
                 if (m_inventoryFileData.Length > 2)
                 {
-                    xferManager.AddNewFile(filename, m_inventoryFileData);
-                    client.SendTaskInventory(m_part.UUID, (short)m_inventoryFileNameSerial,
-                            Util.StringToBytes256(filename));
+                    m_inventoryFileName = "inventory_" + UUID.Random().ToString() + ".tmp";
+                    m_inventoryFileNameBytes = Util.StringToBytes256(m_inventoryFileName);
+                    xferManager.AddNewFile(m_inventoryFileName, m_inventoryFileData);
+                    client.SendTaskInventory(m_part.UUID, (short)m_inventoryFileNameSerial,m_inventoryFileNameBytes);
                     return;
                 }
 
@@ -1245,72 +1246,72 @@ namespace OpenSim.Region.Framework.Scenes
 //            if (HasInventoryChanged)
 //            {
                 Items.LockItemsForRead(true);
+                ICollection<TaskInventoryItem> itemsvalues = Items.Values;
+                HasInventoryChanged = false;
+                Items.LockItemsForRead(false);
                 try
                 {
-                    datastore.StorePrimInventory(m_part.UUID, Items.Values);
+                    datastore.StorePrimInventory(m_part.UUID, itemsvalues);
                 }
                 catch {}
-
-                HasInventoryChanged = false;
-
-                Items.LockItemsForRead(false);
-
-                
 //            }
         }
 
         public class InventoryStringBuilder
         {
-            public string BuildString = String.Empty;
+            private StringBuilder BuildString = new StringBuilder(1024);
 
             public InventoryStringBuilder(UUID folderID, UUID parentID)
             {
-                BuildString += "\tinv_object\t0\n\t{\n";
+                BuildString.Append("\tinv_object\t0\n\t{\n");
                 AddNameValueLine("obj_id", folderID.ToString());
                 AddNameValueLine("parent_id", parentID.ToString());
                 AddNameValueLine("type", "category");
-                AddNameValueLine("name", "Contents|");
-                AddSectionEnd();
+                AddNameValueLine("name", "Contents|\n\t}");
             }
 
             public void AddItemStart()
             {
-                BuildString += "\tinv_item\t0\n";
-                AddSectionStart();
+                BuildString.Append("\tinv_item\t0\n\t{\n");
             }
 
             public void AddPermissionsStart()
             {
-                BuildString += "\tpermissions 0\n";
-                AddSectionStart();
+                BuildString.Append("\tpermissions 0\n\t{\n");
             }
 
             public void AddSaleStart()
             {
-                BuildString += "\tsale_info\t0\n";
-                AddSectionStart();
+                BuildString.Append("\tsale_info\t0\n\t{\n");
             }
 
             protected void AddSectionStart()
             {
-                BuildString += "\t{\n";
+                BuildString.Append("\t{\n");
             }
 
             public void AddSectionEnd()
             {
-                BuildString += "\t}\n";
+                BuildString.Append("\t}\n");
             }
 
             public void AddLine(string addLine)
             {
-                BuildString += addLine;
+                BuildString.Append(addLine);
             }
 
             public void AddNameValueLine(string name, string value)
             {
-                BuildString += "\t\t";
-                BuildString += name + "\t";
-                BuildString += value + "\n";
+                BuildString.Append("\t\t");
+                BuildString.Append(name);
+                BuildString.Append("\t");
+                BuildString.Append(value);
+                BuildString.Append("\n");
+            }
+
+            public String GetString()
+            {
+                return BuildString.ToString();
             }
 
             public void Close()

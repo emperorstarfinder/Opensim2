@@ -2680,7 +2680,7 @@ namespace OpenSim.Region.ScriptEngine.Shared.Api
             if (part.ParentGroup.RootPart == part)
             {
                 SceneObjectGroup parent = part.ParentGroup;
-                if (!World.Permissions.CanObjectEntry(parent.UUID, false, (Vector3)toPos))
+                if (!parent.IsAttachment && !World.Permissions.CanObjectEntry(parent.UUID, false, (Vector3)toPos))
                     return;
                 parent.UpdateGroupPosition((Vector3)toPos);
             }
@@ -6409,7 +6409,7 @@ namespace OpenSim.Region.ScriptEngine.Shared.Api
                 else
                 {
                     // Y is the only valid direction
-                    edge.y = dir.y / Math.Abs(dir.y);
+                    edge.y = dir.y / Math.Abs(dir.y) * (World.RegionInfo.RegionSizeY / Constants.RegionSize);
                 }
             }
             else
@@ -6431,20 +6431,20 @@ namespace OpenSim.Region.ScriptEngine.Shared.Api
                 if (edge.y > World.RegionInfo.RegionSizeY || edge.y < 0)
                 {
                     // Y goes out of bounds first
-                    edge.y = dir.y / Math.Abs(dir.y);
+                    edge.y = dir.y / Math.Abs(dir.y) * (World.RegionInfo.RegionSizeY / Constants.RegionSize);
                 }
                 else
                 {
                     // X goes out of bounds first or its a corner exit
                     edge.y = 0;
-                    edge.x = dir.x / Math.Abs(dir.x);
+                    edge.x = dir.x / Math.Abs(dir.x) * (World.RegionInfo.RegionSizeY / Constants.RegionSize);
                 }
             }
 
             List<GridRegion> neighbors = World.GridService.GetNeighbours(World.RegionInfo.ScopeID, World.RegionInfo.RegionID);
 
-            uint neighborX = World.RegionInfo.RegionLocX + (uint)dir.x;
-            uint neighborY = World.RegionInfo.RegionLocY + (uint)dir.y;
+            uint neighborX = World.RegionInfo.RegionLocX + (uint)edge.x;
+            uint neighborY = World.RegionInfo.RegionLocY + (uint)edge.y;
 
             foreach (GridRegion sri in neighbors)
             {
@@ -11132,6 +11132,30 @@ namespace OpenSim.Region.ScriptEngine.Shared.Api
                             0
                         ));
                         break;
+
+                    case (int)ScriptBaseClass.PRIM_OMEGA:
+                        // this may return values diferent from SL since we don't handle set the same way
+                        float gain = 1.0f; // we don't use gain and don't store it
+                        Vector3 axis = part.AngularVelocity;
+                        float spin = axis.Length();
+                        if(spin < 1.0e-6)
+                        {
+                            axis = Vector3.Zero;
+                            gain = 0.0f;
+                            spin = 0.0f;
+                        }
+                        else
+                        {
+                            axis = axis * (1.0f/spin);
+                        }
+
+                        res.Add(new LSL_Vector(axis.X,
+                                               axis.Y,
+                                               axis.Z));
+                        res.Add(new LSL_Float(spin));
+                        res.Add(new LSL_Float(gain));
+                        break;
+                                            
                     case (int)ScriptBaseClass.PRIM_LINK_TARGET:
 
                         // TODO: Should be issuing a runtime script warning in this case.
@@ -11918,7 +11942,7 @@ namespace OpenSim.Region.ScriptEngine.Shared.Api
 
             if (m_ScriptEngine.Config.GetBoolean("AllowGodFunctions", false))
             {
-                if (World.Permissions.CanRunConsoleCommand(m_host.OwnerID))
+                if (World.Permissions.IsAdministrator(m_host.OwnerID))
                 {
                     if (mask == ScriptBaseClass.MASK_BASE)//0
                     {
@@ -11980,7 +12004,7 @@ namespace OpenSim.Region.ScriptEngine.Shared.Api
 
             if (m_ScriptEngine.Config.GetBoolean("AllowGodFunctions", false))
             {
-                if (World.Permissions.CanRunConsoleCommand(m_host.OwnerID))
+                if (World.Permissions.IsAdministrator(m_host.OwnerID))
                 {
                     TaskInventoryItem item = m_host.Inventory.GetInventoryItem(itemName);
 
@@ -12039,7 +12063,7 @@ namespace OpenSim.Region.ScriptEngine.Shared.Api
         {
             m_host.AddScriptLPS(1);
             if (m_UrlModule != null)
-                return m_UrlModule.RequestSecureURL(m_ScriptEngine.ScriptModule, m_host, m_item.ItemID).ToString();
+                return m_UrlModule.RequestSecureURL(m_ScriptEngine.ScriptModule, m_host, m_item.ItemID, null).ToString();
             return UUID.Zero.ToString();
         }
 
@@ -12157,7 +12181,7 @@ namespace OpenSim.Region.ScriptEngine.Shared.Api
             m_host.AddScriptLPS(1);
 
             if (m_UrlModule != null)
-                return m_UrlModule.RequestURL(m_ScriptEngine.ScriptModule, m_host, m_item.ItemID).ToString();
+                return m_UrlModule.RequestURL(m_ScriptEngine.ScriptModule, m_host, m_item.ItemID, null).ToString();
             return UUID.Zero.ToString();
         }
 

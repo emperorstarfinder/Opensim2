@@ -461,6 +461,7 @@ namespace OpenSim.Framework.Servers.HttpServer
             }
             
             OSHttpResponse resp = new OSHttpResponse(new HttpResponse(context, request),context);
+//            resp.ReuseContext = true;
             resp.ReuseContext = false;
             HandleRequest(req, resp);           
 
@@ -1270,8 +1271,7 @@ namespace OpenSim.Framework.Servers.HttpServer
             requestStream.Close();
 
             //m_log.DebugFormat("[OGP]: {0}:{1}", request.RawUrl, requestBody);
-            // response.KeepAlive = true;
-            response.KeepAlive = false;
+            response.KeepAlive = true;
 
             OSD llsdRequest = null;
             OSD llsdResponse = null;
@@ -1955,7 +1955,7 @@ namespace OpenSim.Framework.Servers.HttpServer
 
                 // Long Poll Service Manager with 3 worker threads a 25 second timeout for no events
 
-                PollServiceRequestManager = new PollServiceRequestManager(this, performPollResponsesAsync, 3, 25000);
+                PollServiceRequestManager = new PollServiceRequestManager(this, performPollResponsesAsync, 2, 25000);
                 PollServiceRequestManager.Start();
 
                 HTTPDRunning = true;

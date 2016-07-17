@@ -526,7 +526,6 @@ namespace OpenSim.Region.CoreModules.World.Land
                 ILandObject newover = GetLandObject(pos.X, pos.Y);
                 if(over != newover || avatar.currentParcelUUID != newover.LandData.GlobalID)
                 {
-                    avatar.currentParcelUUID = newover.LandData.GlobalID;
                     m_scene.EventManager.TriggerAvatarEnteringNewParcel(avatar,
                             newover.LandData.LocalID, m_scene.RegionInfo.RegionID);
                 }
@@ -885,7 +884,7 @@ namespace OpenSim.Region.CoreModules.World.Land
             }
         }
 
-        public void FinalizeLandPrimCountUpdate()
+        private void FinalizeLandPrimCountUpdate()
         {
             //Get Simwide prim count for owner
             Dictionary<UUID, List<LandObject>> landOwnersAndParcels = new Dictionary<UUID, List<LandObject>>();
@@ -926,10 +925,10 @@ namespace OpenSim.Region.CoreModules.World.Land
 
         public void EventManagerOnParcelPrimCountUpdate()
         {
-//            m_log.DebugFormat(
-//                "[LAND MANAGEMENT MODULE]: Triggered EventManagerOnParcelPrimCountUpdate() for {0}", 
-//                m_scene.RegionInfo.RegionName);
-            
+            //m_log.DebugFormat(
+            //    "[land management module]: triggered eventmanageronparcelprimcountupdate() for {0}",
+            //    m_scene.RegionInfo.RegionName);
+
             ResetOverMeRecords();
             EntityBase[] entities = m_scene.Entities.GetEntities();
             foreach (EntityBase obj in entities)
@@ -1844,7 +1843,7 @@ namespace OpenSim.Region.CoreModules.World.Land
 
             LLSDRemoteParcelResponse response = new LLSDRemoteParcelResponse();
             response.parcel_id = parcelID;
-            m_log.DebugFormat("[LAND MANAGEMENT MODULE]: Got parcelID {0}", parcelID);
+            //m_log.DebugFormat("[LAND MANAGEMENT MODULE]: Got parcelID {0}", parcelID);
 
             return LLSDHelpers.SerialiseLLSDReply(response);
         }
@@ -2237,30 +2236,39 @@ namespace OpenSim.Region.CoreModules.World.Land
         }
 
         private void AppendParcelsSummaryReport(StringBuilder report)
-        {           
-            report.AppendFormat("Land information for {0}\n", m_scene.RegionInfo.RegionName);            
-            report.AppendFormat(
-                "{0,-20} {1,-10} {2,-9} {3,-18} {4,-18} {5,-20}\n",
-                "Parcel Name",
-                "Local ID",
-                "Area",
-                "AABBMin",
-                "AABBMax",
-                "Owner");
+        {
+            report.AppendFormat("Land information for {0}\n", m_scene.Name);
+
+            ConsoleDisplayTable cdt = new ConsoleDisplayTable();
+            cdt.AddColumn("Parcel Name", ConsoleDisplayUtil.ParcelNameSize);
+            cdt.AddColumn("ID", 3);
+            cdt.AddColumn("Area", 6);
+            cdt.AddColumn("Starts", ConsoleDisplayUtil.VectorSize);
+            cdt.AddColumn("Ends", ConsoleDisplayUtil.VectorSize);
+            cdt.AddColumn("Owner", ConsoleDisplayUtil.UserNameSize);
             
             lock (m_landList)
             {
                 foreach (ILandObject lo in m_landList.Values)
                 {
                     LandData ld = lo.LandData;
-                    
-                    report.AppendFormat(
-                        "{0,-20} {1,-10} {2,-9} {3,-18} {4,-18} {5,-20}\n", 
-                        ld.Name, ld.LocalID, ld.Area, ld.AABBMin, ld.AABBMax, m_userManager.GetUserName(ld.OwnerID));
+                    string ownerName;
+                    if (ld.IsGroupOwned)
+                    {
+                        GroupRecord rec = m_groupManager.GetGroupRecord(ld.GroupID);
+                        ownerName = (rec != null) ? rec.GroupName : "Unknown Group";
+                    }
+                    else
+                    {
+                        ownerName = m_userManager.GetUserName(ld.OwnerID);
+                    }
+                    cdt.AddRow(
+                        ld.Name, ld.LocalID, ld.Area, lo.StartPoint, lo.EndPoint, ownerName);
                 }
             }
-           
-        }         
+
+            report.Append(cdt.ToString());
+        }
 
         private void AppendParcelReport(StringBuilder report, ILandObject lo)
         {
@@ -2298,12 +2306,14 @@ namespace OpenSim.Region.CoreModules.World.Land
             cdl.AddRow("Other clean time", ld.OtherCleanTime);
 
             cdl.AddRow("Max Prims", lo.GetParcelMaxPrimCount());
+            cdl.AddRow("Simwide Max Prims (owner)", lo.GetSimulatorMaxPrimCount());
             IPrimCounts pc = lo.PrimCounts;
             cdl.AddRow("Owner Prims", pc.Owner);
             cdl.AddRow("Group Prims", pc.Group);
             cdl.AddRow("Other Prims", pc.Others);
             cdl.AddRow("Selected Prims", pc.Selected);
             cdl.AddRow("Total Prims", pc.Total);
+            cdl.AddRow("SimWide Prims (owner)", pc.Simulator);
 
             cdl.AddRow("Music URL", ld.MusicURL);
             cdl.AddRow("Obscure Music", ld.ObscureMusic);

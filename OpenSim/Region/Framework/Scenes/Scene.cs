@@ -250,6 +250,12 @@ namespace OpenSim.Region.Framework.Scenes
         /// 
         public int m_linksetPhysCapacity = 0;
 
+        /// <summary>
+        /// When placed outside the region's border, do we transfer the objects or
+        /// do we keep simulating them here?
+        /// </summary>
+        public bool DisableObjectTransfer { get; set; }
+
         public bool m_useFlySlow;
         public bool m_useTrashOnDelete = true;
 
@@ -284,9 +290,10 @@ namespace OpenSim.Region.Framework.Scenes
         public int ChildTerseUpdatePeriod { get; set; }
 
         protected float m_defaultDrawDistance = 255f;
+        protected float m_defaultCullingDrawDistance = 16f;
         public float DefaultDrawDistance
         {
-             get { return m_defaultDrawDistance; }
+             get { return ObjectsCullingByDistance?m_defaultCullingDrawDistance:m_defaultDrawDistance; }
         }
 
         protected float m_maxDrawDistance = 512.0f;
@@ -417,17 +424,6 @@ namespace OpenSim.Region.Framework.Scenes
         private float backupMS;
         private float terrainMS;
         private float landMS;
-
-        // A temporary configuration flag to enable using FireAndForget to process
-        //   collisions from the physics engine. There is a problem with collisions
-        //   stopping sometimes and MB's suspicion is some race condition passing
-        //   collisions from the physics engine callback to the script engine.
-        //   This causes the collision events to be passed with a FireAndForget
-        //   call which should eliminate that linkage. Testers can turn this on
-        //   and see if collisions stop. If they don't, the problem is somewhere else.
-        //   This feature defaults to 'off' so, by default, the simulator operation
-        //   is not changed.
-        public bool ShouldUseFireAndForgetForCollisions = false;
 
         /// <summary>
         /// Tick at which the last frame was processed.
@@ -808,9 +804,9 @@ namespace OpenSim.Region.Framework.Scenes
         public UpdatePrioritizationSchemes UpdatePrioritizationScheme { get; set; }
         public bool IsReprioritizationEnabled { get; set; }
         public float ReprioritizationInterval { get; set; }
-        public float RootReprioritizationDistance { get; set; }
-        public float ChildReprioritizationDistance { get; set; }
+        public float ReprioritizationDistance { get; set; }
         private float m_minReprioritizationDistance = 32f;
+        public bool ObjectsCullingByDistance = false;
 
         public AgentCircuitManager AuthenticateHandler
         {
@@ -980,7 +976,7 @@ namespace OpenSim.Region.Framework.Scenes
                 m_maxDrawDistance = startupConfig.GetFloat("MaxDrawDistance", m_maxDrawDistance);
                 m_maxRegionViewDistance = startupConfig.GetFloat("MaxRegionsViewDistance", m_maxRegionViewDistance);
 
-                LegacySitOffsets = startupConfig.GetBoolean("LegacyOpenSimSitOffsets", LegacySitOffsets);
+                LegacySitOffsets = startupConfig.GetBoolean("LegacySitOffsets", LegacySitOffsets);
 
                 if (m_defaultDrawDistance > m_maxDrawDistance)
                     m_defaultDrawDistance = m_maxDrawDistance;
@@ -1147,10 +1143,6 @@ namespace OpenSim.Region.Framework.Scenes
                 m_update_terrain          = startupConfig.GetInt("UpdateTerrainEveryNFrames",         m_update_terrain);
                 m_update_temp_cleaning    = startupConfig.GetInt("UpdateTempCleaningEveryNSeconds",   m_update_temp_cleaning);
 
-                if (startupConfig.Contains("ShouldUseFireAndForgetForCollisions"))
-                {
-                    ShouldUseFireAndForgetForCollisions = startupConfig.GetBoolean("ShouldUseFireAndForgetForCollisions", false);
-                }
             }
 
 
@@ -1170,6 +1162,7 @@ namespace OpenSim.Region.Framework.Scenes
             if (entityTransferConfig != null)
             {
                 AllowAvatarCrossing = entityTransferConfig.GetBoolean("AllowAvatarCrossing", AllowAvatarCrossing);
+                DisableObjectTransfer = entityTransferConfig.GetBoolean("DisableObjectTransfer", false);
             }
 
             #region Interest Management
@@ -1193,15 +1186,15 @@ namespace OpenSim.Region.Framework.Scenes
                     = interestConfig.GetBoolean("ReprioritizationEnabled", IsReprioritizationEnabled);
                 ReprioritizationInterval
                     = interestConfig.GetFloat("ReprioritizationInterval", ReprioritizationInterval);
-                RootReprioritizationDistance
-                    = interestConfig.GetFloat("RootReprioritizationDistance", RootReprioritizationDistance);
-                ChildReprioritizationDistance
-                    = interestConfig.GetFloat("ChildReprioritizationDistance", ChildReprioritizationDistance);
+                ReprioritizationDistance
+                    = interestConfig.GetFloat("RootReprioritizationDistance", ReprioritizationDistance);
 
-                if(RootReprioritizationDistance < m_minReprioritizationDistance)
-                    RootReprioritizationDistance = m_minReprioritizationDistance;
-                if(ChildReprioritizationDistance < m_minReprioritizationDistance)
-                    ChildReprioritizationDistance = m_minReprioritizationDistance;
+                if(ReprioritizationDistance < m_minReprioritizationDistance)
+                    ReprioritizationDistance = m_minReprioritizationDistance;
+
+                ObjectsCullingByDistance
+                    = interestConfig.GetBoolean("ObjectsCullingByDistance", ObjectsCullingByDistance);
+
 
                 RootTerseUpdatePeriod = interestConfig.GetInt("RootTerseUpdatePeriod", RootTerseUpdatePeriod);
                 ChildTerseUpdatePeriod = interestConfig.GetInt("ChildTerseUpdatePeriod", ChildTerseUpdatePeriod);
@@ -1260,8 +1253,7 @@ namespace OpenSim.Region.Framework.Scenes
             RootRotationUpdateTolerance = 0.1f;
             RootVelocityUpdateTolerance = 0.001f;
             RootPositionUpdateTolerance = 0.05f;
-            RootReprioritizationDistance = m_minReprioritizationDistance;
-            ChildReprioritizationDistance = m_minReprioritizationDistance;
+            ReprioritizationDistance = m_minReprioritizationDistance;
 
             m_eventManager = new EventManager();
 
@@ -2581,6 +2573,18 @@ namespace OpenSim.Region.Framework.Scenes
                 sceneObject = new SceneObjectGroup(ownerID, pos, rot, shape);
                 AddNewSceneObject(sceneObject, true);
                 sceneObject.SetGroup(groupID, null);
+
+                if (AgentPreferencesService != null) // This will override the brave new full perm world!
+                {
+                    AgentPrefs prefs = AgentPreferencesService.GetAgentPreferences(ownerID);
+                    // Only apply user selected prefs if the user set them
+                    if (prefs != null && prefs.PermNextOwner != 0)
+                    {
+                        sceneObject.RootPart.GroupMask = (uint)prefs.PermGroup;
+                        sceneObject.RootPart.EveryoneMask = (uint)prefs.PermEveryone;
+                        sceneObject.RootPart.NextOwnerMask = (uint)prefs.PermNextOwner;
+                    }
+                }
             }
 
             if (UserManagementModule != null)
@@ -2812,8 +2816,6 @@ namespace OpenSim.Region.Framework.Scenes
             }
 
             group.DeleteGroupFromScene(silent);
-            if (!silent)
-                SendKillObject(new List<uint>() { group.LocalId });
 
             // use this to mean also full delete
             if (removeScripts)
@@ -2959,52 +2961,8 @@ namespace OpenSim.Region.Framework.Scenes
                 return false;
             }
 
-            // If the user is banned, we won't let any of their objects
-            // enter. Period.
-            //
-            if (RegionInfo.EstateSettings.IsBanned(newObject.OwnerID, 36))
-            {
-                m_log.InfoFormat("[INTERREGION]: Denied prim crossing for banned avatar {0}", newObject.OwnerID);
+            if (!EntityTransferModule.HandleIncomingSceneObject(newObject, newPosition))
                 return false;
-            }
-
-            if (newPosition != Vector3.Zero)
-                newObject.RootPart.GroupPosition = newPosition;
-
-            if (!AddSceneObject(newObject))
-            {
-                m_log.DebugFormat(
-                    "[INTERREGION]: Problem adding scene object {0} in {1} ", newObject.UUID, RegionInfo.RegionName);
-                return false;
-            }
-
-            if (!newObject.IsAttachment)
-            {
-                // FIXME: It would be better to never add the scene object at all rather than add it and then delete
-                // it
-                if (!Permissions.CanObjectEntry(newObject.UUID, true, newObject.AbsolutePosition))
-                {
-                    // Deny non attachments based on parcel settings
-                    //
-                    m_log.Info("[INTERREGION]: Denied prim crossing because of parcel settings");
-
-                    DeleteSceneObject(newObject, false);
-
-                    return false;
-                }
-
-                // For attachments, we need to wait until the agent is root
-                // before we restart the scripts, or else some functions won't work.
-                newObject.RootPart.ParentGroup.CreateScriptInstances(0, false, DefaultScriptEngine, GetStateSource(newObject));
-                newObject.ResumeScripts();
-
-                // AddSceneObject already does this and doing it again messes
-                // up region crossings, so don't.
-                //if (newObject.RootPart.KeyframeMotion != null)
-                //    newObject.RootPart.KeyframeMotion.UpdateSceneObject(newObject);
-            }
-
-            
 
             // Do this as late as possible so that listeners have full access to the incoming object
             EventManager.TriggerOnIncomingSceneObject(newObject);
@@ -4282,16 +4240,18 @@ namespace OpenSim.Region.Framework.Scenes
 //                CleanDroppedAttachments();
 //            }
 
-            // Make sure avatar position is in the region (why it wouldn't be is a mystery but do sanity checking)
-            if (acd.startpos.X < 0)
-                acd.startpos.X = 1f;
-            else if (acd.startpos.X >= RegionInfo.RegionSizeX)
-                acd.startpos.X = RegionInfo.RegionSizeX - 1f;
-            if (acd.startpos.Y < 0)
-                acd.startpos.Y = 1f;
-            else if (acd.startpos.Y >= RegionInfo.RegionSizeY)
-                acd.startpos.Y = RegionInfo.RegionSizeY - 1f;
-
+            if(teleportFlags != (uint) TPFlags.Default)
+            {
+                // Make sure root avatar position is in the region
+                if (acd.startpos.X < 0)
+                    acd.startpos.X = 1f;
+                else if (acd.startpos.X >= RegionInfo.RegionSizeX)
+                    acd.startpos.X = RegionInfo.RegionSizeX - 1f;
+                if (acd.startpos.Y < 0)
+                    acd.startpos.Y = 1f;
+                else if (acd.startpos.Y >= RegionInfo.RegionSizeY)
+                    acd.startpos.Y = RegionInfo.RegionSizeY - 1f;
+            }
             // only check access, actual relocations will happen later on ScenePresence MakeRoot
             // allow child agents creation
             if(!godlike && teleportFlags != (uint) TPFlags.Default)
@@ -4358,14 +4318,14 @@ namespace OpenSim.Region.Framework.Scenes
             if (banned || restricted)
             {
                 ILandObject nearestParcel = GetNearestAllowedParcel(agentID, posX, posY);
+                Vector2? newPosition = null;
                 if (nearestParcel != null)
                 {
                     //Move agent to nearest allowed
-                    Vector2 newPosition = GetParcelSafeCorner(nearestParcel);
-                    posX = newPosition.X;
-                    posY = newPosition.Y;
+//                    Vector2 newPosition = GetParcelSafeCorner(nearestParcel);
+                    newPosition = nearestParcel.GetNearestPoint(new Vector3(posX, posY,0));
                 }
-                else
+                if(newPosition == null)
                 {
                     if (banned)
                     {
@@ -4377,6 +4337,11 @@ namespace OpenSim.Region.Framework.Scenes
                             RegionInfo.RegionName);
                     }
                     return false;
+                }
+                else
+                {
+                    posX = newPosition.Value.X;
+                    posY = newPosition.Value.Y;
                 }
             }
             reason = "";
@@ -5442,6 +5407,11 @@ Label_GroupsDone:
         public void ForEachClient(Action<IClientAPI> action)
         {
             m_clientManager.ForEachSync(action);
+        }
+
+        public int GetNumberOfClients()
+        {
+            return m_clientManager.Count;
         }
 
         public bool TryGetClient(UUID avatarID, out IClientAPI client)

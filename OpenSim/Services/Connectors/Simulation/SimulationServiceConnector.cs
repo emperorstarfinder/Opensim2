@@ -288,6 +288,8 @@ namespace OpenSim.Services.Connectors.Simulation
 
         public bool QueryAccess(GridRegion destination, UUID agentID, string agentHomeURI, bool viaTeleport, Vector3 position, List<UUID> featuresAvailable, EntityTransferContext ctx, out string reason)
         {
+            Culture.SetCurrentCulture();
+
             reason = "Failed to contact destination";
 
             // m_log.DebugFormat("[REMOTE SIMULATION CONNECTOR]: QueryAccess start, position={0}", position);
@@ -331,7 +333,7 @@ namespace OpenSim.Services.Connectors.Simulation
 
                     // FIXME: If there is a _Result map then it's the success key here that indicates the true success
                     // or failure, not the sibling result node.
-                    success = data["success"];
+                    success = data["success"].AsBoolean();
 
                     reason = data["reason"].AsString();
                     // We will need to plumb this and start sing the outbound version as well

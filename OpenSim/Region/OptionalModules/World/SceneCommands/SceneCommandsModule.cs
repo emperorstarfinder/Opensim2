@@ -97,7 +97,6 @@ namespace OpenSim.Region.OptionalModules.Avatar.Attachments
                       "active          - if false then main scene update and maintenance loops are suspended.\n"
                     + "animations      - if true  then extra animations debug information is logged.\n"
                     + "appear-refresh  - if true  then appearance is resent to other avatars every 60 seconds.\n"
-                    + "child-repri     - how far an avatar must move in meters before we update the position of its child agents in neighbouring regions.\n"
                     + "client-pos-upd  - the tolerance before clients are updated with new rotation information for an avatar.\n"
                     + "client-rot-upd  - the tolerance before clients are updated with new rotation information for an avatar.\n"
                     + "client-vel-upd  - the tolerance before clients are updated with new velocity information for an avatar.\n"
@@ -119,7 +118,6 @@ namespace OpenSim.Region.OptionalModules.Avatar.Attachments
                       "active          - if false then main scene update and maintenance loops are suspended.\n"
                     + "animations      - if true  then extra animations debug information is logged.\n"
                     + "appear-refresh  - if true  then appearance is resent to other avatars every 60 seconds.\n"
-                    + "child-repri     - how far an avatar must move in meters before we update the position of its child agents in neighbouring regions.\n"
                     + "client-pos-upd  - the tolerance before clients are updated with new rotation information for an avatar.\n"
                     + "client-rot-upd  - the tolerance before clients are updated with new rotation information for an avatar.\n"
                     + "client-vel-upd  - the tolerance before clients are updated with new velocity information for an avatar.\n"
@@ -156,7 +154,6 @@ namespace OpenSim.Region.OptionalModules.Avatar.Attachments
             cdl.AddRow("active", m_scene.Active);
             cdl.AddRow("animations", m_scene.DebugAnimations);
             cdl.AddRow("appear-refresh", m_scene.SendPeriodicAppearanceUpdates);
-            cdl.AddRow("child-repri", m_scene.ChildReprioritizationDistance);
             cdl.AddRow("client-pos-upd", m_scene.RootPositionUpdateTolerance);
             cdl.AddRow("client-rot-upd", m_scene.RootRotationUpdateTolerance);
             cdl.AddRow("client-vel-upd", m_scene.RootVelocityUpdateTolerance);
@@ -217,15 +214,6 @@ namespace OpenSim.Region.OptionalModules.Avatar.Attachments
                 // FIXME: This can only come from the console at the moment but might not always be true.
                 if (ConsoleUtil.TryParseConsoleBool(MainConsole.Instance, options["appear-refresh"], out newValue))
                     m_scene.SendPeriodicAppearanceUpdates = newValue;     
-            }
-
-            if (options.ContainsKey("child-repri"))
-            {
-                double newValue;
-
-                // FIXME: This can only come from the console at the moment but might not always be true.
-                if (ConsoleUtil.TryParseConsoleDouble(MainConsole.Instance, options["child-repri"], out newValue))
-                    m_scene.ChildReprioritizationDistance = (float)newValue;                
             }
 
             if (options.ContainsKey("client-pos-upd"))

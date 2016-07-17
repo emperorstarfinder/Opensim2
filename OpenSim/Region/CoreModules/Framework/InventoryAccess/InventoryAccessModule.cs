@@ -175,8 +175,8 @@ namespace OpenSim.Region.CoreModules.Framework.InventoryAccess
         /// <param name="nextOwnerMask"></param>
         public void CreateNewInventoryItem(IClientAPI remoteClient, UUID transactionID, UUID folderID,
                                            uint callbackID, string description, string name, sbyte invType,
-                                           sbyte assetType,
-                                           byte wearableType, uint nextOwnerMask, int creationDate)
+                                           sbyte assetType, byte wearableType,
+                                           uint nextOwnerMask, int creationDate)
         {
             m_log.DebugFormat("[INVENTORY ACCESS MODULE]: Received request to create inventory item {0} in folder {1}, transactionID {2}", name,
                 folderID, transactionID);
@@ -184,8 +184,14 @@ namespace OpenSim.Region.CoreModules.Framework.InventoryAccess
             if (!m_Scene.Permissions.CanCreateUserInventory(invType, remoteClient.AgentId))
                 return;
 
-            InventoryFolderBase f = new InventoryFolderBase(folderID, remoteClient.AgentId);
-            InventoryFolderBase folder = m_Scene.InventoryService.GetFolder(f);
+            InventoryFolderBase folder = m_Scene.InventoryService.GetFolder(remoteClient.AgentId, folderID);
+
+            if (folder == null && Enum.IsDefined(typeof(FolderType), (sbyte)invType))
+            {
+                folder = m_Scene.InventoryService.GetFolderForType(remoteClient.AgentId, (FolderType)invType);
+                if (folder != null)
+                    m_log.DebugFormat("[INVENTORY ACCESS MODULE]: Requested folder not found but found folder for type {0}", invType);
+            }
 
             if (folder == null || folder.Owner != remoteClient.AgentId)
                 return;
@@ -220,7 +226,10 @@ namespace OpenSim.Region.CoreModules.Framework.InventoryAccess
                 m_Scene.AssetService.Store(asset);
                 m_Scene.CreateNewInventoryItem(
                         remoteClient, remoteClient.AgentId.ToString(), string.Empty, folderID,
-                        name, description, 0, callbackID, asset.FullID, asset.Type, invType, nextOwnerMask, creationDate);              
+                        name, description, 0, callbackID, asset.FullID, asset.Type, invType,
+                        (uint)PermissionMask.All | (uint)PermissionMask.Export, // Base
+                        (uint)PermissionMask.All | (uint)PermissionMask.Export, // Current
+                        0, nextOwnerMask, 0, creationDate, false); // Data from viewer
             }
             else
             {
@@ -250,8 +259,7 @@ namespace OpenSim.Region.CoreModules.Framework.InventoryAccess
         /// <returns></returns>
         public virtual UUID CapsUpdateInventoryItemAsset(IClientAPI remoteClient, UUID itemID, byte[] data)
         {
-            InventoryItemBase item = new InventoryItemBase(itemID, remoteClient.AgentId);
-            item = m_Scene.InventoryService.GetItem(item);
+            InventoryItemBase item = m_Scene.InventoryService.GetItem(remoteClient.AgentId, itemID);
 
             if (item.Owner != remoteClient.AgentId)
                 return UUID.Zero;
@@ -556,7 +564,7 @@ namespace OpenSim.Region.CoreModules.Framework.InventoryAccess
             }
 
             // This is a hook to do some per-asset post-processing for subclasses that need that
-            if (remoteClient != null)
+            if (remoteClient != null && action != DeRezAction.Delete)
                 ExportAsset(remoteClient.AgentId, asset.FullID);
             
             return item;
@@ -709,8 +717,7 @@ namespace OpenSim.Region.CoreModules.Framework.InventoryAccess
 
             if (DeRezAction.SaveToExistingUserInventoryItem == action)
             {
-                item = new InventoryItemBase(so.RootPart.FromUserInventoryItemID, userID);
-                item = m_Scene.InventoryService.GetItem(item);
+                item = m_Scene.InventoryService.GetItem(userID, so.RootPart.FromUserInventoryItemID);
 
                 //item = userInfo.RootFolder.FindItem(
                 //        objectGroup.RootPart.FromUserInventoryItemID);
@@ -782,9 +789,7 @@ namespace OpenSim.Region.CoreModules.Framework.InventoryAccess
                 {
                     if (so.FromFolderID != UUID.Zero && so.RootPart.OwnerID == remoteClient.AgentId)
                     {
-                        InventoryFolderBase f = new InventoryFolderBase(so.FromFolderID, userID);
-                        if (f != null)
-                            folder = m_Scene.InventoryService.GetFolder(f);
+                        folder = m_Scene.InventoryService.GetFolder(userID, so.FromFolderID);
 
                         if(folder.Type == 14 || folder.Type == 16)
                         {
@@ -820,8 +825,7 @@ namespace OpenSim.Region.CoreModules.Framework.InventoryAccess
             bool RezSelected, bool RemoveItem, UUID fromTaskID, bool attachment)
         {
 //            m_log.DebugFormat("[INVENTORY ACCESS MODULE]: RezObject for {0}, item {1}", remoteClient.Name, itemID);
-            InventoryItemBase item = new InventoryItemBase(itemID, remoteClient.AgentId);
-            item = m_Scene.InventoryService.GetItem(item);
+            InventoryItemBase item = m_Scene.InventoryService.GetItem(remoteClient.AgentId, itemID);
 
             if (item == null)
             {
@@ -1279,8 +1283,7 @@ namespace OpenSim.Region.CoreModules.Framework.InventoryAccess
         protected virtual InventoryItemBase GetItem(UUID agentID, UUID itemID)
         {
             IInventoryService invService = m_Scene.RequestModuleInterface<IInventoryService>();
-            InventoryItemBase item = new InventoryItemBase(itemID, agentID);
-            item = invService.GetItem(item);
+            InventoryItemBase item = invService.GetItem(agentID, itemID);
             
             if (item != null && item.CreatorData != null && item.CreatorData != string.Empty)
                 UserManagementModule.AddUser(item.CreatorIdAsUuid, item.CreatorData);

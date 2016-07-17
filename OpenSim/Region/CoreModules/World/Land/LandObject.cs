@@ -350,22 +350,6 @@ namespace OpenSim.Region.CoreModules.World.Land
             }
         }
 
-        private int GetParcelBasePrimCount()
-        {
-            if (overrideParcelMaxPrimCount != null)
-            {
-                return overrideParcelMaxPrimCount(this);
-            }
-            else
-            {
-                // Normal Calculations
-                int parcelMax = (int)((long)LandData.Area
-                              * (long)m_scene.RegionInfo.ObjectCapacity
-                              / 65536L);
-                return parcelMax;
-            }
-        }
-
         public int GetSimulatorMaxPrimCount()
         {
             if (overrideSimulatorMaxPrimCount != null)
@@ -378,7 +362,8 @@ namespace OpenSim.Region.CoreModules.World.Land
                 int simMax = (int)(   (long)LandData.SimwideArea
                                     * (long)m_scene.RegionInfo.ObjectCapacity
                                     / (long)(m_scene.RegionInfo.RegionSizeX * m_scene.RegionInfo.RegionSizeY) );
-                // m_log.DebugFormat("Simwide Area: {0}, Capacity {1}, SimMax {2}", LandData.SimwideArea, m_scene.RegionInfo.ObjectCapacity, simMax);
+                 //m_log.DebugFormat("Simwide Area: {0}, Capacity {1}, SimMax {2}, SimWidePrims {3}", 
+                 //    LandData.SimwideArea, m_scene.RegionInfo.ObjectCapacity, simMax, LandData.SimwidePrims);
                 return simMax;
             }
         }
@@ -416,7 +401,7 @@ namespace OpenSim.Region.CoreModules.World.Land
             remote_client.SendLandProperties(seq_id,
                     snap_selection, request_result, this,
                     (float)m_scene.RegionInfo.RegionSettings.ObjectBonus,
-                    GetParcelBasePrimCount(),
+                    GetParcelMaxPrimCount(),
                     GetSimulatorMaxPrimCount(), regionFlags);
         }
 
@@ -709,7 +694,30 @@ namespace OpenSim.Region.CoreModules.World.Land
             if (HasGroupAccess(avatar))
                 return false;
 
-            return !IsInLandAccessList(avatar);
+            if(IsInLandAccessList(avatar))
+                return false;
+
+            // check for a NPC
+            ScenePresence sp;
+            if (!m_scene.TryGetScenePresence(avatar, out sp))
+                return true;
+
+            if(sp==null || !sp.isNPC)
+                return true;
+            
+            INPC npccli = (INPC)sp.ControllingClient;
+            if(npccli== null)
+                return true;
+            
+            UUID owner = npccli.Owner;
+
+            if(owner == UUID.Zero)
+                return true;
+
+            if (owner == LandData.OwnerID)
+                return false;
+
+            return !IsInLandAccessList(owner);
         }
 
         public bool IsInLandAccessList(UUID avatar)

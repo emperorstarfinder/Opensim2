@@ -775,6 +775,29 @@ namespace OpenSim.Region.CoreModules.Avatar.Attachments
                 return;
             }
 
+            // If this didn't come from inventory, it also shouldn't go there
+            // on detach. It's likely a temp attachment.
+            if (so.FromItemID == UUID.Zero)
+            {
+                // Retirn value is ignored
+                PrepareScriptInstanceForSave(so, true);
+
+                lock (sp.AttachmentsSyncLock)
+                {
+                    bool changed = sp.Appearance.DetachAttachment(so.FromItemID);
+                    if (changed && m_scene.AvatarFactory != null)
+                        m_scene.AvatarFactory.QueueAppearanceSave(sp.UUID);
+
+                    sp.RemoveAttachment(so);
+                }
+
+                m_scene.DeleteSceneObject(so, false, false);
+                so.RemoveScriptInstances(true);
+                so.Clear();
+
+                return;
+            }
+
             if (DebugLevel > 0)
                 m_log.DebugFormat(
                     "[ATTACHMENTS MODULE]: Detaching object {0} {1} (FromItemID {2}) for {3} in {4}", 
@@ -875,8 +898,7 @@ namespace OpenSim.Region.CoreModules.Avatar.Attachments
 
                 string sceneObjectXml = SceneObjectSerializer.ToOriginalXmlFormat(grp, scriptedState);
 
-                InventoryItemBase item = new InventoryItemBase(grp.FromItemID, sp.UUID);
-                item = m_scene.InventoryService.GetItem(item);
+                InventoryItemBase item = m_scene.InventoryService.GetItem(sp.UUID, grp.FromItemID);
 
                 if (item != null)
                 {
@@ -1200,8 +1222,7 @@ namespace OpenSim.Region.CoreModules.Avatar.Attachments
                 return;
             }
 
-            InventoryItemBase item = new InventoryItemBase(itemID, sp.UUID);
-            item = m_scene.InventoryService.GetItem(item);
+            InventoryItemBase item = m_scene.InventoryService.GetItem(sp.UUID, itemID);
             if (item == null)
                 return;
 
@@ -1322,7 +1343,7 @@ namespace OpenSim.Region.CoreModules.Avatar.Attachments
             ScenePresence sp = m_scene.GetScenePresence(remoteClient.AgentId);
             SceneObjectGroup group = m_scene.GetGroupByPrim(objectLocalID);
 
-            if (sp != null && group != null && group.FromItemID != UUID.Zero)
+            if (sp != null && group != null)
                 DetachSingleAttachmentToInv(sp, group);
         }
 

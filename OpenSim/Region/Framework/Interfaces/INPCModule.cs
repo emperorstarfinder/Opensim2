@@ -57,6 +57,7 @@ namespace OpenSim.Region.Framework.Interfaces
         /// </summary>
         bool SenseAsAgent { get; }
         UUID ActiveGroupId { get; set; }
+        UUID Owner { get; }
     }
 
     public interface INPCModule
@@ -107,7 +108,7 @@ namespace OpenSim.Region.Framework.Interfaces
         /// failure.
         /// </returns>
         UUID CreateNPC(string firstname, string lastname,
-                Vector3 position, UUID agentID, UUID owner, bool senseAsAgent, Scene scene,
+                Vector3 position, UUID agentID, UUID owner, string groupTitle, UUID groupID, bool senseAsAgent, Scene scene,
                 AvatarAppearance appearance);
 
         /// <summary>

@@ -1470,11 +1470,6 @@ namespace OpenSim.Region.CoreModules.Framework.EntityTransfer
             return true;
         }
 
-        public GridRegion GetDestination(Scene scene, UUID agentID, Vector3 pos, EntityTransferContext ctx, out Vector3 newpos)
-        {
-            string r = String.Empty;
-            return GetDestination(scene, agentID, pos, ctx, out newpos, out r);
-        }
 
         // Given a position relative to the current region and outside of it
         // find the new region that the point is actually in.
@@ -1491,7 +1486,7 @@ namespace OpenSim.Region.CoreModules.Framework.EntityTransfer
 //            m_log.DebugFormat(
 //                "[ENTITY TRANSFER MODULE]: Crossing agent {0} at pos {1} in {2}", agent.Name, pos, scene.Name);
 
-            // Compute world location of the agente position
+            // Compute world location of the agent's position
             double presenceWorldX = (double)scene.RegionInfo.WorldLocX + pos.X;
             double presenceWorldY = (double)scene.RegionInfo.WorldLocY + pos.Y;
 
@@ -1561,6 +1556,9 @@ namespace OpenSim.Region.CoreModules.Framework.EntityTransfer
             Vector3 newpos;
             EntityTransferContext ctx = new EntityTransferContext();
             string failureReason;
+
+            // We need this because of decimal number parsing of the protocols.
+            Culture.SetCurrentCulture();
 
             Vector3 pos = agent.AbsolutePosition + agent.Velocity;
 
@@ -2240,7 +2238,7 @@ namespace OpenSim.Region.CoreModules.Framework.EntityTransfer
 
 // needed for current OSG or old grid code
  
-        public GridRegion GetRegionContainingWorldLocation(IGridService pGridService, UUID pScopeID, double px, double py)
+        protected GridRegion GetRegionContainingWorldLocation(IGridService pGridService, UUID pScopeID, double px, double py)
         {
             // Since we don't know how big the regions could be, we have to search a very large area
             //    to find possible regions.
@@ -2253,7 +2251,7 @@ namespace OpenSim.Region.CoreModules.Framework.EntityTransfer
         // 'pSizeHint' is the size of the source region but since the destination point can be anywhere
         //     the size of the target region is unknown thus the search area might have to be very large.
         // Return 'null' if no such region exists.
-        public GridRegion GetRegionContainingWorldLocation(IGridService pGridService, UUID pScopeID,
+        protected GridRegion GetRegionContainingWorldLocation(IGridService pGridService, UUID pScopeID,
                             double px, double py, uint pSizeHint)
         {
             m_log.DebugFormat("{0} GetRegionContainingWorldLocation: call, XY=<{1},{2}>", LogHeader, px, py);
@@ -2627,6 +2625,8 @@ namespace OpenSim.Region.CoreModules.Framework.EntityTransfer
         {
             //m_log.Debug("  >>> CrossPrimGroupIntoNewRegion <<<");
 
+            Culture.SetCurrentCulture();
+
             bool successYN = false;
             grp.RootPart.ClearUpdateSchedule();
             //int primcrossingXMLmethod = 0;
@@ -2795,8 +2795,9 @@ namespace OpenSim.Region.CoreModules.Framework.EntityTransfer
 
                 so.ResumeScripts();
 
-                if (so.RootPart.KeyframeMotion != null)
-                    so.RootPart.KeyframeMotion.UpdateSceneObject(so);
+                // AddSceneObject already does this and doing it again messes
+                //if (so.RootPart.KeyframeMotion != null)
+                //    so.RootPart.KeyframeMotion.UpdateSceneObject(so);
             }
 
             return true;

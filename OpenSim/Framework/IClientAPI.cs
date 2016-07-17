@@ -51,6 +51,7 @@ namespace OpenSim.Framework
                                    UUID RayTargetID, byte BypassRayCast, bool RayEndIsIntersection,
                                    bool RezSelected, bool RemoveItem, UUID fromTaskID);
 
+    public delegate void RezRestoreToWorld(IClientAPI remoteClient, UUID itemId);
     public delegate ISceneEntity RezSingleAttachmentFromInv(IClientAPI remoteClient, UUID itemID, uint AttachmentPt);
 
     public delegate void RezMultipleAttachmentsFromInv(IClientAPI remoteClient, List<KeyValuePair<UUID, uint>> rezlist );
@@ -241,7 +242,7 @@ namespace OpenSim.Framework
 
     public delegate void CreateNewInventoryItem(
         IClientAPI remoteClient, UUID transActionID, UUID folderID, uint callbackID, string description, string name,
-        sbyte invType, sbyte type, byte wearableType, uint nextOwnerMask, int creationDate);
+        sbyte invType, sbyte type, byte wearableType, uint everyoneMask, int creationDate);
 
     public delegate void LinkInventoryItem(
         IClientAPI remoteClient, UUID transActionID, UUID folderID, uint callbackID, string description, string name,
@@ -818,6 +819,7 @@ namespace OpenSim.Framework
         event TeleportLandmarkRequest OnTeleportLandmarkRequest;
         event TeleportCancel OnTeleportCancel;
         event DeRezObject OnDeRezObject;
+        event RezRestoreToWorld OnRezRestoreToWorld;
         event Action<IClientAPI> OnRegionHandShakeReply;
         event GenericCall1 OnRequestWearables;
         event Action<IClientAPI, bool> OnCompleteMovementToRegion;
@@ -1471,6 +1473,9 @@ namespace OpenSim.Framework
 
         void SendAgentDropGroup(UUID groupID);
         void RefreshGroupMembership();
+        void UpdateGroupMembership(GroupMembershipData[] data);
+        void GroupMembershipRemove(UUID GroupID);
+        void GroupMembershipAddReplace(UUID GroupID,ulong GroupPowers);
         void SendAvatarNotesReply(UUID targetID, string text);
         void SendAvatarPicksReply(UUID targetID, Dictionary<UUID, string> picks);
         void SendPickInfoReply(UUID pickID,UUID creatorID, bool topPick, UUID parcelID, string name, string desc, UUID snapshotID, string user, string originalName, string simName, Vector3 posGlobal, int sortOrder, bool enabled);

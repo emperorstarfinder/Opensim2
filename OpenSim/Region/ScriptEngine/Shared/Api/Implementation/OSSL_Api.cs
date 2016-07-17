@@ -523,29 +523,65 @@ namespace OpenSim.Region.ScriptEngine.Shared.Api
             {
                 if (seconds < 15)
                 {
-                    restartModule.AbortRestart("Restart aborted");
+                    restartModule.AbortRestart("Region restart has been aborted\n");
                     return 1;
                 }
 
-                List<int> times = new List<int>();
-                while (seconds > 0)
-                {
-                    times.Add((int)seconds);
-                    if (seconds > 300)
-                        seconds -= 120;
-                    else if (seconds > 30)
-                        seconds -= 30;
-                    else
-                        seconds -= 15;
-                }
-
-                restartModule.ScheduleRestart(UUID.Zero, "Region will restart in {0}", times.ToArray(), true);
+                RegionRestart(seconds, String.Empty);
                 return 1;
             }
             else
             {
                 return 0;
             }
+        }
+
+        public int osRegionRestart(double seconds, string msg)
+        {
+            CheckThreatLevel(ThreatLevel.High, "osRegionRestart");
+
+            IRestartModule restartModule = World.RequestModuleInterface<IRestartModule>();
+            m_host.AddScriptLPS(1);
+            if (World.Permissions.CanIssueEstateCommand(m_host.OwnerID, false) && (restartModule != null))
+            {
+                if (seconds < 15)
+                {
+                    restartModule.AbortRestart("Region restart has been aborted\n");
+                    return 1;
+                }
+
+                RegionRestart(seconds, msg);
+                return 1;
+            }
+            else
+            {
+                return 0;
+            }
+        }
+
+        private void RegionRestart(double seconds, string msg)
+        {
+            IRestartModule restartModule = World.RequestModuleInterface<IRestartModule>();
+
+            List<int> times = new List<int>();
+            while (seconds > 0)
+            {
+                times.Add((int)seconds);
+                if (seconds > 300)
+                    seconds -= 120;
+                else if (seconds > 120)
+                    seconds -= 60;
+                else if (seconds > 60)
+                    seconds -= 30;
+                else
+                    seconds -= 15;
+            }
+
+            if (msg == String.Empty)
+                restartModule.ScheduleRestart(UUID.Zero, "Region: " + World.RegionInfo.RegionName + " is about to restart.\n\nIf you stay here you will be logged out.\n\n\nTime remaining: {0}.\n", times.ToArray(), true);
+
+            else
+                restartModule.ScheduleRestart(UUID.Zero, msg + "\n\nTime remaining: {0}.\n", times.ToArray(), true);
         }
 
         public void osRegionNotice(string msg)
@@ -1688,6 +1724,22 @@ namespace OpenSim.Region.ScriptEngine.Shared.Api
             return ret;
         }
 
+        public string osGetPhysicsEngineName()
+        {
+            // not doing security checks
+            // this whould limit the use of this
+
+            m_host.AddScriptLPS(1);
+            string ret = "NoEngine";
+            if (m_ScriptEngine.World.PhysicsScene != null)
+            {
+                ret = m_ScriptEngine.World.PhysicsScene.EngineName;
+                // An old physics engine might have an uninitialized engine type
+                if (ret == null)
+                    ret = "UnknownEngine";
+                }
+            return ret;
+        }
         public string osGetSimulatorVersion()
         {
             // High because it can be used to target attacks to known weaknesses
@@ -2712,7 +2764,10 @@ namespace OpenSim.Region.ScriptEngine.Shared.Api
             UUID x = module.CreateNPC(firstname,
                                       lastname,
                                       position,
+                                      UUID.Random(),
                                       ownerID,
+                                      groupTitle,
+                                      groupID,
                                       senseAsAgent,
                                       World,
                                       appearance);
@@ -2720,9 +2775,6 @@ namespace OpenSim.Region.ScriptEngine.Shared.Api
             ScenePresence sp;
             if (World.TryGetScenePresence(x, out sp))
             {
-                sp.Grouptitle = groupTitle;
-                ((INPC)(sp.ControllingClient)).ActiveGroupId = groupID;
-                     
                 sp.SendAvatarDataToAllAgents();
             }
             return new LSL_Key(x.ToString());
@@ -4133,6 +4185,42 @@ namespace OpenSim.Region.ScriptEngine.Shared.Api
                 OSSLShoutError("Possible invalid regular expression detected.");
                 return 0;
             }
+        }
+
+        public LSL_String osRequestURL(LSL_List options)
+        {
+            CheckThreatLevel(ThreatLevel.Moderate, "osRequestSecureURL");
+            m_host.AddScriptLPS(1);
+            
+            Hashtable opts = new Hashtable();
+            for (int i = 0 ; i < options.Length ; i++)
+            {
+                object opt = options.Data[i];
+                if (opt.ToString() == "allowXss")
+                    opts["allowXss"] = true;
+            }
+
+            if (m_UrlModule != null)
+                return m_UrlModule.RequestURL(m_ScriptEngine.ScriptModule, m_host, m_item.ItemID, opts).ToString();
+            return UUID.Zero.ToString();
+        }
+
+        public LSL_String osRequestSecureURL(LSL_List options)
+        {
+            CheckThreatLevel(ThreatLevel.Moderate, "osRequestSecureURL");
+            m_host.AddScriptLPS(1);
+            
+            Hashtable opts = new Hashtable();
+            for (int i = 0 ; i < options.Length ; i++)
+            {
+                object opt = options.Data[i];
+                if (opt.ToString() == "allowXss")
+                    opts["allowXss"] = true;
+            }
+
+            if (m_UrlModule != null)
+                return m_UrlModule.RequestSecureURL(m_ScriptEngine.ScriptModule, m_host, m_item.ItemID, opts).ToString();
+            return UUID.Zero.ToString();
         }
     }
 }

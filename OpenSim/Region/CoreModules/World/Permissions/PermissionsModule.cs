@@ -288,6 +288,7 @@ namespace OpenSim.Region.CoreModules.World.Permissions
             m_scene.Permissions.OnCompileScript += CanCompileScript;
             m_scene.Permissions.OnSellParcel += CanSellParcel;
             m_scene.Permissions.OnTakeObject += CanTakeObject;
+            m_scene.Permissions.OnSellGroupObject += CanSellGroupObject;
             m_scene.Permissions.OnTakeCopyObject += CanTakeCopyObject;
             m_scene.Permissions.OnTerraformLand += CanTerraformLand;
             m_scene.Permissions.OnLinkObject += CanLinkObject; 
@@ -1099,8 +1100,7 @@ namespace OpenSim.Region.CoreModules.World.Permissions
             if (objectID == UUID.Zero) // User inventory
             {
                 IInventoryService invService = m_scene.InventoryService;
-                InventoryItemBase assetRequestItem = new InventoryItemBase(notecard, user);
-                assetRequestItem = invService.GetItem(assetRequestItem);
+                InventoryItemBase assetRequestItem = invService.GetItem(user, notecard);
                 if (assetRequestItem == null && LibraryRootFolder != null) // Library item
                 {
                     assetRequestItem = LibraryRootFolder.FindItem(notecard);
@@ -1302,7 +1302,11 @@ namespace OpenSim.Region.CoreModules.World.Permissions
             DebugPermissionInformation(MethodInfo.GetCurrentMethod().Name);
             if (m_bypassPermissions) return m_bypassPermissionsValue;
 
-            if ((newPoint.X > 257f || newPoint.X < -1f || newPoint.Y > 257f || newPoint.Y < -1f))
+
+            // allow outide region??
+            if (newPoint.X < -1f || newPoint.Y < -1f)
+                return true;
+            if (newPoint.X > scene.RegionInfo.RegionSizeX + 1.0f ||  newPoint.Y > scene.RegionInfo.RegionSizeY + 1.0f)
             {
                 return true;
             }
@@ -1508,7 +1512,15 @@ namespace OpenSim.Region.CoreModules.World.Permissions
             DebugPermissionInformation(MethodInfo.GetCurrentMethod().Name);
             if (m_bypassPermissions) return m_bypassPermissionsValue;
 
-            return GenericParcelOwnerPermission(user, parcel, (ulong)GroupPowers.LandSetSale, false);
+            return GenericParcelOwnerPermission(user, parcel, (ulong)GroupPowers.LandSetSale, true);
+        }
+
+        private bool CanSellGroupObject(UUID userID, UUID groupID, Scene scene)
+        {
+            DebugPermissionInformation(MethodInfo.GetCurrentMethod().Name);
+            if (m_bypassPermissions) return m_bypassPermissionsValue;
+
+            return IsGroupMember(groupID, userID, (ulong)GroupPowers.ObjectSetForSale);
         }
 
         private bool CanTakeObject(UUID objectID, UUID stealer, Scene scene)
@@ -1616,8 +1628,7 @@ namespace OpenSim.Region.CoreModules.World.Permissions
             if (objectID == UUID.Zero) // User inventory
             {
                 IInventoryService invService = m_scene.InventoryService;
-                InventoryItemBase assetRequestItem = new InventoryItemBase(script, user);
-                assetRequestItem = invService.GetItem(assetRequestItem);
+                InventoryItemBase assetRequestItem = invService.GetItem(user, script);
                 if (assetRequestItem == null && LibraryRootFolder != null) // Library item
                 {
                     assetRequestItem = LibraryRootFolder.FindItem(script);
@@ -1713,8 +1724,7 @@ namespace OpenSim.Region.CoreModules.World.Permissions
             if (objectID == UUID.Zero) // User inventory
             {
                 IInventoryService invService = m_scene.InventoryService;
-                InventoryItemBase assetRequestItem = new InventoryItemBase(notecard, user);
-                assetRequestItem = invService.GetItem(assetRequestItem);
+                InventoryItemBase assetRequestItem = invService.GetItem(user, notecard);
                 if (assetRequestItem == null && LibraryRootFolder != null) // Library item
                 {
                     assetRequestItem = LibraryRootFolder.FindItem(notecard);

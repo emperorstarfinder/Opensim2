@@ -350,6 +350,7 @@ namespace OpenSim.Region.Framework.Scenes
         protected int  m_reprioritizationLastTime;
         protected bool m_reprioritizationBusy;
         protected Vector3 m_reprioritizationLastPosition;
+        protected float m_reprioritizationLastDrawDistance;
         
         private Quaternion m_headrotation = Quaternion.Identity;
 
@@ -461,6 +462,14 @@ namespace OpenSim.Region.Framework.Scenes
         /// Script engines present in the scene
         /// </value>
         private IScriptModule[] m_scriptEngines;
+
+        private enum LandingPointBehavior
+        {
+            OS = 1,
+            SL = 2
+        }
+
+        private LandingPointBehavior m_LandingPointBehavior = LandingPointBehavior.OS;
 
         #region Properties
 
@@ -1039,6 +1048,8 @@ namespace OpenSim.Region.Framework.Scenes
             AbsolutePosition = posLastMove = posLastSignificantMove = CameraPosition =
                m_reprioritizationLastPosition = ControllingClient.StartPos;
 
+            m_reprioritizationLastDrawDistance = DrawDistance;
+
             // disable updates workjobs for now
             childUpdatesBusy = true;  
             m_reprioritizationBusy = true;
@@ -1051,6 +1062,15 @@ namespace OpenSim.Region.Framework.Scenes
             Appearance = appearance;
 
             m_stateMachine = new ScenePresenceStateMachine(this);
+
+            IConfig sconfig = m_scene.Config.Configs["EntityTransfer"];
+            if (sconfig != null)
+            {
+                string lpb = sconfig.GetString("LandingPointBehavior", "LandingPointBehavior_OS");
+                if (lpb == "LandingPointBehavior_SL")
+                    m_LandingPointBehavior = LandingPointBehavior.SL;
+            }
+
         }
 
         private void RegionHeartbeatEnd(Scene scene)
@@ -1208,10 +1228,14 @@ namespace OpenSim.Region.Framework.Scenes
             if (ParentID == 0)
             {
                 bool positionChanged = false;
-                if(!CheckAndAdjustLandingPoint(ref pos, ref lookat, ref positionChanged ))
-                {
-                    m_log.DebugFormat("[SCENE PRESENCE MakeRootAgent]: houston we have a problem.. {0}({1} got here banned",Name, UUID);
-                }
+                bool success = true;
+                if (m_LandingPointBehavior == LandingPointBehavior.OS)
+                    success = CheckAndAdjustLandingPoint_OS(ref pos, ref lookat, ref positionChanged);
+                else
+                    success = CheckAndAdjustLandingPoint_SL(ref pos, ref lookat, ref positionChanged);
+
+                if (!success)
+                    m_log.DebugFormat("[SCENE PRESENCE MakeRootAgent]: houston we have a problem.. {0} ({1} got banned)", Name, UUID);
 
                 if (pos.X < 0f || pos.Y < 0f
                           || pos.X >= m_scene.RegionInfo.RegionSizeX
@@ -2108,9 +2132,10 @@ namespace OpenSim.Region.Framework.Scenes
                     SendInitialDataToMe();
 
                 // priority uses avatar position only
-                m_reprioritizationLastPosition = AbsolutePosition;
-                m_reprioritizationLastTime = Util.EnvironmentTickCount() + 15000; // delay it
-                m_reprioritizationBusy = false;
+//                m_reprioritizationLastPosition = AbsolutePosition;
+//                m_reprioritizationLastDrawDistance = DrawDistance;
+//                m_reprioritizationLastTime = Util.EnvironmentTickCount() + 15000; // delay it
+//                m_reprioritizationBusy = false;
 
                 m_log.DebugFormat("[CompleteMovement] SendInitialDataToMe: {0}ms", Util.EnvironmentTickCountSubtract(ts));
 
@@ -3312,7 +3337,9 @@ namespace OpenSim.Region.Framework.Scenes
                     Vector3 sitOffset;
                     Quaternion r = sitTargetOrient;
 
-                    if(LegacySitOffsets)
+                    Vector3 newPos;
+
+                    if (LegacySitOffsets)
                     {
                         double m1,m2;
 
@@ -3343,6 +3370,7 @@ namespace OpenSim.Region.Framework.Scenes
 
                         Vector3 up = new Vector3((float)x, (float)y, (float)z);
                         sitOffset = up * (float)offset;
+                        newPos = sitTargetPos - sitOffset + SIT_TARGET_ADJUSTMENT;
                     }
                     else
                     {
@@ -3373,9 +3401,9 @@ namespace OpenSim.Region.Framework.Scenes
                         z = -r.X * r.X - r.Y * r.Y + r.Z * r.Z + r.W * r.W;
                         Vector3 up = new Vector3((float)x, (float)y, (float)z);   
                         sitOffset = up * Appearance.AvatarHeight * 0.02638f;
+                        newPos = sitTargetPos + sitOffset + SIT_TARGET_ADJUSTMENT;
                     }
 
-                    Vector3 newPos = sitTargetPos + sitOffset + SIT_TARGET_ADJUSTMENT;
                     Quaternion newRot;
 
                     if (part.IsRoot)
@@ -3571,6 +3599,9 @@ namespace OpenSim.Region.Framework.Scenes
                         !Rotation.ApproxEquals(m_lastRotation, ROTATION_TOLERANCE)
                         || !Velocity.ApproxEquals(m_lastVelocity, VELOCITY_TOLERANCE)
                         || !m_pos.ApproxEquals(m_lastPosition, POSITION_LARGETOLERANCE)
+                        // if velocity is zero and it wasn't zero last time, send the update
+                        || (Velocity == Vector3.Zero && m_lastVelocity != Vector3.Zero)
+                        // if position has moved just a little and velocity is very low, send  the update
                         || (!m_pos.ApproxEquals(m_lastPosition, POSITION_SMALLTOLERANCE) && Velocity.LengthSquared() < LOWVELOCITYSQ )
                 ) )
             {
@@ -3750,6 +3781,12 @@ namespace OpenSim.Region.Framework.Scenes
                     if (e != null && e is SceneObjectGroup && !((SceneObjectGroup)e).IsAttachment)
                         ((SceneObjectGroup)e).SendFullUpdateToClient(ControllingClient);
                 }
+
+                m_reprioritizationLastPosition = AbsolutePosition;
+                m_reprioritizationLastDrawDistance = DrawDistance;
+                m_reprioritizationLastTime = Util.EnvironmentTickCount() + 15000; // delay it
+                m_reprioritizationBusy = false;
+
             });
         }
 
@@ -3959,29 +3996,38 @@ namespace OpenSim.Region.Framework.Scenes
             if(m_reprioritizationBusy)
                 return;
 
+            float limit = Scene.ReprioritizationDistance;
+            bool byDrawdistance = Scene.ObjectsCullingByDistance;
+            if(byDrawdistance)
+            {
+                float minregionSize = (float)Scene.RegionInfo.RegionSizeX;
+                if(minregionSize > (float)Scene.RegionInfo.RegionSizeY)
+                    minregionSize = (float)Scene.RegionInfo.RegionSizeY;
+                minregionSize *= 0.5f;
+                if(DrawDistance > minregionSize && m_reprioritizationLastDrawDistance > minregionSize)
+                    byDrawdistance = false;
+                else
+                    byDrawdistance = (Math.Abs(DrawDistance-m_reprioritizationLastDrawDistance) > 0.5f * limit);
+            }
+
             int tdiff =  Util.EnvironmentTickCountSubtract(m_reprioritizationLastTime);
-            if(tdiff < Scene.ReprioritizationInterval)
+            if(!byDrawdistance && tdiff < Scene.ReprioritizationInterval)
                 return;
             // priority uses avatar position
             Vector3 pos = AbsolutePosition;
             Vector3 diff = pos - m_reprioritizationLastPosition;
-            float limit;
-            if(IsChildAgent)
-                limit = (float)Scene.ChildReprioritizationDistance;
-            else
-                limit = (float)Scene.RootReprioritizationDistance;
-
             limit *= limit;
-            if (diff.LengthSquared() < limit)
+            if (!byDrawdistance && diff.LengthSquared() < limit)
                 return;
 
             m_reprioritizationBusy = true;
             m_reprioritizationLastPosition = pos;
+            m_reprioritizationLastDrawDistance = DrawDistance;
 
             Util.FireAndForget(
                 o =>
                 {
-                    ControllingClient.ReprioritizeUpdates(); 
+                    ControllingClient.ReprioritizeUpdates();
                     m_reprioritizationLastTime = Util.EnvironmentTickCount();
                     m_reprioritizationBusy = false;
                 }, null, "ScenePresence.Reprioritization");
@@ -5782,8 +5828,63 @@ namespace OpenSim.Region.Framework.Scenes
         const TeleportFlags adicionalLandPointFlags = TeleportFlags.ViaLandmark |
                     TeleportFlags.ViaLocation | TeleportFlags.ViaHGLogin;
 
-       // Modify landing point based on telehubs or parcel restrictions.
-        private bool CheckAndAdjustLandingPoint(ref Vector3 pos, ref Vector3 lookat, ref bool positionChanged)
+        // Modify landing point based on possible banning, telehubs or parcel restrictions.
+        // This is the behavior in OpenSim for a very long time, different from SL
+        private bool CheckAndAdjustLandingPoint_OS(ref Vector3 pos, ref Vector3 lookat, ref bool positionChanged)
+        {
+            string reason;
+
+            // Honor bans
+            if (!m_scene.TestLandRestrictions(UUID, out reason, ref pos.X, ref pos.Y))
+                return false;
+
+            SceneObjectGroup telehub = null;
+            if (m_scene.RegionInfo.RegionSettings.TelehubObject != UUID.Zero && (telehub = m_scene.GetSceneObjectGroup(m_scene.RegionInfo.RegionSettings.TelehubObject)) != null)
+            {
+                if (!m_scene.RegionInfo.EstateSettings.AllowDirectTeleport)
+                {
+                    CheckAndAdjustTelehub(telehub, ref pos, ref positionChanged);
+                    return true;
+                }
+            }
+
+            ILandObject land = m_scene.LandChannel.GetLandObject(pos.X, pos.Y);
+            if (land != null)
+            {
+                if (Scene.DebugTeleporting)
+                    TeleportFlagsDebug();
+
+                // If we come in via login, landmark or map, we want to
+                // honor landing points. If we come in via Lure, we want
+                // to ignore them.
+                if ((m_teleportFlags & (TeleportFlags.ViaLogin | TeleportFlags.ViaRegionID)) ==
+                    (TeleportFlags.ViaLogin | TeleportFlags.ViaRegionID) ||
+                    (m_teleportFlags & adicionalLandPointFlags) != 0)
+                {
+                    // Don't restrict gods, estate managers, or land owners to
+                    // the TP point. This behaviour mimics agni.
+                    if (land.LandData.LandingType == (byte)LandingType.LandingPoint &&
+                        land.LandData.UserLocation != Vector3.Zero &&
+                        GodLevel < 200 &&
+                        ((land.LandData.OwnerID != m_uuid &&
+                          !m_scene.Permissions.IsGod(m_uuid) &&
+                          !m_scene.RegionInfo.EstateSettings.IsEstateManagerOrOwner(m_uuid)) ||
+                         (m_teleportFlags & TeleportFlags.ViaLocation) != 0 ||
+                         (m_teleportFlags & Constants.TeleportFlags.ViaHGLogin) != 0))
+                    {
+                        pos = land.LandData.UserLocation;
+                    }
+                }
+
+                land.SendLandUpdateToClient(ControllingClient);
+            }
+
+            return true;
+        }
+
+        // Modify landing point based on telehubs or parcel restrictions.
+        // This is a behavior coming from AVN, somewhat mimicking SL
+        private bool CheckAndAdjustLandingPoint_SL(ref Vector3 pos, ref Vector3 lookat, ref bool positionChanged)
         {
             string reason;
 

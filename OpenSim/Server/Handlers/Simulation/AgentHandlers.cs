@@ -120,6 +120,8 @@ namespace OpenSim.Server.Handlers.Simulation
 
         protected virtual void DoQueryAccess(Hashtable request, Hashtable responsedata, UUID agentID, UUID regionID)
         {
+            Culture.SetCurrentCulture();
+
             EntityTransferContext ctx = new EntityTransferContext();
 
             if (m_SimulationService == null)
@@ -259,6 +261,8 @@ namespace OpenSim.Server.Handlers.Simulation
             }
 
             bool result = m_SimulationService.QueryAccess(destination, agentID, agentHomeURI, viaTeleport, position, features, ctx, out reason);
+            m_log.DebugFormat("[AGENT HANDLER]: QueryAccess returned {0} ({1}). Version={2}, {3}/{4}",
+                result, reason, version, inboundVersion, outboundVersion);
 
             resp["success"] = OSD.FromBoolean(result);
             resp["reason"] = OSD.FromString(reason);

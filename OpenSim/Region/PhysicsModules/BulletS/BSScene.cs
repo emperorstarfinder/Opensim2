@@ -212,6 +212,11 @@ namespace OpenSim.Region.PhysicsModule.BulletS
             get { return "BulletSim"; }
         }
 
+        public string Version
+        {
+            get { return "1.0"; }
+        }
+
         public Type ReplaceableInterface
         {
             get { return null; }
@@ -245,6 +250,7 @@ namespace OpenSim.Region.PhysicsModule.BulletS
             EngineType = Name;
             RegionName = scene.RegionInfo.RegionName;
             PhysicsSceneName = EngineType + "/" + RegionName;
+            EngineName = Name + " " + Version;
 
             scene.RegisterModuleInterface<PhysicsScene>(this);
             Vector3 extent = new Vector3(scene.RegionInfo.RegionSizeX, scene.RegionInfo.RegionSizeY, scene.RegionInfo.RegionSizeZ);
@@ -523,13 +529,13 @@ namespace OpenSim.Region.PhysicsModule.BulletS
             return null;
         }
 
-        public override PhysicsActor AddAvatar(uint localID, string avName, Vector3 position, Vector3 velocity, Vector3 size, bool isFlying)
+        public override PhysicsActor AddAvatar(uint localID, string avName, Vector3 position, Vector3 size, float footOffset, bool isFlying)
         {
             // m_log.DebugFormat("{0}: AddAvatar: {1}", LogHeader, avName);
 
             if (!m_initialized) return null;
 
-            BSCharacter actor = new BSCharacter(localID, avName, this, position, velocity, size, isFlying);
+            BSCharacter actor = new BSCharacter(localID, avName, this, position, Vector3.Zero, size, footOffset, isFlying);
             lock (PhysObjects)
                 PhysObjects.Add(localID, actor);
 
