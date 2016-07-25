@@ -54,6 +54,7 @@ namespace OpenSim.Framework
         /// Occasionally data is relayed, such as which a user clicks an item in a neighbouring region.
         /// </summary>
         bool IsChildAgent { get; }
+        bool Invulnerable { get; set; }
 
         /// <summary>
         /// Avatar appearance data.
