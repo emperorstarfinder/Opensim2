@@ -313,6 +313,8 @@ namespace OpenSim.Region.ClientStack.Linden
             OSDMap infoDetail = new OSDMap();
             OSDMap mutes = new OSDMap();
 
+            // This should be a list of agents and parameters foreach agent
+
             mutes.Add("text", OSD.FromBoolean(textMute));
             infoDetail.Add("can_voice_chat", OSD.FromBoolean(canVoiceChat));
             infoDetail.Add("is_moderator", OSD.FromBoolean(isModerator));
@@ -324,6 +326,9 @@ namespace OpenSim.Region.ClientStack.Linden
             else
                 info.Add("transition", OSD.FromString("LEAVE"));
             agentUpdates.Add(agentID.ToString(), info);
+
+            // foreach end
+
             body.Add("agent_updates", agentUpdates);
             body.Add("session_id", OSD.FromUUID(sessionID));
             body.Add("updates", new OSD());
