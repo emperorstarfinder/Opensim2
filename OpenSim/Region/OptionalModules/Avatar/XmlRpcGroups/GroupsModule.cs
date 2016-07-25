@@ -28,6 +28,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Text;
 using System.Timers;
 using log4net;
 using Mono.Addins;
@@ -38,7 +39,6 @@ using OpenSim.Framework;
 using OpenSim.Region.Framework.Interfaces;
 using OpenSim.Region.Framework.Scenes;
 using OpenSim.Services.Interfaces;
-using System.Text;
 using DirFindFlags = OpenMetaverse.DirectoryManager.DirFindFlags;
 
 namespace OpenSim.Region.OptionalModules.Avatar.XmlRpcGroups
@@ -71,8 +71,7 @@ namespace OpenSim.Region.OptionalModules.Avatar.XmlRpcGroups
         /// XmlRpcDisableKeepAlive = false
         /// </summary>
 
-        private static readonly ILog m_log =
-            LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly ILog m_log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         private List<Scene> m_sceneList = new List<Scene>();
 
@@ -209,7 +208,6 @@ namespace OpenSim.Region.OptionalModules.Avatar.XmlRpcGroups
             scene.EventManager.OnMakeChildAgent += OnMakeChild;
             scene.EventManager.OnIncomingInstantMessage += OnGridInstantMessage;
             scene.EventManager.OnClientClosed += OnClientClosed;
-
         }
 
         public void RemoveRegion(Scene scene)
@@ -295,11 +293,9 @@ namespace OpenSim.Region.OptionalModules.Avatar.XmlRpcGroups
 
             client.OnAgentDataUpdateRequest += OnAgentDataUpdateRequest;
             client.OnRequestAvatarProperties += OnRequestAvatarProperties;
-
-
         }
-
-/*  this should be the right message to ask for other avatars groups
+        
+        /*  this should be the right message to ask for other avatars groups
 
         private void AvatarGroupsRequest(Object sender, string method, List<String> args)
         {
@@ -319,7 +315,7 @@ namespace OpenSim.Region.OptionalModules.Avatar.XmlRpcGroups
                 remoteClient.SendAvatarGroupsReply(avatarID, avatarGroups);
             }
         }
-*/
+        */
 
         // this should not be used to send groups memberships, but some viewers do expect it
         // it does send unnecessary memberships, when viewers just want other properties information
@@ -330,8 +326,7 @@ namespace OpenSim.Region.OptionalModules.Avatar.XmlRpcGroups
             GroupMembershipData[] avatarGroups = GetProfileListedGroupMemberships(remoteClient, avatarID);
             remoteClient.SendAvatarGroupsReply(avatarID, avatarGroups);
         }
-
-       
+  
         private void OnClientClosed(UUID AgentId, Scene scene)
         {
             if (m_debugEnabled) m_log.DebugFormat("[GROUPS]: {0} called", System.Reflection.MethodBase.GetCurrentMethod().Name);
@@ -348,8 +343,8 @@ namespace OpenSim.Region.OptionalModules.Avatar.XmlRpcGroups
                 client.OnUUIDGroupNameRequest -= HandleUUIDGroupNameRequest;
                 client.OnInstantMessage -= OnInstantMessage;
             }
-
-/*
+            
+            /*
             lock (m_ActiveClients)
                 {
                 if (m_ActiveClients.ContainsKey(AgentId))
@@ -367,7 +362,7 @@ namespace OpenSim.Region.OptionalModules.Avatar.XmlRpcGroups
                         if (m_debugEnabled) m_log.WarnFormat("[GROUPS]: Client closed that wasn't registered here.");
                     }
                 }
-*/
+                */
         }
 
         private void OnAgentDataUpdateRequest(IClientAPI remoteClient, UUID dataForAgentID, UUID sessionID)
