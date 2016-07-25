@@ -28,7 +28,6 @@
 using System;
 using System.Collections;
 using OpenSim.Region.ScriptEngine.Interfaces;
-
 using key = OpenSim.Region.ScriptEngine.Shared.LSL_Types.LSLString;
 using rotation = OpenSim.Region.ScriptEngine.Shared.LSL_Types.Quaternion;
 using vector = OpenSim.Region.ScriptEngine.Shared.LSL_Types.Vector3;
@@ -118,15 +117,11 @@ namespace OpenSim.Region.ScriptEngine.Shared.Api.Interfaces
 
         //OpenSim functions
         string osSetDynamicTextureURL(string dynamicID, string contentType, string url, string extraParams, int timer);
-        string osSetDynamicTextureURLBlend(string dynamicID, string contentType, string url, string extraParams,
-                                           int timer, int alpha);
-        string osSetDynamicTextureURLBlendFace(string dynamicID, string contentType, string url, string extraParams,
-                                           bool blend, int disp, int timer, int alpha, int face);
+        string osSetDynamicTextureURLBlend(string dynamicID, string contentType, string url, string extraParams, int timer, int alpha);
+        string osSetDynamicTextureURLBlendFace(string dynamicID, string contentType, string url, string extraParams, bool blend, int disp, int timer, int alpha, int face);
         string osSetDynamicTextureData(string dynamicID, string contentType, string data, string extraParams, int timer);
-        string osSetDynamicTextureDataBlend(string dynamicID, string contentType, string data, string extraParams,
-                                            int timer, int alpha);
-        string osSetDynamicTextureDataBlendFace(string dynamicID, string contentType, string data, string extraParams,
-                                            bool blend, int disp, int timer, int alpha, int face);
+        string osSetDynamicTextureDataBlend(string dynamicID, string contentType, string data, string extraParams, int timer, int alpha);
+        string osSetDynamicTextureDataBlendFace(string dynamicID, string contentType, string data, string extraParams, bool blend, int disp, int timer, int alpha, int face);
 
         LSL_Float osGetTerrainHeight(int x, int y);
         LSL_Float osTerrainGetHeight(int x, int y); // Deprecated
@@ -323,13 +318,13 @@ namespace OpenSim.Region.ScriptEngine.Shared.Api.Interfaces
         /// <returns>TRUE if the key belongs to an npc in the scene.  FALSE otherwise.</returns>
         LSL_Integer osIsNpc(LSL_Key npc);
 
-        key         osNpcCreate(string user, string name, vector position, string notecard);
-        key         osNpcCreate(string user, string name, vector position, string notecard, int options);
-        LSL_Key     osNpcSaveAppearance(key npc, string notecard);
-        void        osNpcLoadAppearance(key npc, string notecard);
-        vector      osNpcGetPos(key npc);
-        void        osNpcMoveTo(key npc, vector position);
-        void        osNpcMoveToTarget(key npc, vector target, int options);
+        key osNpcCreate(string user, string name, vector position, string notecard);
+        key osNpcCreate(string user, string name, vector position, string notecard, int options);
+        LSL_Key osNpcSaveAppearance(key npc, string notecard);
+        void osNpcLoadAppearance(key npc, string notecard);
+        vector osNpcGetPos(key npc);
+        void osNpcMoveTo(key npc, vector position);
+        void osNpcMoveToTarget(key npc, vector target, int options);
 
         /// <summary>
         /// Get the owner of the NPC
@@ -338,24 +333,24 @@ namespace OpenSim.Region.ScriptEngine.Shared.Api.Interfaces
         /// <returns>
         /// The owner of the NPC for an owned NPC.  The NPC's agent id for an unowned NPC.  UUID.Zero if the key is not an npc.
         /// </returns>
-        LSL_Key     osNpcGetOwner(key npc);
+        LSL_Key osNpcGetOwner(key npc);
 
-        rotation    osNpcGetRot(key npc);
-        void        osNpcSetRot(LSL_Key npc, rotation rot);
-        void        osNpcStopMoveToTarget(LSL_Key npc);
-        void        osNpcSay(key npc, string message);
-        void        osNpcSay(key npc, int channel, string message);
-        void        osNpcShout(key npc, int channel, string message);
-        void        osNpcSit(key npc, key target, int options);
-        void        osNpcStand(LSL_Key npc);
-        void        osNpcRemove(key npc);
-        void        osNpcPlayAnimation(LSL_Key npc, string animation);
-        void        osNpcStopAnimation(LSL_Key npc, string animation);
-        void        osNpcTouch(LSL_Key npcLSL_Key, LSL_Key object_key, LSL_Integer link_num);
-        void        osNpcWhisper(key npc, int channel, string message);
+        rotation osNpcGetRot(key npc);
+        void osNpcSetRot(LSL_Key npc, rotation rot);
+        void osNpcStopMoveToTarget(LSL_Key npc);
+        void osNpcSay(key npc, string message);
+        void osNpcSay(key npc, int channel, string message);
+        void osNpcShout(key npc, int channel, string message);
+        void osNpcSit(key npc, key target, int options);
+        void osNpcStand(LSL_Key npc);
+        void osNpcRemove(key npc);
+        void osNpcPlayAnimation(LSL_Key npc, string animation);
+        void osNpcStopAnimation(LSL_Key npc, string animation);
+        void osNpcTouch(LSL_Key npcLSL_Key, LSL_Key object_key, LSL_Integer link_num);
+        void osNpcWhisper(key npc, int channel, string message);
 
-        LSL_Key     osOwnerSaveAppearance(string notecard);
-        LSL_Key     osAgentSaveAppearance(key agentId, string notecard);
+        LSL_Key osOwnerSaveAppearance(string notecard);
+        LSL_Key osAgentSaveAppearance(key agentId, string notecard);
 
         key osGetGender(LSL_Key rawAvatarId);
         key osGetMapTexture();
@@ -368,6 +363,7 @@ namespace OpenSim.Region.ScriptEngine.Shared.Api.Interfaces
         void osSetSpeed(string UUID, LSL_Float SpeedModifier);
         LSL_Float osGetHealth(string avatar);
         void osCauseHealing(string avatar, double healing);
+        void osSetHealth(string avatar, double health);
         void osCauseDamage(string avatar, double damage);
         void osForceOtherSit(string avatar);
         void osForceOtherSit(string avatar, string target);
@@ -460,8 +456,7 @@ namespace OpenSim.Region.ScriptEngine.Shared.Api.Interfaces
         /// OS_LISTEN_REGEX_MESSAGE
         /// </param>
         /// <returns></returns>
-        LSL_Integer osListenRegex(int channelID, string name, string ID,
-                string msg, int regexBitfield);
+        LSL_Integer osListenRegex(int channelID, string name, string ID, string msg, int regexBitfield);
 
         /// <summary>
         /// Wraps to bool Regex.IsMatch(string input, string pattern)
