@@ -85,7 +85,7 @@ namespace OpenSim.Region.ScriptEngine.Shared.ScriptBase
         {
             return m_OSSL_Functions.osGetSunParam(param);
         }
-        // Depreciated
+        // Deprecated
         public double osSunGetParam(string param)
         {
             return m_OSSL_Functions.osSunGetParam(param);
@@ -95,7 +95,7 @@ namespace OpenSim.Region.ScriptEngine.Shared.ScriptBase
         {
             m_OSSL_Functions.osSetSunParam(param, value);
         }
-        // Depreciated
+        // Deprecated
         public void osSunSetParam(string param, double value)
         {
             m_OSSL_Functions.osSunSetParam(param, value);
@@ -130,8 +130,7 @@ namespace OpenSim.Region.ScriptEngine.Shared.ScriptBase
         {
             m_OSSL_Functions.osSetParcelDetails(pos, rules);
         }
-
-        // Depreciated
+        // Deprecated
         public void osParcelSetDetails(vector pos, LSL_List rules)
         {
             m_OSSL_Functions.osParcelSetDetails(pos,rules);
@@ -142,42 +141,49 @@ namespace OpenSim.Region.ScriptEngine.Shared.ScriptBase
             return m_OSSL_Functions.osList2Double(src, index);
         }
 
-        public string osSetDynamicTextureURL(string dynamicID, string contentType, string url, string extraParams, int timer)
+        public string osSetDynamicTextureURL(string dynamicID, string contentType, string url, string extraParams,
+                                             int timer)
         {
             return m_OSSL_Functions.osSetDynamicTextureURL(dynamicID, contentType, url, extraParams, timer);
         }
 
-        public string osSetDynamicTextureData(string dynamicID, string contentType, string data, string extraParams, int timer)
+        public string osSetDynamicTextureData(string dynamicID, string contentType, string data, string extraParams,
+                                             int timer)
         {
             return m_OSSL_Functions.osSetDynamicTextureData(dynamicID, contentType, data, extraParams, timer);
         }
 
-        public string osSetDynamicTextureURLBlend(string dynamicID, string contentType, string url, string extraParams, int timer, int alpha)
+        public string osSetDynamicTextureURLBlend(string dynamicID, string contentType, string url, string extraParams,
+                                           int timer, int alpha)
         {
             return m_OSSL_Functions.osSetDynamicTextureURLBlend(dynamicID, contentType, url, extraParams, timer, alpha);
         }
 
-        public string osSetDynamicTextureDataBlend(string dynamicID, string contentType, string data, string extraParams, int timer, int alpha)
+        public string osSetDynamicTextureDataBlend(string dynamicID, string contentType, string data, string extraParams,
+                                             int timer, int alpha)
         {
             return m_OSSL_Functions.osSetDynamicTextureDataBlend(dynamicID, contentType, data, extraParams, timer, alpha);
         }
 
-        public string osSetDynamicTextureURLBlendFace(string dynamicID, string contentType, string url, string extraParams, bool blend, int disp, int timer, int alpha, int face)
+        public string osSetDynamicTextureURLBlendFace(string dynamicID, string contentType, string url, string extraParams,
+                                           bool blend, int disp, int timer, int alpha, int face)
         {
-            return m_OSSL_Functions.osSetDynamicTextureURLBlendFace(dynamicID, contentType, url, extraParams, blend, disp, timer, alpha, face);
+            return m_OSSL_Functions.osSetDynamicTextureURLBlendFace(dynamicID, contentType, url, extraParams,
+                                             blend, disp, timer, alpha, face);
         }
 
-        public string osSetDynamicTextureDataBlendFace(string dynamicID, string contentType, string data, string extraParams, bool blend, int disp, int timer, int alpha, int face)
+        public string osSetDynamicTextureDataBlendFace(string dynamicID, string contentType, string data, string extraParams,
+                                             bool blend, int disp, int timer, int alpha, int face)
         {
-            return m_OSSL_Functions.osSetDynamicTextureDataBlendFace(dynamicID, contentType, data, extraParams, blend, disp, timer, alpha, face);
+            return m_OSSL_Functions.osSetDynamicTextureDataBlendFace(dynamicID, contentType, data, extraParams,
+                                             blend, disp, timer, alpha, face);
         }
 
         public LSL_Float osGetTerrainHeight(int x, int y)
         {
             return m_OSSL_Functions.osGetTerrainHeight(x, y);
         }
-
-        // Depreciated
+        // Deprecated
         public LSL_Float osTerrainGetHeight(int x, int y)
         {
             return m_OSSL_Functions.osTerrainGetHeight(x, y);
@@ -187,8 +193,7 @@ namespace OpenSim.Region.ScriptEngine.Shared.ScriptBase
         {
             return m_OSSL_Functions.osSetTerrainHeight(x, y, val);
         }
-
-        // Depreciated
+        // Deprecated
         public LSL_Integer osTerrainSetHeight(int x, int y, double val)
         {
             return m_OSSL_Functions.osTerrainSetHeight(x, y, val);
@@ -394,7 +399,7 @@ namespace OpenSim.Region.ScriptEngine.Shared.ScriptBase
         {
             return m_OSSL_Functions.osSetPenColor(drawList, color);
         }
-        // Depreciated
+        // Deprecated
         public string osSetPenColour(string drawList, string colour)
         {
             return m_OSSL_Functions.osSetPenColour(drawList, colour);
@@ -535,6 +540,7 @@ namespace OpenSim.Region.ScriptEngine.Shared.ScriptBase
             return m_OSSL_Functions.osReplaceString(src,pattern,replace,count,start);
         }
         
+
         // Information about data loaded into the region
         public string osLoadedCreationDate()
         {
@@ -641,6 +647,7 @@ namespace OpenSim.Region.ScriptEngine.Shared.ScriptBase
             m_OSSL_Functions.osNpcSay(npc, channel, message);
         }
 
+
         public void osNpcShout(key npc, int channel, string message)
         {
             m_OSSL_Functions.osNpcShout(npc, channel, message);
@@ -735,12 +742,10 @@ namespace OpenSim.Region.ScriptEngine.Shared.ScriptBase
             {
                 prim = _prim;
             }
-
             private void Load()
             {
                 Position = prim.OSSL.llGetPos();
             }
-
             private void Save()
             {
                 /* Remove temporarily until we have a handle to the region size
@@ -774,7 +779,6 @@ namespace OpenSim.Region.ScriptEngine.Shared.ScriptBase
                     Save();
                 }
             }
-
             public double y
             {
                 get
@@ -789,7 +793,6 @@ namespace OpenSim.Region.ScriptEngine.Shared.ScriptBase
                     Save();
                 }
             }
-
             public double z
             {
                 get
@@ -811,17 +814,14 @@ namespace OpenSim.Region.ScriptEngine.Shared.ScriptBase
         {
             private OSSLPrim prim;
             private LSL_Types.Quaternion Rotation;
-
             public OSSLPrim_Rotation(OSSLPrim _prim)
             {
                 prim = _prim;
             }
-
             private void Load()
             {
                 Rotation = prim.OSSL.llGetRot();
             }
-
             private void Save()
             {
                 prim.OSSL.llSetRot(Rotation);
@@ -841,7 +841,6 @@ namespace OpenSim.Region.ScriptEngine.Shared.ScriptBase
                     Save();
                 }
             }
-
             public double y
             {
                 get
@@ -856,7 +855,6 @@ namespace OpenSim.Region.ScriptEngine.Shared.ScriptBase
                     Save();
                 }
             }
-
             public double z
             {
                 get
@@ -871,7 +869,6 @@ namespace OpenSim.Region.ScriptEngine.Shared.ScriptBase
                     Save();
                 }
             }
-
             public double s
             {
                 get
@@ -951,6 +948,16 @@ namespace OpenSim.Region.ScriptEngine.Shared.ScriptBase
         public void osSetHealth(string avatar, double health)
         {
             m_OSSL_Functions.osSetHealth(avatar, health);
+        }
+
+        public void osSetHealRate(string avatar, double health)
+        {
+            m_OSSL_Functions.osSetHealRate(avatar, health);
+        }
+
+        public LSL_Float osGetHealRate(string avatar)
+        {
+            return m_OSSL_Functions.osGetHealRate(avatar);
         }
 
         public void osForceOtherSit(string avatar)

@@ -375,8 +375,8 @@ namespace OpenSim.Region.CoreModules.World.Land
         public void SendLandProperties(int sequence_id, bool snap_selection, int request_result, IClientAPI remote_client)
         {
             remote_client.SceneAgent.Invulnerable =
-                !m_scene.RegionInfo.RegionSettings.AllowDamage ||
-                (m_landData.Flags & (uint)ParcelFlags.AllowDamage) == 0;
+                           !m_scene.RegionInfo.RegionSettings.AllowDamage ||
+                           (m_landData.Flags & (uint)ParcelFlags.AllowDamage) == 0;
 
             if (remote_client.SceneAgent.PresenceType == PresenceType.Npc)
                 return;

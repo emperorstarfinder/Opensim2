@@ -31,8 +31,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
-using System.Linq;
-using System.Reflection;
 using System.Runtime.Remoting.Lifetime;
 using System.Text;
 using System.Threading;
@@ -47,6 +45,7 @@ using OpenMetaverse.Packets;
 using OpenMetaverse.Rendering;
 using OpenSim;
 using OpenSim.Framework;
+
 using OpenSim.Region.CoreModules;
 using OpenSim.Region.CoreModules.World.Land;
 using OpenSim.Region.CoreModules.World.Terrain;
@@ -67,6 +66,7 @@ using PresenceInfo = OpenSim.Services.Interfaces.PresenceInfo;
 using PrimType = OpenSim.Region.Framework.Scenes.PrimType;
 using AssetLandmark = OpenSim.Framework.AssetLandmark;
 using RegionFlags = OpenSim.Framework.RegionFlags;
+
 using LSL_Float = OpenSim.Region.ScriptEngine.Shared.LSL_Types.LSLFloat;
 using LSL_Integer = OpenSim.Region.ScriptEngine.Shared.LSL_Types.LSLInteger;
 using LSL_Key = OpenSim.Region.ScriptEngine.Shared.LSL_Types.LSLString;
@@ -74,7 +74,9 @@ using LSL_List = OpenSim.Region.ScriptEngine.Shared.LSL_Types.list;
 using LSL_Rotation = OpenSim.Region.ScriptEngine.Shared.LSL_Types.Quaternion;
 using LSL_String = OpenSim.Region.ScriptEngine.Shared.LSL_Types.LSLString;
 using LSL_Vector = OpenSim.Region.ScriptEngine.Shared.LSL_Types.Vector3;
+using System.Reflection;
 using Timer = System.Timers.Timer;
+using System.Linq;
 using PermissionMask = OpenSim.Framework.PermissionMask;
 
 namespace OpenSim.Region.ScriptEngine.Shared.Api
@@ -15733,7 +15735,7 @@ namespace OpenSim.Region.ScriptEngine.Shared.Api
                     }
 
                     string reason;
-                    bool result = money.ObjectGiveMoney(m_host.ParentGroup.RootPart.UUID, m_host.ParentGroup.RootPart.OwnerID, toID, amount, txn, out reason);
+                    bool result = money.ObjectGiveMoney( m_host.ParentGroup.RootPart.UUID, m_host.ParentGroup.RootPart.OwnerID, toID, amount, txn, out reason);
 
                     if (result)
                     {

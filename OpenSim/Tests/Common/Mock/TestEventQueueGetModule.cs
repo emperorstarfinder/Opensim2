@@ -119,7 +119,8 @@ namespace OpenSim.Tests.Common
             AddEvent(avatarID, "EnableSimulator", handle);
         }
 
-        public void EstablishAgentCommunication (UUID avatarID, IPEndPoint endPoint, string capsPath, ulong regionHandle, int regionSizeX, int regionSizeY)
+        public void EstablishAgentCommunication (UUID avatarID, IPEndPoint endPoint, string capsPath,
+                                ulong regionHandle, int regionSizeX, int regionSizeY)
         {
             AddEvent(avatarID, "EstablishAgentCommunication", endPoint, capsPath);
         }
@@ -146,9 +147,9 @@ namespace OpenSim.Tests.Common
                 timeStamp, offline, parentEstateID, position, ttl, transactionID, fromGroup, binaryBucket);
         }
 
-        public void ChatterBoxSessionAgentListUpdates (UUID sessionID, UUID fromAgent, UUID toAgent, bool canVoiceChat, bool isModerator, bool textMute, bool isEnterOrLeave)
+        public void ChatterBoxSessionAgentListUpdates (UUID sessionID, UUID fromAgent, UUID toAgent, bool canVoiceChat, bool isModerator, bool textMute , bool isEnterorLeave)
         {
-            AddEvent(toAgent, "ChatterBoxSessionAgentListUpdates", sessionID, fromAgent, canVoiceChat, isModerator, textMute, isEnterOrLeave);
+            AddEvent(toAgent, "ChatterBoxSessionAgentListUpdates", sessionID, fromAgent, canVoiceChat, isModerator, textMute, isEnterorLeave);
         }
 
         public void ParcelProperties (OpenMetaverse.Messages.Linden.ParcelPropertiesMessage parcelPropertiesMessage, UUID avatarID)

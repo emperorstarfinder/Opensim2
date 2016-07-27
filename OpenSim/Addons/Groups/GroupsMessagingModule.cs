@@ -626,7 +626,7 @@ namespace OpenSim.Groups
                         , new UUID(msg.toAgentID)
                         , false //canVoiceChat
                         , false //isModerator
-                        , false //Text Mute
+                        , false //text mute
                         , true // Enter
                         );
                 }
@@ -669,8 +669,8 @@ namespace OpenSim.Groups
                         , new UUID(im.toAgentID)
                         , false //canVoiceChat
                         , false //isModerator
-                        , false //Text Mute
-                        , true  //Enter
+                        , false //text mute
+                        , true
                         );
                 }
             }

@@ -403,7 +403,6 @@ namespace OpenSim.Region.ClientStack.Linden
                     ev["message"], m_scene.GetScenePresence(agentId).Name, m_scene.Name);
             }
         }
-
         public void Drop(UUID requestID, UUID pAgentId)
         {
             // do nothing for now, hope client close will do it        
@@ -569,10 +568,12 @@ namespace OpenSim.Region.ClientStack.Linden
 
         }
 
-        public void ChatterBoxSessionAgentListUpdates(UUID sessionID, UUID fromAgent, UUID toAgent, bool canVoiceChat, bool isModerator, bool textMute, bool isEnterOrLeave)
+        public void ChatterBoxSessionAgentListUpdates(UUID sessionID, UUID fromAgent, UUID toAgent, bool canVoiceChat, 
+                                                      bool isModerator, bool textMute, bool isEnterorLeave)
         {
-            OSD item = EventQueueHelper.ChatterBoxSessionAgentListUpdates(sessionID, fromAgent, canVoiceChat, isModerator, textMute, isEnterOrLeave);
-            Enqueue(item, ToAgent);
+            OSD item = EventQueueHelper.ChatterBoxSessionAgentListUpdates(sessionID, fromAgent, canVoiceChat,
+                                                                          isModerator, textMute, isEnterorLeave);
+            Enqueue(item, toAgent);
             //m_log.InfoFormat("########### eq ChatterBoxSessionAgentListUpdates #############\n{0}", item);
         }
 

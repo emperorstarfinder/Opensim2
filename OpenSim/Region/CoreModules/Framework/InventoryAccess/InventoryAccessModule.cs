@@ -32,10 +32,7 @@ using System.Xml;
 using System.Reflection;
 using System.Text;
 using System.Threading;
-using log4net;
-using Nini.Config;
-using Mono.Addins;
-using OpenMetaverse;
+
 using OpenSim.Framework;
 using OpenSim.Framework.Capabilities;
 using OpenSim.Framework.Client;
@@ -43,7 +40,13 @@ using OpenSim.Region.Framework.Interfaces;
 using OpenSim.Region.Framework.Scenes;
 using OpenSim.Region.Framework.Scenes.Serialization;
 using OpenSim.Services.Interfaces;
+
 using GridRegion = OpenSim.Services.Interfaces.GridRegion;
+
+using OpenMetaverse;
+using log4net;
+using Nini.Config;
+using Mono.Addins;
 using PermissionMask = OpenSim.Framework.PermissionMask;
 
 namespace OpenSim.Region.CoreModules.Framework.InventoryAccess
@@ -864,11 +867,13 @@ namespace OpenSim.Region.CoreModules.Framework.InventoryAccess
                 return null;
             }
 
-            if (rezAsset.Data == null || rezAsset.Data.Length == 0)
+            if(rezAsset.Data == null || rezAsset.Data.Length == 0)
             {
-                m_log.WarnFormat("[INVENTORY ACCESS MODULE]: missing data in asset {0} to RezObject()", assetID, remoteClient.Name);
+                m_log.WarnFormat(
+                    "[INVENTORY ACCESS MODULE]: missing data in asset {0} to RezObject()",
+                    assetID, remoteClient.Name);
                 remoteClient.SendAgentAlertMessage(string.Format("Unable to rez: missing data in asset {0} ", assetID), false);
-                return null;
+                return null;           
             }
 
             SceneObjectGroup group = null;
