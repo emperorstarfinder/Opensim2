@@ -37,7 +37,7 @@ namespace OpenSim.Region.CoreModules.ServiceConnectorsOut.Presence
 {
     public class PresenceDetector 
     {
-//        private static readonly ILog m_log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+        //private static readonly ILog m_log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         private IPresenceService m_PresenceService;
         private Scene m_aScene;
@@ -68,7 +68,23 @@ namespace OpenSim.Region.CoreModules.ServiceConnectorsOut.Presence
 
         public void OnMakeRootAgent(ScenePresence sp)
         {
-//            m_log.DebugFormat("[PRESENCE DETECTOR]: Detected root presence {0} in {1}", sp.UUID, sp.Scene.RegionInfo.RegionName);
+            if (sp.isNPC)
+                return;
+
+            if (sp.gotCrossUpdate)
+            {
+                Util.FireAndForget(delegate
+                {
+                    DoOnMakeRootAgent(sp);
+                }, null, "PresenceDetector_MakeRoot");
+            }
+            else
+                DoOnMakeRootAgent(sp);
+        }
+
+        public void DoOnMakeRootAgent(ScenePresence sp)
+        {
+            //m_log.DebugFormat("[PRESENCE DETECTOR]: Detected root presence {0} in {1}", sp.UUID, sp.Scene.RegionInfo.RegionName);
             if (sp.PresenceType != PresenceType.Npc)
                 m_PresenceService.ReportAgent(sp.ControllingClient.SessionId, sp.Scene.RegionInfo.RegionID);
         }
@@ -82,7 +98,7 @@ namespace OpenSim.Region.CoreModules.ServiceConnectorsOut.Presence
         {
             if (client != null && client.SceneAgent != null && !client.SceneAgent.IsChildAgent)
             {
-//                m_log.DebugFormat("[PRESENCE DETECTOR]: Detected client logout {0} in {1}", client.AgentId, client.Scene.RegionInfo.RegionName);
+                //m_log.DebugFormat("[PRESENCE DETECTOR]: Detected client logout {0} in {1}", client.AgentId, client.Scene.RegionInfo.RegionName);
                 m_PresenceService.LogoutAgent(client.SessionId);
             }
         }
