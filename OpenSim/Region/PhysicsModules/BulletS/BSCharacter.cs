@@ -52,7 +52,6 @@ public sealed class BSCharacter : BSPhysObject
     private bool _setAlwaysRun;
     private bool _throttleUpdates;
     private bool _floatOnWater;
-    private OMV.Vector3 _rotationalVelocity;
     private bool _kinematic;
     private float _buoyancy;
 
@@ -65,9 +64,9 @@ public sealed class BSCharacter : BSPhysObject
     private OMV.Vector3 _PIDTarget;
     private float _PIDTau;
 
-//        public override OMV.Vector3 RawVelocity 
-//        { get { return base.RawVelocity; } 
-//            set { 
+//        public override OMV.Vector3 RawVelocity
+//        { get { return base.RawVelocity; }
+//            set {
 //                if (value != base.RawVelocity)
 //                    Util.PrintCallStack();
 //                Console.WriteLine("Set rawvel to {0}", value);
@@ -83,7 +82,7 @@ public sealed class BSCharacter : BSPhysObject
             : base(parent_scene, localID, avName, "BSCharacter")
     {
         _physicsActorType = (int)ActorTypes.Agent;
-        RawPosition = pos;        
+        RawPosition = pos;
 
         _flying = isFlying;
         RawOrientation = OMV.Quaternion.Identity;
@@ -291,7 +290,7 @@ public sealed class BSCharacter : BSPhysObject
     {
         RawVelocity = OMV.Vector3.Zero;
         _acceleration = OMV.Vector3.Zero;
-        _rotationalVelocity = OMV.Vector3.Zero;
+        RawRotationalVelocity = OMV.Vector3.Zero;
 
         // Zero some other properties directly into the physics engine
         PhysScene.TaintedObject(inTaintTime, LocalID, "BSCharacter.ZeroMotion", delegate()
@@ -303,7 +302,7 @@ public sealed class BSCharacter : BSPhysObject
 
     public override void ZeroAngularMotion(bool inTaintTime)
     {
-        _rotationalVelocity = OMV.Vector3.Zero;
+        RawRotationalVelocity = OMV.Vector3.Zero;
 
         PhysScene.TaintedObject(inTaintTime, LocalID, "BSCharacter.ZeroMotion", delegate()
         {
@@ -350,7 +349,6 @@ public sealed class BSCharacter : BSPhysObject
             }
         }
     }
-
 
     // Check that the current position is sane and, if not, modify the position to make it so.
     // Check for being below terrain or on water.
@@ -451,6 +449,7 @@ public sealed class BSCharacter : BSPhysObject
     public override OMV.Vector3 GeometricCenter { get { return OMV.Vector3.Zero; } }
     public override OMV.Vector3 CenterOfMass { get { return OMV.Vector3.Zero; } }
 
+    // PhysicsActor.TargetVelocity
     // Sets the target in the motor. This starts the changing of the avatar's velocity.
     public override OMV.Vector3 TargetVelocity
     {
@@ -461,7 +460,7 @@ public sealed class BSCharacter : BSPhysObject
         set
         {
             DetailLog("{0},BSCharacter.setTargetVelocity,call,vel={1}", LocalID, value);
-            m_targetVelocity = value;
+            base.m_targetVelocity = value;
             OMV.Vector3 targetVel = value;
             if (_setAlwaysRun && !_flying)
                 targetVel *= new OMV.Vector3(BSParam.AvatarAlwaysRunFactor, BSParam.AvatarAlwaysRunFactor, 1f);
@@ -474,30 +473,33 @@ public sealed class BSCharacter : BSPhysObject
     public override OMV.Vector3 Velocity {
         get { return RawVelocity; }
         set {
-            RawVelocity = value;
-            OMV.Vector3 vel = RawVelocity;
-
-            DetailLog("{0}: set Velocity = {1}", LocalID, value);
-
-            PhysScene.TaintedObject(LocalID, "BSCharacter.setVelocity", delegate()
+            if (m_moveActor != null)
             {
-                if (m_moveActor != null)
-                    m_moveActor.SetVelocityAndTarget(vel, vel, true /* inTaintTime */);
-
-                DetailLog("{0},BSCharacter.setVelocity,taint,vel={1}", LocalID, vel);
-                ForceVelocity = vel;
-            });
+                // m_moveActor.SetVelocityAndTarget(OMV.Vector3.Zero, OMV.Vector3.Zero, false /* inTaintTime */);
+                m_moveActor.SetVelocityAndTarget(RawVelocity, RawVelocity, false /* inTaintTime */);
+            }
+            base.Velocity = value;
         }
+    }
+
+    // SetMomentum just sets the velocity without a target. We need to stop the movement actor if a character.
+    public override void SetMomentum(OMV.Vector3 momentum)
+    {
+        if (m_moveActor != null)
+        {
+            // m_moveActor.SetVelocityAndTarget(OMV.Vector3.Zero, OMV.Vector3.Zero, false /* inTaintTime */);
+            m_moveActor.SetVelocityAndTarget(RawVelocity, RawVelocity, false /* inTaintTime */);
+        }
+        base.SetMomentum(momentum);
     }
 
     public override OMV.Vector3 ForceVelocity {
         get { return RawVelocity; }
         set {
             PhysScene.AssertInTaintTime("BSCharacter.ForceVelocity");
-//                Util.PrintCallStack();
-            DetailLog("{0}: set ForceVelocity = {1}", LocalID, value);
+            DetailLog("{0}: BSCharacter.ForceVelocity.set = {1}", LocalID, value);
 
-            RawVelocity = value;
+            RawVelocity = Util.ClampV(value, BSParam.MaxLinearVelocity);
             PhysScene.PE.SetLinearVelocity(PhysBody, RawVelocity);
             PhysScene.PE.Activate(PhysBody, true);
         }
@@ -618,14 +620,6 @@ public sealed class BSCharacter : BSPhysObject
             });
         }
     }
-    public override OMV.Vector3 RotationalVelocity {
-        get { return _rotationalVelocity; }
-        set { _rotationalVelocity = value; }
-    }
-    public override OMV.Vector3 ForceRotationalVelocity {
-        get { return _rotationalVelocity; }
-        set { _rotationalVelocity = value; }
-    }
     public override bool Kinematic {
         get { return _kinematic; }
         set { _kinematic = value; }
@@ -715,8 +709,6 @@ public sealed class BSCharacter : BSPhysObject
     }
 
     public override void AddAngularForce(bool inTaintTime, OMV.Vector3 force) {
-    }
-    public override void SetMomentum(OMV.Vector3 momentum) {
     }
 
     // The avatar's physical shape (whether capsule or cube) is unit sized. BulletSim sets
@@ -827,7 +819,7 @@ public sealed class BSCharacter : BSPhysObject
         //    0.001m/s. Bullet introduces a lot of jitter in the velocity which causes many
         //    extra updates.
         //
-        // XXX: Contrary to the above comment, setting an update threshold here above 0.4 actually introduces jitter to 
+        // XXX: Contrary to the above comment, setting an update threshold here above 0.4 actually introduces jitter to
         // avatar movement rather than removes it.  The larger the threshold, the bigger the jitter.
         // This is most noticeable in level flight and can be seen with
         // the "show updates" option in a viewer.  With an update threshold, the RawVelocity cycles between a lower
@@ -841,7 +833,7 @@ public sealed class BSCharacter : BSPhysObject
             RawVelocity = entprop.Velocity;
 
         _acceleration = entprop.Acceleration;
-        _rotationalVelocity = entprop.RotationalVelocity;
+        RawRotationalVelocity = entprop.RotationalVelocity;
 
         // Do some sanity checking for the avatar. Make sure it's above ground and inbounds.
         if (PositionSanityCheck(true))
@@ -861,7 +853,7 @@ public sealed class BSCharacter : BSPhysObject
         // PhysScene.PostUpdate(this);
 
         DetailLog("{0},BSCharacter.UpdateProperties,call,pos={1},orient={2},vel={3},accel={4},rotVel={5}",
-                LocalID, RawPosition, RawOrientation, RawVelocity, _acceleration, _rotationalVelocity);
+                LocalID, RawPosition, RawOrientation, RawVelocity, _acceleration, RawRotationalVelocity);
     }
 }
 }

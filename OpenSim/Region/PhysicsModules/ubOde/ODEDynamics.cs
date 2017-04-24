@@ -170,7 +170,7 @@ namespace OpenSim.Region.PhysicsModule.ubOde
             m_type = vd.m_type;
             m_flags = vd.m_flags;
 
-            
+
             // Linear properties
             m_linearMotorDirection = vd.m_linearMotorDirection;
 
@@ -648,6 +648,10 @@ namespace OpenSim.Region.PhysicsModule.ubOde
                     break;
 
             }
+            // disable mouse steering
+            m_flags &= ~(VehicleFlag.MOUSELOOK_STEER |
+                         VehicleFlag.MOUSELOOK_BANK  |
+                         VehicleFlag.CAMERA_DECOUPLED);
 
             m_lmDecay = (1.0f - 1.0f / m_linearMotorDecayTimescale);
             m_amDecay = 1.0f - 1.0f / m_angularMotorDecayTimescale;
@@ -757,8 +761,8 @@ namespace OpenSim.Region.PhysicsModule.ubOde
                 roll = (float)Math.Atan2(minuszY, zZ);
             }
             return ;
-        }        
-        
+        }
+
         internal void Step()
         {
             IntPtr Body = rootPrim.Body;
@@ -793,7 +797,29 @@ namespace OpenSim.Region.PhysicsModule.ubOde
             Vector3 curLocalAngVel = curAngVel * irotq; // current angular velocity in  local
 
             float ldampZ = 0;
-            
+
+            bool mousemode = false;
+            bool mousemodebank = false;
+
+            float bankingEfficiency;
+            float verticalAttractionTimescale = m_verticalAttractionTimescale;
+
+            if((m_flags & (VehicleFlag.MOUSELOOK_STEER | VehicleFlag.MOUSELOOK_BANK)) != 0 )
+            {
+                mousemode = true;
+                mousemodebank = (m_flags & VehicleFlag.MOUSELOOK_BANK) != 0;
+                if(mousemodebank)
+                {
+                    bankingEfficiency = m_bankingEfficiency;
+                    if(verticalAttractionTimescale < 149.9)
+                        verticalAttractionTimescale *= 2.0f; // reduce current instability
+                }
+                else
+                    bankingEfficiency = 0;
+            }
+            else
+                bankingEfficiency = m_bankingEfficiency;
+
             // linear motor
             if (m_lmEfect > 0.01 && m_linearMotorTimescale < 1000)
             {
@@ -826,7 +852,7 @@ namespace OpenSim.Region.PhysicsModule.ubOde
                 m_lmEfect = 0;
                 m_ffactor = 1f;
             }
-           
+
             // hover
             if (m_VhoverTimescale < 300 && rootPrim.prim_geom != IntPtr.Zero)
             {
@@ -930,14 +956,12 @@ namespace OpenSim.Region.PhysicsModule.ubOde
             }
 
             // vertical atractor
-            if (m_verticalAttractionTimescale < 300)
+            if (verticalAttractionTimescale < 300)
             {
                 float roll;
                 float pitch;
 
-
-
-                float ftmp = m_invtimestep / m_verticalAttractionTimescale / m_verticalAttractionTimescale;
+                float ftmp = m_invtimestep / verticalAttractionTimescale / verticalAttractionTimescale;
 
                 float ftmp2;
                 ftmp2 = 0.5f * m_verticalAttractionEfficiency * m_invtimestep;
@@ -957,7 +981,6 @@ namespace OpenSim.Region.PhysicsModule.ubOde
                 effroll = 1 - effroll;
                 effroll *= roll;
 
-
                 torque.X += effroll * ftmp;
 
                 if ((m_flags & VehicleFlag.LIMIT_ROLL_ONLY) == 0)
@@ -970,7 +993,7 @@ namespace OpenSim.Region.PhysicsModule.ubOde
                     torque.Y += effpitch * ftmp;
                 }
 
-                if (m_bankingEfficiency != 0 && Math.Abs(effroll) > 0.01)
+                if (bankingEfficiency != 0 && Math.Abs(effroll) > 0.01)
                 {
 
                     float broll = effroll;
@@ -978,7 +1001,7 @@ namespace OpenSim.Region.PhysicsModule.ubOde
                                         if (broll > halfpi)
                                             broll = pi - broll;
                                         else if (broll < -halfpi)
-                                            broll = -pi - broll;                           
+                                            broll = -pi - broll;
                     */
                     broll *= m_bankingEfficiency;
                     if (m_bankingMix != 0)
@@ -1021,63 +1044,138 @@ namespace OpenSim.Region.PhysicsModule.ubOde
                 m_amdampZ = 1 / m_angularFrictionTimescale.Z;
             }
 
-            // angular motor
-            if (m_amEfect > 0.01 && m_angularMotorTimescale < 1000)
+            if(mousemode)
             {
-                tmpV = m_angularMotorDirection - curLocalAngVel; // velocity error
-                tmpV *= m_amEfect / m_angularMotorTimescale; // error to correct in this timestep
-                torque.X += tmpV.X * m_ampwr;
-                torque.Y += tmpV.Y * m_ampwr;
-                torque.Z += tmpV.Z;
+                CameraData cam = rootPrim.TryGetCameraData();
+                if(cam.Valid && cam.MouseLook)
+                {
+                    Vector3 dirv = cam.CameraAtAxis * irotq;
 
-                m_amEfect *= m_amDecay;
-            }
-            else
-                m_amEfect = 0;
+                    float invamts = 1.0f/m_angularMotorTimescale;
+                    float tmp;
 
-            // angular deflection
-            if (m_angularDeflectionEfficiency > 0)
-            {
-                Vector3 dirv;
-                
-                if (curLocalVel.X > 0.01f)
-                    dirv = curLocalVel;
-                else if (curLocalVel.X < -0.01f)
-                    // use oposite 
-                    dirv = -curLocalVel;
+                    // get out of x == 0 plane
+                    if(Math.Abs(dirv.X) < 0.001f)
+                        dirv.X = 0.001f;
+
+                    if (Math.Abs(dirv.Z) > 0.01)
+                    {
+                        tmp = -(float)Math.Atan2(dirv.Z, dirv.X) * m_angularMotorDirection.Y;
+                        if(tmp < -4f)
+                            tmp = -4f;
+                        else if(tmp > 4f)
+                            tmp = 4f;
+                        torque.Y += (tmp - curLocalAngVel.Y) * invamts;
+                        torque.Y -= curLocalAngVel.Y * m_amdampY;
+                    }
+                    else
+                        torque.Y -= curLocalAngVel.Y * m_invtimestep;
+
+                    if (Math.Abs(dirv.Y) > 0.01)
+                    {
+                        if(mousemodebank)
+                        {
+                            tmp = -(float)Math.Atan2(dirv.Y, dirv.X) * m_angularMotorDirection.X;
+                            if(tmp < -4f)
+                                tmp = -4f;
+                            else if(tmp > 4f)
+                                tmp = 4f;
+                            torque.X += (tmp - curLocalAngVel.X) * invamts;
+                        }
+                        else
+                        {
+                            tmp = (float)Math.Atan2(dirv.Y, dirv.X) * m_angularMotorDirection.Z;
+                            tmp *= invamts;
+                            if(tmp < -4f)
+                                tmp = -4f;
+                            else if(tmp > 4f)
+                                tmp = 4f;
+                            torque.Z += (tmp - curLocalAngVel.Z) * invamts;
+                        }
+                        torque.X -= curLocalAngVel.X * m_amdampX;
+                        torque.Z -= curLocalAngVel.Z * m_amdampZ;
+                    }
+                    else
+                    {
+                        if(mousemodebank)
+                            torque.X -= curLocalAngVel.X * m_invtimestep;
+                        else
+                            torque.Z -= curLocalAngVel.Z * m_invtimestep;
+                    }
+                }
                 else
                 {
-                    // make it fall into small positive x case
-                    dirv.X = 0.01f;
-                    dirv.Y = curLocalVel.Y;
-                    dirv.Z = curLocalVel.Z;
-                }
-
-                float ftmp = m_angularDeflectionEfficiency / m_angularDeflectionTimescale;
-
-                if (Math.Abs(dirv.Z) > 0.01)
-                {
-                    torque.Y += - (float)Math.Atan2(dirv.Z, dirv.X) * ftmp;
-                }
-
-                if (Math.Abs(dirv.Y) > 0.01)
-                {
-                    torque.Z += (float)Math.Atan2(dirv.Y, dirv.X) * ftmp;
+                    if (curLocalAngVel.X != 0 || curLocalAngVel.Y != 0 || curLocalAngVel.Z != 0)
+                    {
+                        torque.X -= curLocalAngVel.X * 10f;
+                        torque.Y -= curLocalAngVel.Y * 10f;
+                        torque.Z -= curLocalAngVel.Z * 10f;
+                    }
                 }
             }
-
-            // angular friction
-            if (curLocalAngVel.X != 0 || curLocalAngVel.Y != 0 || curLocalAngVel.Z != 0)
+            else
             {
-                torque.X -= curLocalAngVel.X * m_amdampX;
-                torque.Y -= curLocalAngVel.Y * m_amdampY;
-                torque.Z -= curLocalAngVel.Z * m_amdampZ;
+                // angular motor
+                if (m_amEfect > 0.01 && m_angularMotorTimescale < 1000)
+                {
+                    tmpV = m_angularMotorDirection - curLocalAngVel; // velocity error
+                    tmpV *= m_amEfect / m_angularMotorTimescale; // error to correct in this timestep
+                    torque.X += tmpV.X * m_ampwr;
+                    torque.Y += tmpV.Y * m_ampwr;
+                    torque.Z += tmpV.Z;
+
+                    m_amEfect *= m_amDecay;
+                }
+                else
+                    m_amEfect = 0;
+
+                // angular deflection
+                if (m_angularDeflectionEfficiency > 0)
+                {
+                    Vector3 dirv;
+
+                    if (curLocalVel.X > 0.01f)
+                        dirv = curLocalVel;
+                    else if (curLocalVel.X < -0.01f)
+                        // use oposite
+                        dirv = -curLocalVel;
+                    else
+                    {
+                        // make it fall into small positive x case
+                        dirv.X = 0.01f;
+                        dirv.Y = curLocalVel.Y;
+                        dirv.Z = curLocalVel.Z;
+                    }
+
+                    float ftmp = m_angularDeflectionEfficiency / m_angularDeflectionTimescale;
+
+                    if (Math.Abs(dirv.Z) > 0.01)
+                    {
+                        torque.Y += - (float)Math.Atan2(dirv.Z, dirv.X) * ftmp;
+                    }
+
+                    if (Math.Abs(dirv.Y) > 0.01)
+                    {
+                        torque.Z += (float)Math.Atan2(dirv.Y, dirv.X) * ftmp;
+                    }
+                }
+
+                if (curLocalAngVel.X != 0 || curLocalAngVel.Y != 0 || curLocalAngVel.Z != 0)
+                {
+                    torque.X -= curLocalAngVel.X * m_amdampX;
+                    torque.Y -= curLocalAngVel.Y * m_amdampY;
+                    torque.Z -= curLocalAngVel.Z * m_amdampZ;
+                }
             }
-          
+
+            force *= dmass.mass;
+
+            force += rootPrim.m_force;
+            force += rootPrim.m_forceacc;
+            rootPrim.m_forceacc = Vector3.Zero;
 
             if (force.X != 0 || force.Y != 0 || force.Z != 0)
             {
-                force *= dmass.mass;
                 d.BodyAddForce(Body, force.X, force.Y, force.Z);
             }
 
@@ -1091,6 +1189,12 @@ namespace OpenSim.Region.PhysicsModule.ubOde
                 d.MultiplyM3V3(out dvtmp, ref dmass.I, ref dtorque);
                 d.BodyAddRelTorque(Body, dvtmp.X, dvtmp.Y, dvtmp.Z); // add torque in object frame
             }
+
+            torque = rootPrim.m_torque;
+            torque += rootPrim.m_angularForceacc;
+            rootPrim.m_angularForceacc = Vector3.Zero;
+            if (torque.X != 0 || torque.Y != 0 || torque.Z != 0)
+                d.BodyAddTorque(Body,torque.X, torque.Y, torque.Z);
         }
     }
 }

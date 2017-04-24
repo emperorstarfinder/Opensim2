@@ -54,7 +54,7 @@ namespace OpenSim.Data.MySQL
         {
             get { return GetType().Assembly; }
         }
-        
+
         public MySQLFSAssetData()
         {
         }
@@ -221,7 +221,8 @@ namespace OpenSim.Data.MySQL
                     cmd.Parameters.AddWithValue("?id", meta.ID);
                     cmd.Parameters.AddWithValue("?name", meta.Name);
                     cmd.Parameters.AddWithValue("?description", meta.Description);
-                    cmd.Parameters.AddWithValue("?type", meta.Type.ToString());
+//                    cmd.Parameters.AddWithValue("?type", meta.Type.ToString());
+                    cmd.Parameters.AddWithValue("?type", meta.Type);
                     cmd.Parameters.AddWithValue("?hash", hash);
                     cmd.Parameters.AddWithValue("?asset_flags", meta.Flags);
 
@@ -239,7 +240,12 @@ namespace OpenSim.Data.MySQL
                     //ExecuteNonQuery(cmd);
 
                 }
-                return false;
+
+//                return false;
+                // if the asset already exits
+                // assume it was already correctly stored
+                // or regions will keep retry.
+                return true;
             }
             catch(Exception e)
             {
@@ -316,15 +322,16 @@ namespace OpenSim.Data.MySQL
                     return 0;
                 }
 
-                MySqlCommand cmd = conn.CreateCommand();
-
-                cmd.CommandText = String.Format("select count(*) as count from {0}", m_Table);
-
-                using (IDataReader reader = cmd.ExecuteReader())
+                using(MySqlCommand cmd = conn.CreateCommand())
                 {
-                    reader.Read();
+                    cmd.CommandText = String.Format("select count(*) as count from {0}",m_Table);
 
-                    count = Convert.ToInt32(reader["count"]);
+                    using (IDataReader reader = cmd.ExecuteReader())
+                    {
+                        reader.Read();
+
+                        count = Convert.ToInt32(reader["count"]);
+                    }
                 }
             }
 
@@ -333,15 +340,15 @@ namespace OpenSim.Data.MySQL
 
         public bool Delete(string id)
         {
-            MySqlCommand cmd = new MySqlCommand();
+            using(MySqlCommand cmd = new MySqlCommand())
+            {
 
-            cmd.CommandText = String.Format("delete from {0} where id = ?id", m_Table);
+                cmd.CommandText = String.Format("delete from {0} where id = ?id",m_Table);
 
-            cmd.Parameters.AddWithValue("?id", id);
+                cmd.Parameters.AddWithValue("?id", id);
 
-            ExecuteNonQuery(cmd);
-
-            cmd.Dispose();
+                ExecuteNonQuery(cmd);
+            }
 
             return true;
         }

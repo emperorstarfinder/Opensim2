@@ -45,11 +45,13 @@ using ComponentAce.Compression.Libs.zlib;
 using OSDArray = OpenMetaverse.StructuredData.OSDArray;
 using OSDMap = OpenMetaverse.StructuredData.OSDMap;
 
+using Nini.Config;
+
 namespace OpenSim.Region.ClientStack.Linden
 {
     public struct ModelPrimLimits
     {
-        
+
     }
 
     public class ModelCost
@@ -80,9 +82,9 @@ namespace OpenSim.Region.ClientStack.Linden
         const float lowestSizeWth = 2f; // 3x
         // favor potencially physical optimized meshs versus automatic decomposition
         const float physMeshSizeWth = 6f; // counts  7x
-        const float physHullSizeWth = 8f; // counts  9x      
+        const float physHullSizeWth = 8f; // counts  9x
 
-        // stream cost area factors 
+        // stream cost area factors
         // more or less like SL
         const float highLodFactor = 17.36f;
         const float midLodFactor = 277.78f;
@@ -100,7 +102,26 @@ namespace OpenSim.Region.ClientStack.Linden
         public float PhysicalPrimScaleMax = 10f;
         public int ObjectLinkedPartsMax = 512;
 
-        // storage for a single mesh asset cost parameters       
+
+        public ModelCost(Scene scene)
+        {
+            PrimScaleMin = scene.m_minNonphys;
+            NonPhysicalPrimScaleMax = scene.m_maxNonphys;
+            PhysicalPrimScaleMax = scene.m_maxPhys;
+            ObjectLinkedPartsMax = scene.m_linksetCapacity;
+        }
+
+        public void Econfig(IConfig EconomyConfig)
+        {
+            ModelMeshCostFactor = EconomyConfig.GetFloat("MeshModelUploadCostFactor", ModelMeshCostFactor);
+            ModelTextureCostFactor = EconomyConfig.GetFloat("MeshModelUploadTextureCostFactor", ModelTextureCostFactor);
+            ModelMinCostFactor = EconomyConfig.GetFloat("MeshModelMinCostFactor", ModelMinCostFactor);
+                    // next 2 are normalized so final cost is afected by modelUploadFactor above and normal cost
+            primCreationCost = EconomyConfig.GetFloat("ModelPrimCreationCost", primCreationCost);
+            bytecost = EconomyConfig.GetFloat("ModelMeshByteCost", bytecost);
+        }
+
+        // storage for a single mesh asset cost parameters
         private class ameshCostParam
         {
             // LOD sizes for size dependent streaming cost
@@ -119,7 +140,7 @@ namespace OpenSim.Region.ClientStack.Linden
         // resources input LLSD request
         // basicCost input region assets upload cost
         // totalcost returns model total upload fee
-        // meshcostdata returns detailed costs for viewer 
+        // meshcostdata returns detailed costs for viewer
         // avatarSkeleton if mesh includes a avatar skeleton
         // useAvatarCollider if we should use physics mesh for avatar
         public bool MeshModelCost(LLSDAssetResource resources, int basicCost, out int totalcost,
@@ -129,7 +150,7 @@ namespace OpenSim.Region.ClientStack.Linden
             error = string.Empty;
 
             bool avatarSkeleton = false;
-            
+
             if (resources == null ||
                 resources.instance_list == null ||
                 resources.instance_list.Array.Count == 0)
@@ -182,7 +203,7 @@ namespace OpenSim.Region.ClientStack.Linden
             if (resources.mesh_list != null && resources.mesh_list.Array.Count > 0)
             {
                 numberMeshs = resources.mesh_list.Array.Count;
-                
+
                 for (int i = 0; i < numberMeshs; i++)
                 {
                     ameshCostParam curCost = new ameshCostParam();
@@ -209,7 +230,7 @@ namespace OpenSim.Region.ClientStack.Linden
             }
 
             // instances (prims) cost
-            
+
 
             int mesh;
             int skipedSmall = 0;
@@ -310,7 +331,7 @@ namespace OpenSim.Region.ClientStack.Linden
 
             // breakdown prices
             // don't seem to be in use so removed code for now
-            
+
             return true;
         }
 
@@ -383,7 +404,7 @@ namespace OpenSim.Region.ClientStack.Linden
                     int sksize = tmpmap["size"].AsInteger();
                     if(sksize > 0)
                         skeleton = true;
-                }               
+                }
             }
 
             if (map.ContainsKey("physics_convex"))
@@ -408,7 +429,7 @@ namespace OpenSim.Region.ClientStack.Linden
             }
 
             submesh_offset = -1;
-            
+
             // only look for LOD meshs sizes
 
             if (map.ContainsKey("high_lod"))
@@ -497,7 +518,7 @@ namespace OpenSim.Region.ClientStack.Linden
             cost.physicsCost = 0.04f * phys_hullsvertices;
 
             float sfee;
-            
+
             sfee = data.Length; // start with total compressed data size
 
             // penalize lod meshs that should be more builder optimized
@@ -514,7 +535,7 @@ namespace OpenSim.Region.ClientStack.Linden
 
             // bytes to money
             sfee *= bytecost;
-           
+
             cost.costFee = sfee;
             return true;
         }
@@ -654,7 +675,7 @@ namespace OpenSim.Region.ClientStack.Linden
             return true;
         }
 
-        // returns streaming cost from on mesh LODs sizes in curCost and square of prim size length 
+        // returns streaming cost from on mesh LODs sizes in curCost and square of prim size length
         private float streamingCost(ameshCostParam curCost, float sqdiam)
         {
             // compute efective areas

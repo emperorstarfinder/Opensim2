@@ -59,26 +59,38 @@ namespace OpenSim.Framework
 {
     [Flags]
     public enum PermissionMask : uint
-    { 
+    {
         None = 0,
 
         // folded perms
-        foldedTransfer = 1,
-        foldedModify = 1 << 1,
-        foldedCopy = 1 << 2,
+        FoldedTransfer = 1,
+        FoldedModify = 1 << 1,
+        FoldedCopy = 1 << 2,
+        FoldedExport = 1 << 3,
 
-        foldedMask = 0x07,
+        // DO NOT USE THIS FOR NEW WORK. IT IS DEPRECATED AND
+        // EXISTS ONLY TO REACT TO EXISTING OBJECTS HAVING IT.
+        // NEW CODE SHOULD NEVER SET THIS BIT!
+        // Use InventoryItemFlags.ObjectSlamPerm in the Flags field of
+        // this legacy slam bit. It comes from prior incomplete
+        // understanding of the code and the prohibition on
+        // reading viewer code that used to be in place.
+        Slam = (1 << 4),
+
+        FoldedMask = 0x0f,
 
         //
-        Transfer = 1 << 13,
-        Modify = 1 << 14,
-        Copy = 1 << 15,
-        Export = 1 << 16,
-        Move = 1 << 19,
-        Damage = 1 << 20,
+        Transfer = 1 << 13, // 0x02000
+        Modify = 1 << 14,   // 0x04000
+        Copy = 1 << 15,     // 0x08000
+        Export = 1 << 16,   // 0x10000
+        Move = 1 << 19,     // 0x80000
+        Damage = 1 << 20,   // 0x100000 does not seem to be in use
         // All does not contain Export, which is special and must be
         // explicitly given
-        All = (1 << 13) | (1 << 14) | (1 << 15) | (1 << 19)
+        All = 0x8e000,
+        AllAndExport = 0x9e000,
+        AllEffective = 0x9e000
     }
 
     /// <summary>
@@ -112,7 +124,7 @@ namespace OpenSim.Framework
         public STPStartInfo STPStartInfo { get; set; }
         public WIGStartInfo WIGStartInfo { get; set; }
         public bool IsIdle { get; set; }
-        public bool IsShuttingDown { get; set; }       
+        public bool IsShuttingDown { get; set; }
         public int MaxThreads { get; set; }
         public int MinThreads { get; set; }
         public int InUseThreads { get; set; }
@@ -230,7 +242,7 @@ namespace OpenSim.Framework
         public static Encoding UTF8NoBomEncoding = new UTF8Encoding(false);
 
         /// <value>
-        /// Well known UUID for the blank texture used in the Linden SL viewer version 1.20 (and hopefully onwards) 
+        /// Well known UUID for the blank texture used in the Linden SL viewer version 1.20 (and hopefully onwards)
         /// </value>
         public static UUID BLANK_TEXTURE_UUID = new UUID("5748decc-f629-461c-9a36-a35a221fe21f");
 
@@ -280,7 +292,7 @@ namespace OpenSim.Framework
         /// </summary>
         /// <param name="a">A 3d vector</param>
         /// <returns>A new vector which is normalized form of the vector</returns>
-        
+
         public static Vector3 GetNormalizedVector(Vector3 a)
         {
             Vector3 v = new Vector3(a.X, a.Y, a.Z);
@@ -368,47 +380,184 @@ namespace OpenSim.Framework
             return Utils.UIntsToLong(X, Y);
         }
 
-        // Regions are identified with a 'handle' made up of its region coordinates packed into a ulong.
-        // Several places rely on the ability to extract a region's location from its handle.
-        // Note the location is in 'world coordinates' (see below).
-        // Region handles are based on the lowest coordinate of the region so trim the passed x,y to be the regions 0,0.
+        // Regions are identified with a 'handle' made up of its world coordinates packed into a ulong.
+        // Region handles are based on the coordinate of the region corner with lower X and Y
+        // var regions need more work than this to get that right corner from a generic world position
+        // this corner must be on a grid point
         public static ulong RegionWorldLocToHandle(uint X, uint Y)
         {
-            return Utils.UIntsToLong(X, Y);
+           ulong handle = X & 0xffffff00; // make sure it matchs grid coord points.
+           handle <<= 32; // to higher half
+           handle |= (Y & 0xffffff00);
+           return handle;
         }
 
-        public static ulong RegionLocToHandle(uint X, uint Y)
+        public static ulong RegionGridLocToHandle(uint X, uint Y)
         {
-            return Utils.UIntsToLong(Util.RegionToWorldLoc(X), Util.RegionToWorldLoc(Y));
+            ulong handle = X;
+            handle <<= 40; // shift to higher half and mult by 256)
+            handle |= (Y << 8);  // mult by 256)
+            return handle;
         }
 
         public static void RegionHandleToWorldLoc(ulong handle, out uint X, out uint Y)
         {
             X = (uint)(handle >> 32);
-            Y = (uint)(handle & (ulong)uint.MaxValue);
+            Y = (uint)(handle & 0xfffffffful);
         }
 
         public static void RegionHandleToRegionLoc(ulong handle, out uint X, out uint Y)
         {
-            uint worldX, worldY;
-            RegionHandleToWorldLoc(handle, out worldX, out worldY);
-            X = WorldToRegionLoc(worldX);
-            Y = WorldToRegionLoc(worldY);
+            X = (uint)(handle >> 40) & 0x00ffffffu; //  bring from higher half, divide by 256 and clean
+            Y = (uint)(handle >> 8) & 0x00ffffffu; // divide by 256 and clean
+            // if you trust the uint cast then the clean can be removed.
         }
 
-        // A region location can be 'world coordinates' (meters from zero) or 'region coordinates'
-        //      (number of regions from zero). This measurement of regions relies on the legacy 256 region size.
-        // These routines exist to make what is being converted explicit so the next person knows what was meant.
-        // Convert a region's 'world coordinate' to its 'region coordinate'.
+        // A region location can be 'world coordinates' (meters) or 'region grid coordinates'
+        // grid coordinates have a fixed step of 256m as defined by viewers
         public static uint WorldToRegionLoc(uint worldCoord)
         {
-            return worldCoord / Constants.RegionSize;
+            return worldCoord >> 8;
         }
 
-        // Convert a region's 'region coordinate' to its 'world coordinate'.
+        // Convert a region's 'region grid coordinate' to its 'world coordinate'.
         public static uint RegionToWorldLoc(uint regionCoord)
         {
-            return regionCoord * Constants.RegionSize;
+            return regionCoord << 8;
+        }
+
+        public static bool checkServiceURI(string uristr, out string serviceURI)
+        {
+            serviceURI = string.Empty;
+            try
+            {
+                Uri  uri = new Uri(uristr);
+                serviceURI = uri.AbsoluteUri;
+                if(uri.Port == 80)
+                    serviceURI = serviceURI.Trim(new char[] { '/', ' ' }) +":80/";
+                else if(uri.Port == 443)
+                    serviceURI = serviceURI.Trim(new char[] { '/', ' ' }) +":443/";
+                return true;
+            }
+            catch
+            {
+                serviceURI = string.Empty;
+            }
+            return false;
+        }
+
+        public static bool buildHGRegionURI(string inputName, out string serverURI, out string regionName)
+        {
+            serverURI = string.Empty;
+            regionName = string.Empty;
+
+            inputName = inputName.Trim();
+
+            if (!inputName.StartsWith("http") && !inputName.StartsWith("https"))
+            {
+                // Formats: grid.example.com:8002:region name
+                //          grid.example.com:region name
+                //          grid.example.com:8002
+                //          grid.example.com
+
+                string host;
+                uint port = 80;
+
+                string[] parts = inputName.Split(new char[] { ':' });
+                int indx;
+                if(parts.Length == 0)
+                    return false;
+                if (parts.Length == 1)
+                {
+                    indx = inputName.IndexOf('/');
+                    if (indx < 0)
+                        serverURI = "http://"+ inputName + "/";
+                    else
+                    {
+                        serverURI = "http://"+ inputName.Substring(0,indx + 1);
+                        if(indx + 2 < inputName.Length)
+                            regionName = inputName.Substring(indx + 1);
+                    }
+                }
+                else
+                {
+                    host = parts[0];
+
+                    if (parts.Length >= 2)
+                    {
+                        indx = parts[1].IndexOf('/');
+                        if(indx < 0)
+                        {
+                            // If it's a number then assume it's a port. Otherwise, it's a region name.
+                            if (!UInt32.TryParse(parts[1], out port))
+                            {
+                                port = 80;
+                                regionName = parts[1];
+                            }
+                        }
+                        else
+                        {
+                            string portstr = parts[1].Substring(0, indx);
+                            if(indx + 2 < parts[1].Length)
+                                regionName = parts[1].Substring(indx + 1);
+                            if (!UInt32.TryParse(portstr, out port))
+                                port = 80;
+                        }
+                    }
+                    // always take the last one
+                    if (parts.Length >= 3)
+                    {
+                       regionName = parts[2];
+                    }
+
+                    serverURI = "http://"+ host +":"+ port.ToString() + "/";
+                }
+            }
+            else
+            {
+                // Formats: http://grid.example.com region name
+                //          http://grid.example.com "region name"
+                //          http://grid.example.com
+
+                string[] parts = inputName.Split(new char[] { ' ' });
+
+                if (parts.Length == 0)
+                    return false;
+
+                serverURI = parts[0];
+
+                int indx = serverURI.LastIndexOf('/');
+                if(indx > 10)
+                {
+                    if(indx + 2 < inputName.Length)
+                        regionName = inputName.Substring(indx + 1);
+                    serverURI = inputName.Substring(0, indx + 1);
+                }
+                else if (parts.Length >= 2)
+                {
+                    regionName = inputName.Substring(serverURI.Length);
+                }
+            }
+
+            // use better code for sanity check
+            Uri uri;
+            try
+            {
+                    uri = new Uri(serverURI);
+            }
+            catch
+            {
+                return false;
+            }
+
+            if(!string.IsNullOrEmpty(regionName))
+                regionName = regionName.Trim(new char[] { '"', ' ' });
+            serverURI = uri.AbsoluteUri;
+            if(uri.Port == 80)
+                serverURI = serverURI.Trim(new char[] { '/', ' ' }) +":80/";
+            else if(uri.Port == 443)
+                serverURI = serverURI.Trim(new char[] { '/', ' ' }) +":443/";
+            return true;
         }
 
         public static T Clamp<T>(T x, T min, T max)
@@ -702,8 +851,10 @@ namespace OpenSim.Framework
 
         private static byte[] ComputeSHA1Hash(byte[] src)
         {
-            SHA1CryptoServiceProvider SHA1 = new SHA1CryptoServiceProvider();
-            return SHA1.ComputeHash(src);
+            byte[] ret;
+            using(SHA1CryptoServiceProvider SHA1 = new SHA1CryptoServiceProvider())
+                 ret = SHA1.ComputeHash(src);
+            return ret;
         }
 
         public static int fast_distance2d(int x, int y)
@@ -736,8 +887,8 @@ namespace OpenSim.Framework
         /// <param name="newx">New region x-coord</param>
         /// <param name="oldy">Old region y-coord</param>
         /// <param name="newy">New region y-coord</param>
-        /// <returns></returns>        
-        public static bool IsOutsideView(float drawdist, uint oldx, uint newx, uint oldy, uint newy, 
+        /// <returns></returns>
+        public static bool IsOutsideView(float drawdist, uint oldx, uint newx, uint oldy, uint newy,
             int oldsizex, int oldsizey, int newsizex, int newsizey)
         {
             // we still need to make sure we see new region  1stNeighbors
@@ -1041,13 +1192,26 @@ namespace OpenSim.Framework
         {
             foreach (IAppender appender in LogManager.GetRepository().GetAppenders())
             {
-                if (appender is FileAppender)
+                if (appender is FileAppender && appender.Name == "LogFileAppender")
                 {
                     return ((FileAppender)appender).File;
                 }
             }
 
             return "./OpenSim.log";
+        }
+
+        public static string statsLogFile()
+        {
+            foreach (IAppender appender in LogManager.GetRepository().GetAppenders())
+            {
+                if (appender is FileAppender && appender.Name == "StatsLogFileAppender")
+                {
+                    return ((FileAppender)appender).File;
+                }
+            }
+
+            return "./OpenSimStats.log";
         }
 
         public static string logDir()
@@ -1128,7 +1292,7 @@ namespace OpenSim.Framework
 
         /// <summary>
         /// Gets the value of a configuration variable by looking into
-        /// multiple sections in order. The latter sections overwrite 
+        /// multiple sections in order. The latter sections overwrite
         /// any values previously found.
         /// </summary>
         /// <typeparam name="T">Type of the variable</typeparam>
@@ -1143,7 +1307,7 @@ namespace OpenSim.Framework
 
         /// <summary>
         /// Gets the value of a configuration variable by looking into
-        /// multiple sections in order. The latter sections overwrite 
+        /// multiple sections in order. The latter sections overwrite
         /// any values previously found.
         /// </summary>
         /// <remarks>
@@ -1199,7 +1363,7 @@ namespace OpenSim.Framework
                 ConfigSource.ExpandKeyValues();
             }
         }
-        
+
         public static T ReadSettingsFromIniFile<T>(IConfig config, T settingsClass)
         {
             Type settingsType = settingsClass.GetType();
@@ -1303,14 +1467,14 @@ namespace OpenSim.Framework
                 }
                 catch (Exception e)
                 {
-                    m_log.WarnFormat("[UTILS]: Exception copying configuration file {0} to {1}: {2}", exampleConfigFile, configFile, e.Message);
+                    m_log.WarnFormat("[UTILS]: Exception copying configuration file {0} to {1}: {2}", configFile, exampleConfigFile, e.Message);
                     return false;
                 }
             }
 
             if (File.Exists(configFile))
             {
-                // Merge 
+                // Merge
                 config.Merge(new IniConfigSource(configFile));
                 config.ExpandKeyValues();
                 configFilePath = configFile;
@@ -1459,7 +1623,7 @@ namespace OpenSim.Framework
             }
 
             memory.Position = 0;
-           
+
             byte[] compressed = new byte[memory.Length];
             memory.Read(compressed, 0, compressed.Length);
 
@@ -1506,7 +1670,7 @@ namespace OpenSim.Framework
             const int readSize = 256;
             byte[] buffer = new byte[readSize];
             MemoryStream ms = new MemoryStream();
-        
+
             int count = inputStream.Read(buffer, 0, readSize);
 
             while (count > 0)
@@ -1586,12 +1750,16 @@ namespace OpenSim.Framework
             return new UUID(bytes, 0);
         }
 
-        public static void ParseFakeParcelID(UUID parcelID, out ulong regionHandle, out uint x, out uint y)
+        public static bool ParseFakeParcelID(UUID parcelID, out ulong regionHandle, out uint x, out uint y)
         {
             byte[] bytes = parcelID.GetBytes();
             regionHandle = Utils.BytesToUInt64(bytes);
             x = Utils.BytesToUInt(bytes, 8) & 0xffff;
             y = Utils.BytesToUInt(bytes, 12) & 0xffff;
+            // validation may fail, just reducing the odds of using a real UUID as encoded parcel
+            return  ( bytes[0] == 0 && bytes[4] == 0 && // handler x,y multiples of 256
+                         bytes[9] < 64 && bytes[13] < 64 && // positions < 16km
+                         bytes[14] == 0 && bytes[15] == 0);
         }
 
         public static void ParseFakeParcelID(UUID parcelID, out ulong regionHandle, out uint x, out uint y, out uint z)
@@ -1614,7 +1782,7 @@ namespace OpenSim.Framework
             x += rx;
             y += ry;
         }
-        
+
         /// <summary>
         /// Get operating system information if available.  Returns only the first 45 characters of information
         /// </summary>
@@ -1633,12 +1801,12 @@ namespace OpenSim.Framework
 //            {
 //                os = ReadEtcIssue();
 //            }
-//                      
+//
 //            if (os.Length > 45)
 //            {
 //                os = os.Substring(0, 45);
 //            }
-            
+
             return os;
         }
 
@@ -1680,6 +1848,8 @@ namespace OpenSim.Framework
 
             // hide the password in the connection string
             passPosition = connectionString.IndexOf("password", StringComparison.OrdinalIgnoreCase);
+            if (passPosition == -1)
+                return connectionString;
             passPosition = connectionString.IndexOf("=", passPosition);
             if (passPosition < connectionString.Length)
                 passPosition += 1;
@@ -1848,7 +2018,7 @@ namespace OpenSim.Framework
                     vol = vcomps[0];
                 }
             }
-            
+
             string[] comps = path.Split(new char[] {Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar}, StringSplitOptions.RemoveEmptyEntries);
 
             // Glob
@@ -1950,7 +2120,7 @@ namespace OpenSim.Framework
 
             if (!str.EndsWith("\0"))
                 str += "\0";
-            
+
             // Because this is UTF-8 encoding and not ASCII, it's possible we
             // might have gotten an oversized array even after the string trim
             byte[] data = UTF8.GetBytes(str);
@@ -2209,7 +2379,7 @@ namespace OpenSim.Framework
                     throw new NotImplementedException();
             }
         }
-                
+
         /// <summary>
         /// Additional information about threads in the main thread pool. Used to time how long the
         /// thread has been running, and abort it if it has timed-out.
@@ -2220,7 +2390,7 @@ namespace OpenSim.Framework
             public string StackTrace { get; set; }
             private string context;
             public bool LogThread { get; set; }
-            
+
             public IWorkItemResult WorkItem { get; set; }
             public Thread Thread { get; set; }
             public bool Running { get; set; }
@@ -2325,7 +2495,7 @@ namespace OpenSim.Framework
         public static Dictionary<string, int> GetFireAndForgetCallsMade()
         {
             return new Dictionary<string, int>(m_fireAndForgetCallsMade);
-        }       
+        }
 
         private static Dictionary<string, int> m_fireAndForgetCallsMade = new Dictionary<string, int>();
 
@@ -2345,7 +2515,7 @@ namespace OpenSim.Framework
         {
             FireAndForget(callback, obj, null);
         }
-     
+
         public static void FireAndForget(System.Threading.WaitCallback callback, object obj, string context)
         {
             Interlocked.Increment(ref numTotalThreadFuncsCalled);
@@ -2366,19 +2536,19 @@ namespace OpenSim.Framework
             WaitCallback realCallback;
 
             bool loggingEnabled = LogThreadPool > 0;
-            
+
             long threadFuncNum = Interlocked.Increment(ref nextThreadFuncNum);
             ThreadInfo threadInfo = new ThreadInfo(threadFuncNum, context);
 
             if (FireAndForgetMethod == FireAndForgetMethod.RegressionTest)
             {
                 // If we're running regression tests, then we want any exceptions to rise up to the test code.
-                realCallback = 
-                    o => 
-                    { 
-                        Culture.SetCurrentCulture(); 
-                        callback(o); 
-                        
+                realCallback =
+                    o =>
+                    {
+                        Culture.SetCurrentCulture();
+                        callback(o);
+
                         if (context != null)
                             m_fireAndForgetCallsInProgress[context]--;
                     };
@@ -2521,7 +2691,7 @@ namespace OpenSim.Framework
                 if (stackTrace.Contains("BeginFireQueueEmpty"))
                     return false;
             }
-            
+
             return true;
         }
 
@@ -2534,7 +2704,7 @@ namespace OpenSim.Framework
         {
             string src = Environment.StackTrace;
             string[] lines = src.Split(new string[] { Environment.NewLine }, StringSplitOptions.None);
-            
+
             StringBuilder dest = new StringBuilder(src.Length);
 
             bool started = false;
@@ -2579,11 +2749,11 @@ namespace OpenSim.Framework
         /// trace. And pausing another thread can cause a deadlock. This method attempts to
         /// avoid deadlock by using a short timeout (200ms), after which it gives up and
         /// returns 'null' instead of the stack trace.
-        /// 
+        ///
         /// Take from: http://stackoverflow.com/a/14935378
-        /// 
+        ///
         /// WARNING: this doesn't work in Mono. See https://bugzilla.novell.com/show_bug.cgi?id=571691
-        /// 
+        ///
         /// </remarks>
         /// <returns>The stack trace, or null if failed to get it</returns>
         private static StackTrace GetStackTrace(Thread targetThread)
@@ -2684,7 +2854,7 @@ namespace OpenSim.Framework
         /// <summary>
         /// Environment.TickCount is an int but it counts all 32 bits so it goes positive
         /// and negative every 24.9 days. This trims down TickCount so it doesn't wrap
-        /// for the callers. 
+        /// for the callers.
         /// This trims it to a 12 day interval so don't let your frame time get too long.
         /// </summary>
         /// <returns></returns>
@@ -3041,7 +3211,7 @@ namespace OpenSim.Framework
                 if (parts.Length == 2)
                     return CalcUniversalIdentifier(id, agentsURI, parts[0] + " " + parts[1]);
             }
-            
+
             return CalcUniversalIdentifier(id, agentsURI, firstName + " " + lastName);
         }
 
@@ -3141,10 +3311,10 @@ namespace OpenSim.Framework
 
         public virtual int Count
         {
-            get 
-            { 
+            get
+            {
                 lock (m_syncRoot)
-                    return m_highQueue.Count + m_lowQueue.Count; 
+                    return m_highQueue.Count + m_lowQueue.Count;
             }
         }
 

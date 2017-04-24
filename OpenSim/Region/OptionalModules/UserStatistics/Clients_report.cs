@@ -97,9 +97,8 @@ namespace OpenSim.Region.UserStatistics
                     sdr.Read();
                     totalregions = Convert.ToInt32(sdr["regcnt"]);
                 }
-
                 sdr.Close();
-                sdr.Dispose();
+                cmd.Dispose();
 
                 sql =
                     "select client_version, count(*) as cnt, avg(avg_sim_fps) as simfps from stats_session_data group by client_version order by count(*) desc LIMIT 10;";
@@ -116,20 +115,20 @@ namespace OpenSim.Region.UserStatistics
                         udata.fps = Convert.ToSingle(sdr["simfps"]);
                         clidata.Add(udata);
                         totalclients += udata.count;
-                        
+
                     }
                 }
                 sdr.Close();
-                sdr.Dispose();
+                cmd.Dispose();
 
                 if (totalregions > 1)
                 {
                     sql =
                         "select region_id, client_version, count(*) as cnt, avg(avg_sim_fps) as simfps from stats_session_data group by region_id, client_version order by region_id, count(*) desc;";
                     cmd = new SqliteCommand(sql, dbConn);
-                    
+
                     sdr = cmd.ExecuteReader();
-                    
+
                     if (sdr.HasRows)
                     {
                         while (sdr.Read())
@@ -143,16 +142,13 @@ namespace OpenSim.Region.UserStatistics
                         }
                     }
                     sdr.Close();
-                    sdr.Dispose();
-
-
+                    cmd.Dispose();
                 }
-
             }
-            
+
             foreach (ClientVersionData cvd in cliRegData)
             {
-                
+
                 if (regionTotals.ContainsKey(cvd.region_id))
                 {
                     int regiontotal = (int)regionTotals[cvd.region_id];
@@ -163,9 +159,6 @@ namespace OpenSim.Region.UserStatistics
                 {
                     regionTotals.Add(cvd.region_id, cvd.count);
                 }
-                
-                
-
             }
 
             modeldata["ClientData"] = clidata;

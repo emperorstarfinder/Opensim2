@@ -181,12 +181,12 @@ namespace OpenSim.Region.CoreModules.Scripting.DynamicTexture
                                          string extraParams, int updateTimer, bool SetBlending, byte AlphaValue)
         {
             return AddDynamicTextureURL(simID, primID, contentType, url,
-                                          extraParams, updateTimer, SetBlending, 
+                                          extraParams, updateTimer, SetBlending,
                                          (int)(DISP_TEMP|DISP_EXPIRE), AlphaValue, ALL_SIDES);
         }
 
         public UUID AddDynamicTextureURL(UUID simID, UUID primID, string contentType, string url,
-                                         string extraParams, int updateTimer, bool SetBlending, 
+                                         string extraParams, int updateTimer, bool SetBlending,
                                          int disp, byte AlphaValue, int face)
         {
             if (RenderPlugins.ContainsKey(contentType))
@@ -227,7 +227,7 @@ namespace OpenSim.Region.CoreModules.Scripting.DynamicTexture
         public UUID AddDynamicTextureData(UUID simID, UUID primID, string contentType, string data,
                                           string extraParams, int updateTimer, bool SetBlending, byte AlphaValue)
         {
-            return AddDynamicTextureData(simID, primID, contentType, data, extraParams, updateTimer, SetBlending, 
+            return AddDynamicTextureData(simID, primID, contentType, data, extraParams, updateTimer, SetBlending,
                                           (int) (DISP_TEMP|DISP_EXPIRE), AlphaValue, ALL_SIDES);
         }
 
@@ -478,17 +478,17 @@ namespace OpenSim.Region.CoreModules.Scripting.DynamicTexture
 
                 if (part == null || data == null || data.Length <= 1)
                 {
-                    string msg = 
+                    string msg =
                         String.Format("DynamicTextureModule: Error preparing image using URL {0}", Url);
                     scene.SimChat(Utils.StringToBytes(msg), ChatTypeEnum.Say,
                                   0, part.ParentGroup.RootPart.AbsolutePosition, part.Name, part.UUID, false);
-                    
+
                     return UUID.Zero;
                 }
 
                 byte[] assetData = null;
                 AssetBase oldAsset = null;
-                
+
                 if (BlendWithOldTexture)
                 {
                     Primitive.TextureEntryFace defaultFace = part.Shape.Textures.DefaultTexture;
@@ -553,37 +553,44 @@ namespace OpenSim.Region.CoreModules.Scripting.DynamicTexture
                 ManagedImage managedImage;
                 Image image;
 
-                if (OpenJPEG.DecodeToImage(frontImage, out managedImage, out image))
+                if (!OpenJPEG.DecodeToImage(frontImage, out managedImage, out image) || image == null)
+                    return null;
+
+                Bitmap image1 = new Bitmap(image);
+                image.Dispose();
+
+                if (!OpenJPEG.DecodeToImage(backImage, out managedImage, out image) || image == null)
                 {
-                    Bitmap image1 = new Bitmap(image);
-
-                    if (OpenJPEG.DecodeToImage(backImage, out managedImage, out image))
-                    {
-                        Bitmap image2 = new Bitmap(image);
-
-                        if (setNewAlpha)
-                            SetAlpha(ref image1, newAlpha);
-
-                        Bitmap joint = MergeBitMaps(image1, image2);
-
-                        byte[] result = new byte[0];
-
-                        try
-                        {
-                            result = OpenJPEG.EncodeFromImage(joint, true);
-                        }
-                        catch (Exception e)
-                        {
-                            m_log.ErrorFormat(
-                                "[DYNAMICTEXTUREMODULE]: OpenJpeg Encode Failed.  Exception {0}{1}",
-                                e.Message, e.StackTrace);
-                        }
-
-                        return result;
-                    }
+                    image1.Dispose();
+                    return null;
                 }
 
-                return null;
+                Bitmap image2 = new Bitmap(image);
+                image.Dispose();
+
+                if (setNewAlpha)
+                    SetAlpha(ref image1, newAlpha);
+
+                using(Bitmap joint = MergeBitMaps(image1, image2))
+                {
+                    image1.Dispose();
+                    image2.Dispose();
+
+                    byte[] result = new byte[0];
+
+                    try
+                    {
+                        result = OpenJPEG.EncodeFromImage(joint, true);
+                    }
+                    catch (Exception e)
+                    {
+                        m_log.ErrorFormat(
+                        "[DYNAMICTEXTUREMODULE]: OpenJpeg Encode Failed.  Exception {0}{1}",
+                                e.Message, e.StackTrace);
+                    }
+
+                    return result;
+                }
             }
 
             public Bitmap MergeBitMaps(Bitmap front, Bitmap back)
@@ -592,12 +599,12 @@ namespace OpenSim.Region.CoreModules.Scripting.DynamicTexture
                 Graphics jG;
 
                 joint = new Bitmap(back.Width, back.Height, PixelFormat.Format32bppArgb);
-                jG = Graphics.FromImage(joint);
-
-                jG.DrawImage(back, 0, 0, back.Width, back.Height);
-                jG.DrawImage(front, 0, 0, back.Width, back.Height);
-
-                return joint;
+                using(jG = Graphics.FromImage(joint))
+                {
+                    jG.DrawImage(back, 0, 0, back.Width, back.Height);
+                    jG.DrawImage(front, 0, 0, back.Width, back.Height);
+                    return joint;
+                }
             }
 
             private void SetAlpha(ref Bitmap b, byte alpha)

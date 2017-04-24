@@ -52,12 +52,13 @@ namespace OpenSim.Region.CoreModules.ServiceConnectorsOut.Grid
                 MethodBase.GetCurrentMethod().DeclaringType);
 
         private bool m_Enabled = false;
+        private string m_ThisGatekeeper = string.Empty;
 
         private IGridService m_LocalGridService;
         private IGridService m_RemoteGridService;
 
-        private RegionInfoCache m_RegionInfoCache = new RegionInfoCache();
-        
+        private RegionInfoCache m_RegionInfoCache;
+
         public RemoteGridServicesConnector()
         {
         }
@@ -69,7 +70,7 @@ namespace OpenSim.Region.CoreModules.ServiceConnectorsOut.Grid
 
         #region ISharedRegionmodule
 
-        public Type ReplaceableInterface 
+        public Type ReplaceableInterface
         {
             get { return null; }
         }
@@ -112,22 +113,33 @@ namespace OpenSim.Region.CoreModules.ServiceConnectorsOut.Grid
                 return false;
             }
 
-            Object[] args = new Object[] { source }; 
+            Object[] args = new Object[] { source };
             m_RemoteGridService = ServerUtils.LoadPlugin<IGridService>(networkConnector, args);
 
             m_LocalGridService = new LocalGridServicesConnector(source, m_RegionInfoCache);
             if (m_LocalGridService == null)
             {
-                m_log.Error("[REMOTE GRID CONNECTOR]: failed to loar local connector");
+                m_log.Error("[REMOTE GRID CONNECTOR]: failed to load local connector");
                 return false;
             }
 
+            if(m_RegionInfoCache == null)
+                m_RegionInfoCache = new RegionInfoCache();
+
+            m_ThisGatekeeper = Util.GetConfigVarFromSections<string>(source, "GatekeeperURI",
+                new string[] { "Startup", "Hypergrid", "GridService" }, String.Empty);
+            // Legacy. Remove soon!
+            m_ThisGatekeeper = gridConfig.GetString("Gatekeeper", m_ThisGatekeeper);
+
+            Util.checkServiceURI(m_ThisGatekeeper, out m_ThisGatekeeper);
+
             return true;
-        }   
+        }
 
         public void PostInitialise()
         {
-            ((ISharedRegionModule)m_LocalGridService).PostInitialise();
+            if (m_Enabled)
+                ((ISharedRegionModule)m_LocalGridService).PostInitialise();
         }
 
         public void Close()
@@ -137,14 +149,16 @@ namespace OpenSim.Region.CoreModules.ServiceConnectorsOut.Grid
         public void AddRegion(Scene scene)
         {
             if (m_Enabled)
+            {
                 scene.RegisterModuleInterface<IGridService>(this);
-
-            ((ISharedRegionModule)m_LocalGridService).AddRegion(scene);
+                ((ISharedRegionModule)m_LocalGridService).AddRegion(scene);
+            }
         }
 
         public void RemoveRegion(Scene scene)
         {
-            ((ISharedRegionModule)m_LocalGridService).RemoveRegion(scene);
+            if (m_Enabled)
+                ((ISharedRegionModule)m_LocalGridService).RemoveRegion(scene);
         }
 
         public void RegionLoaded(Scene scene)
@@ -198,8 +212,8 @@ namespace OpenSim.Region.CoreModules.ServiceConnectorsOut.Grid
             GridRegion rinfo = m_LocalGridService.GetRegionByPosition(scopeID, x, y);
             if (rinfo != null)
             {
-                m_log.DebugFormat("[REMOTE GRID CONNECTOR]: GetRegionByPosition. Added region {0} to the cache from local. Pos=<{1},{2}>, RegionHandle={3}",
-                    rinfo.RegionName, rinfo.RegionCoordX, rinfo.RegionCoordY, rinfo.RegionHandle);
+//                m_log.DebugFormat("[REMOTE GRID CONNECTOR]: GetRegionByPosition. Found region {0} on local. Pos=<{1},{2}>, RegionHandle={3}",
+//                    rinfo.RegionName, rinfo.RegionCoordX, rinfo.RegionCoordY, rinfo.RegionHandle);
                 return rinfo;
             }
 
@@ -207,26 +221,42 @@ namespace OpenSim.Region.CoreModules.ServiceConnectorsOut.Grid
 
             if (rinfo == null)
             {
-                uint regionX = Util.WorldToRegionLoc((uint)x);
-                uint regionY = Util.WorldToRegionLoc((uint)y);
-                m_log.WarnFormat("[REMOTE GRID CONNECTOR]: Requested region {0}-{1} not found", regionX, regionY);
+//                uint regionX = Util.WorldToRegionLoc((uint)x);
+//                uint regionY = Util.WorldToRegionLoc((uint)y);
+//                m_log.WarnFormat("[REMOTE GRID CONNECTOR]: Requested region {0}-{1} not found", regionX, regionY);
             }
             else
             {
                 m_RegionInfoCache.Cache(scopeID, rinfo);
 
-                m_log.DebugFormat("[REMOTE GRID CONNECTOR]: GetRegionByPosition. Added region {0} to the cache. Pos=<{1},{2}>, RegionHandle={3}",
-                    rinfo.RegionName, rinfo.RegionCoordX, rinfo.RegionCoordY, rinfo.RegionHandle);
+//                m_log.DebugFormat("[REMOTE GRID CONNECTOR]: GetRegionByPosition. Added region {0} to the cache. Pos=<{1},{2}>, RegionHandle={3}",
+//                    rinfo.RegionName, rinfo.RegionCoordX, rinfo.RegionCoordY, rinfo.RegionHandle);
             }
             return rinfo;
         }
 
-        public GridRegion GetRegionByName(UUID scopeID, string regionName)
+        public GridRegion GetRegionByName(UUID scopeID, string name)
         {
-            GridRegion rinfo = m_LocalGridService.GetRegionByName(scopeID, regionName);
+            GridRegion rinfo = m_LocalGridService.GetRegionByName(scopeID, name);
             if (rinfo != null)
                 return rinfo;
-                
+
+              // HG urls should not get here, strip them
+            // side effect is that local regions with same name as HG may also be found
+            // this mb good or bad
+            string regionName = name;
+            if(name.Contains("."))
+            {
+                if(string.IsNullOrWhiteSpace(m_ThisGatekeeper))
+                    return rinfo; // no HG
+
+                string regionURI = "";
+                if(!Util.buildHGRegionURI(name, out regionURI, out regionName) || string.IsNullOrWhiteSpace(regionName))
+                    return rinfo; // invalid
+                if(m_ThisGatekeeper != regionURI)
+                    return rinfo; // not local grid
+            }
+
             rinfo = m_RemoteGridService.GetRegionByName(scopeID, regionName);
             m_RegionInfoCache.Cache(scopeID, rinfo);
             return rinfo;
@@ -236,7 +266,24 @@ namespace OpenSim.Region.CoreModules.ServiceConnectorsOut.Grid
         {
             List<GridRegion> rinfo = m_LocalGridService.GetRegionsByName(scopeID, name, maxNumber);
             //m_log.DebugFormat("[REMOTE GRID CONNECTOR]: Local GetRegionsByName {0} found {1} regions", name, rinfo.Count);
-            List<GridRegion> grinfo = m_RemoteGridService.GetRegionsByName(scopeID, name, maxNumber);
+
+            // HG urls should not get here, strip them
+            // side effect is that local regions with same name as HG may also be found
+            // this mb good or bad
+            string regionName = name;
+            if(name.Contains("."))
+            {
+                if(string.IsNullOrWhiteSpace(m_ThisGatekeeper))
+                    return rinfo; // no HG
+
+                string regionURI = "";
+                if(!Util.buildHGRegionURI(name, out regionURI, out regionName) || string.IsNullOrWhiteSpace(regionName))
+                    return rinfo; // invalid
+                if(m_ThisGatekeeper != regionURI)
+                    return rinfo; // not local grid
+            }
+
+            List<GridRegion> grinfo = m_RemoteGridService.GetRegionsByName(scopeID, regionName, maxNumber);
 
             if (grinfo != null)
             {

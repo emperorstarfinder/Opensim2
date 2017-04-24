@@ -26,6 +26,8 @@
  */
 
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using Nini.Config;
 using log4net;
 using Mono.Addins;
@@ -51,7 +53,7 @@ namespace OpenSim.Region.CoreModules.ServiceConnectorsOut.UserAccounts
         private bool m_Enabled = false;
         private UserAccountCache m_Cache;
 
-        public Type ReplaceableInterface 
+        public Type ReplaceableInterface
         {
             get { return null; }
         }
@@ -134,7 +136,8 @@ namespace OpenSim.Region.CoreModules.ServiceConnectorsOut.UserAccounts
         public override UserAccount GetUserAccount(UUID scopeID, UUID userID)
         {
             bool inCache = false;
-            UserAccount account = m_Cache.Get(userID, out inCache);
+            UserAccount account;
+            account = m_Cache.Get(userID, out inCache);
             if (inCache)
                 return account;
 
@@ -147,7 +150,8 @@ namespace OpenSim.Region.CoreModules.ServiceConnectorsOut.UserAccounts
         public override UserAccount GetUserAccount(UUID scopeID, string firstName, string lastName)
         {
             bool inCache = false;
-            UserAccount account = m_Cache.Get(firstName + " " + lastName, out inCache);
+            UserAccount account;
+            account = m_Cache.Get(firstName + " " + lastName, out inCache);
             if (inCache)
                 return account;
 
@@ -156,6 +160,45 @@ namespace OpenSim.Region.CoreModules.ServiceConnectorsOut.UserAccounts
                 m_Cache.Cache(account.PrincipalID, account);
 
             return account;
+        }
+
+        public override List<UserAccount> GetUserAccounts(UUID scopeID, List<string> IDs)
+        {
+            List<UserAccount> accs = new List<UserAccount>();
+            List<string> missing = new List<string>();
+
+            UUID uuid = UUID.Zero;
+            UserAccount account;
+            bool inCache = false;
+
+            foreach(string id in IDs)
+            {
+                if(UUID.TryParse(id, out uuid))
+                {
+                    account = m_Cache.Get(uuid, out inCache);
+                    if (inCache)
+                        accs.Add(account);
+                    else
+                        missing.Add(id);
+                }
+            }
+
+            if(missing.Count > 0)
+            {
+                List<UserAccount> ext = base.GetUserAccounts(scopeID, missing);
+                if(ext != null && ext.Count >0 )
+                {
+                    foreach(UserAccount acc in ext)
+                    {
+                        if(acc != null)
+                        {
+                            accs.Add(acc);
+                            m_Cache.Cache(acc.PrincipalID, acc);
+                        }
+                    }
+                }
+            }
+            return accs;
         }
 
         public override bool StoreUserAccount(UserAccount data)

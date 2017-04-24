@@ -59,6 +59,9 @@
     PublicPort = "8002"
 
     ;# {PrivatePort} {} {PrivatePort} {8003} "8003"
+    ; port to access private grid services.
+    ; grids that run all their regions should deny access to this port
+    ; from outside their networks, using firewalls
     PrivatePort = "8003"
 
 
@@ -191,15 +194,6 @@
     ;; inject ARBITRARY BINARY CODE into your system. Use at your own risk.
     ;; YOU HAVE BEEN WARNED!!!
     ; TrustBinaries = false
-
-    ;# {CombineContiguousRegions} {} {Create megaregions where possible? (Do not use with existing content or varregions!)} {true false} false
-    ;; Combine all contiguous regions into one large megaregion
-    ;; Order your regions from South to North, West to East in your regions.ini
-    ;; and then set this to true
-    ;; Warning!  Don't use this with regions that have existing content!,
-    ;; This will likely break them
-    ;; Also, this setting should be set to false for varregions as they are proper larger single regions rather than combined smaller regions.
-    ; CombineContiguousRegions = false
 
     ;# {InworldRestartShutsDown} {} {Shutdown instance on region restart?} {true false} false
     ;; If you have only one region in an instance, or to avoid the many bugs
@@ -399,10 +393,6 @@
     ;# {region_manager_is_god} {} {Allow region manager gods} {true false} false
     ;; Allow region managers to assume god powers in regions they manage
     ; region_manager_is_god = false
-
-    ;# {parcel_owner_is_god} {} {Allow parcel owner gods} {true false} false
-    ;; Allow parcel owners to assume god powers in their parcels
-    ; parcel_owner_is_god = false
 
     ;# {simple_build_permissions} {} {Allow building in parcel by access list (no groups)} {true false} false
     ;; More control over permissions
@@ -705,12 +695,6 @@
     ;; then you might want to try setting this to false.
     ; mesh_sculpted_prim = true
 
-    ;# {use_NINJA_physics_joints} {[Startup]physics:OpenDynamicsEngine} {Use jointed (NINJA) physics?} {true false} false
-    ;; If you would like physics joints to be enabled through a special naming
-    ;; convention in the client, set this to true.
-    ;; (see NINJA Physics, http://opensimulator.org/wiki/NINJA_Physics)
-    ; use_NINJA_physics_joints = false
-
 [RemoteAdmin]
     ;; This is the remote admin module, which uses XMLRPC requests to
     ;; manage regions from a web interface.
@@ -903,7 +887,7 @@
     ;; The trade-off may be increased memory usage by the script engine.
     ; ThreadStackSize = 262144
 
-    ;; Set this to true (the default) to load each script into a separate
+    ;; Set this to true to load each script into a separate
     ;; AppDomain. 
     ;;
     ;; Setting this to false will load all script assemblies into the
@@ -912,8 +896,10 @@
     ;;
     ;; However, setting this to false will also prevent script DLLs from being unloaded from memory if the script is deleted.
     ;; This may cause an OutOfMemory problem over time when avatars with scripted attachments move in and out of the region.
-    ;; Some Windows users have also reported script loading problems when AppDomainLoading = false
-    ; AppDomainLoading = true
+    ;; at this time some mono versions seem to have problems with the true option
+    ;; so default is now false until a fix is found, to simply life of less technical skilled users.
+    ;; this should only be a issue if regions stay alive for a long time with lots of scripts added or edited.
+    ; AppDomainLoading = false
 
     ;; Controls whether scripts are stopped by aborting their threads externally (abort) or by co-operative checks from the compiled script (co-op) 
     ;; co-op will be more stable but this option is currently experimental.
@@ -932,6 +918,13 @@
     ;; by scripts have changed.
     ; DeleteScriptsOnStartup = true
 
+    ;# {CompactMemOnLoad} {} {compacts memory on each script load at startup?} {true false} false
+    ;; forces calls to memory garbage collector before loading each script DLL during region startup.
+    ;; Peak memory usage is reduced and region starts with a more compacted memory allocation.
+    ;; But this costs a lot of time, so region load will take a lot longer.
+    ;; it is more usefull if there are no previously compiled scripts DLLs (as with DeleteScriptsOnStartup = true)
+    ;CompactMemOnLoad = false
+    
     ;# {DefaultCompileLanguage} {Enabled:true} {Default script language?} {lsl vb cs} lsl
     ;; Default language for scripts
     ; DefaultCompileLanguage = "lsl"
@@ -1138,17 +1131,21 @@
 	
 	;; several options to control NPCs creation
 	
+    ;# {AllowNotOwned} {} {allow NPCs to be created not Owned} {true false} true
 	;; allow NPCs to be created not Owned {true false} default: true
-    ; AllowNotOwned = false
+    ; AllowNotOwned = true
 	
+    ;# {AllowSenseAsAvatar} {} {allow NPCs to set to be sensed as Avatars} {true false} true
 	;; allow NPCs to set to be sensed as Avatars {true false} default: true
-    ; AllowSenseAsAvatar = false
+    ; AllowSenseAsAvatar = true
 	
+    ;# {AllowCloneOtherAvatars} {} {allow NPCs to created cloning any avatar in region} {true false} true
 	;; allow NPCs to created cloning any avatar in region {true false} default: true
-    ; AllowCloneOtherAvatars = false
+    ; AllowCloneOtherAvatars = true
 	
+    ;# {NoNPCGroup} {} {if true NPCs will have no group title, if false display "- NPC -"} {true false} true
 	;; if true NPCs will have no group title, if false display "- NPC -" for easy identification {true false} default: true
-    ; NoNPCGroup = false 
+    ; NoNPCGroup = true 
 
 
 [Terrain]
@@ -1164,6 +1161,11 @@
   ;; Set the value of the url to your UserProfilesService
   ;; If un-set / "" the module is disabled
   ;; ProfileServiceURL = ${Const|BaseURL}:${Const|PublicPort}
+  
+  ;# {AllowUserProfileWebURLs} {} {allow user profiles web urls} {true false} true
+  ;; set this to false to prevent your users to be sent to unknown
+  ;; web sites by other users on their profiles
+  ; AllowUserProfileWebURLs = true
 
 [XBakes]
   ;# {URL} {} {Set URL for Baked texture service} {}

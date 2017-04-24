@@ -230,14 +230,23 @@ public abstract class BSPhysObject : PhysicsActor
     // Update the physical location and motion of the object. Called with data from Bullet.
     public abstract void UpdateProperties(EntityProperties entprop);
 
+    // The position value as known by BulletSim. Does not effect the physics engine.
     public virtual OMV.Vector3 RawPosition { get; set; }
+    // Set position in BulletSim and the physics engined to a value immediately. Must be called at taint time.
     public abstract OMV.Vector3 ForcePosition { get; set; }
 
+    // The orientation value as known by BulletSim. Does not effect the physics engine.
     public virtual OMV.Quaternion RawOrientation { get; set; }
+    // Set orientation in BulletSim and the physics engine to a value immediately. Must be called at taint time.
     public abstract OMV.Quaternion ForceOrientation { get; set; }
 
+    // The velocity value as known by BulletSim. Does not effect the physics engine.
     public virtual OMV.Vector3 RawVelocity { get; set; }
+    // Set velocity in BulletSim and the physics engined to a value immediately. Must be called at taint time.
     public abstract OMV.Vector3 ForceVelocity { get; set; }
+
+    // The rotational velocity value as known by BulletSim. Does not effect the physics engine.
+    public OMV.Vector3 RawRotationalVelocity { get; set; }
 
     // RawForce is a constant force applied to object (see Force { set; } )
     public OMV.Vector3 RawForce { get; set; }
@@ -250,16 +259,68 @@ public abstract class BSPhysObject : PhysicsActor
     public abstract void AddAngularForce(bool inTaintTime, OMV.Vector3 force);
     public abstract void AddForce(bool inTaintTime, OMV.Vector3 force);
 
-    public abstract OMV.Vector3 ForceRotationalVelocity { get; set; }
+    // PhysicsActor.Velocity
+    public override OMV.Vector3 Velocity
+    {
+        get { return RawVelocity;  }
+        set
+        {
+            // This sets the velocity now. BSCharacter will override to clear target velocity
+            //    before calling this.
+            RawVelocity = value;
+            PhysScene.TaintedObject(LocalID, TypeName + ".SetVelocity", delegate () {
+                // DetailLog("{0},BSPhysObject.Velocity.set,vel={1}", LocalID, RawVelocity);
+                ForceVelocity = RawVelocity;
+            });
+        }
+    }
+
+    // PhysicsActor.SetMomentum
+    // All the physics engines use this as a way of forcing the velocity to something.
+    // BSCharacter overrides this so it can set the target velocity to zero before calling this.
+    public override void SetMomentum(OMV.Vector3 momentum)
+    {
+        this.Velocity = momentum;
+    }
+
+    public override OMV.Vector3 RotationalVelocity {
+        get {
+            return RawRotationalVelocity;
+        }
+        set {
+            RawRotationalVelocity = value;
+            Util.ClampV(RawRotationalVelocity, BSParam.MaxAngularVelocity);
+            // m_log.DebugFormat("{0}: RotationalVelocity={1}", LogHeader, _rotationalVelocity);
+            PhysScene.TaintedObject(LocalID, TypeName + ".setRotationalVelocity", delegate()
+            {
+                ForceRotationalVelocity = RawRotationalVelocity;
+            });
+        }
+    }
+    public OMV.Vector3 ForceRotationalVelocity {
+        get {
+            return RawRotationalVelocity;
+        }
+        set {
+            RawRotationalVelocity = Util.ClampV(value, BSParam.MaxAngularVelocity);
+            if (PhysBody.HasPhysicalBody)
+            {
+                DetailLog("{0},{1}.ForceRotationalVel,taint,rotvel={2}", LocalID, TypeName, RawRotationalVelocity);
+                PhysScene.PE.SetAngularVelocity(PhysBody, RawRotationalVelocity);
+                // PhysicsScene.PE.SetInterpolationAngularVelocity(PhysBody, _rotationalVelocity);
+                ActivateIfPhysical(false);
+            }
+        }
+    }
 
     public abstract float ForceBuoyancy { get; set; }
 
     public virtual bool ForceBodyShapeRebuild(bool inTaintTime) { return false; }
 
-    public override bool PIDActive 
+    public override bool PIDActive
     {
         get { return MoveToTargetActive; }
-        set { MoveToTargetActive = value; } 
+        set { MoveToTargetActive = value; }
     }
 
     public override OMV.Vector3 PIDTarget { set { MoveToTargetTarget = value; } }
@@ -511,7 +572,7 @@ public abstract class BSPhysObject : PhysicsActor
             newContact.RelativeSpeed = -OMV.Vector3.Dot(relvel, contactNormal);
             // DetailLog("{0},{1}.Collision.AddCollider,vel={2},contee.vel={3},relvel={4},relspeed={5}",
             //         LocalID, TypeName, RawVelocity, (collidee == null ? OMV.Vector3.Zero : collidee.RawVelocity), relvel, newContact.RelativeSpeed);
-                    
+
             lock (PhysScene.CollisionLock)
             {
                 CollisionCollection.AddCollider(collideeLocalID, newContact);
@@ -582,7 +643,7 @@ public abstract class BSPhysObject : PhysicsActor
                 {
                     CurrentCollisionFlags = PhysScene.PE.AddToCollisionFlags(PhysBody, CollisionFlags.BS_SUBSCRIBE_COLLISION_EVENTS);
                     DetailLog("{0},{1}.SubscribeEvents,setting collision. ms={2}, collisionFlags={3:x}",
-                            LocalID, TypeName, ms, CurrentCollisionFlags);
+                            LocalID, TypeName, SubscribedEventsMs, CurrentCollisionFlags);
                 }
             });
         }

@@ -209,7 +209,7 @@ namespace OpenSim.Data.MySQL
                     {
                         assetName = asset.Name.Substring(0, AssetBase.MAX_ASSET_NAME);
                         m_log.WarnFormat(
-                            "[XASSET DB]: Name '{0}' for asset {1} truncated from {2} to {3} characters on add", 
+                            "[XASSET DB]: Name '{0}' for asset {1} truncated from {2} to {3} characters on add",
                             asset.Name, asset.ID, asset.Name.Length, assetName.Length);
                     }
 
@@ -218,7 +218,7 @@ namespace OpenSim.Data.MySQL
                     {
                         assetDescription = asset.Description.Substring(0, AssetBase.MAX_ASSET_DESC);
                         m_log.WarnFormat(
-                            "[XASSET DB]: Description '{0}' for asset {1} truncated from {2} to {3} characters on add", 
+                            "[XASSET DB]: Description '{0}' for asset {1} truncated from {2} to {3} characters on add",
                             asset.Description, asset.ID, asset.Description.Length, assetDescription.Length);
                     }
 
@@ -341,7 +341,7 @@ namespace OpenSim.Data.MySQL
                 catch (Exception)
                 {
                     m_log.ErrorFormat(
-                        "[XASSET MYSQL DB]: Failure updating access_time for asset {0} with name {1}", 
+                        "[XASSET MYSQL DB]: Failure updating access_time for asset {0} with name {1}",
                         assetMetadata.ID, assetMetadata.Name);
                 }
             }
@@ -440,37 +440,39 @@ namespace OpenSim.Data.MySQL
             using (MySqlConnection dbcon = new MySqlConnection(m_connectionString))
             {
                 dbcon.Open();
-                MySqlCommand cmd = new MySqlCommand("SELECT Name, Description, AccessTime, AssetType, Temporary, ID, AssetFlags, CreatorID FROM XAssetsMeta LIMIT ?start, ?count", dbcon);
-                cmd.Parameters.AddWithValue("?start", start);
-                cmd.Parameters.AddWithValue("?count", count);
-
-                try
+                using(MySqlCommand cmd = new MySqlCommand("SELECT Name, Description, AccessTime, AssetType, Temporary, ID, AssetFlags, CreatorID FROM XAssetsMeta LIMIT ?start, ?count",dbcon))
                 {
-                    using (MySqlDataReader dbReader = cmd.ExecuteReader())
+                    cmd.Parameters.AddWithValue("?start",start);
+                    cmd.Parameters.AddWithValue("?count", count);
+
+                    try
                     {
-                        while (dbReader.Read())
+                        using (MySqlDataReader dbReader = cmd.ExecuteReader())
                         {
-                            AssetMetadata metadata = new AssetMetadata();
-                            metadata.Name = (string)dbReader["Name"];
-                            metadata.Description = (string)dbReader["Description"];
-                            metadata.Type = (sbyte)dbReader["AssetType"];
-                            metadata.Temporary = Convert.ToBoolean(dbReader["Temporary"]); // Not sure if this is correct.
-                            metadata.Flags = (AssetFlags)Convert.ToInt32(dbReader["AssetFlags"]);
-                            metadata.FullID = DBGuid.FromDB(dbReader["ID"]);
-                            metadata.CreatorID = dbReader["CreatorID"].ToString();
+                            while (dbReader.Read())
+                            {
+                                AssetMetadata metadata = new AssetMetadata();
+                                metadata.Name = (string)dbReader["Name"];
+                                metadata.Description = (string)dbReader["Description"];
+                                metadata.Type = (sbyte)dbReader["AssetType"];
+                                metadata.Temporary = Convert.ToBoolean(dbReader["Temporary"]); // Not sure if this is correct.
+                                metadata.Flags = (AssetFlags)Convert.ToInt32(dbReader["AssetFlags"]);
+                                metadata.FullID = DBGuid.FromDB(dbReader["ID"]);
+                                metadata.CreatorID = dbReader["CreatorID"].ToString();
 
-                            // We'll ignore this for now - it appears unused!
-//                                metadata.SHA1 = dbReader["hash"]);
+                                // We'll ignore this for now - it appears unused!
+    //                                metadata.SHA1 = dbReader["hash"]);
 
-                            UpdateAccessTime(metadata, (int)dbReader["AccessTime"]);
+                                UpdateAccessTime(metadata, (int)dbReader["AccessTime"]);
 
-                            retList.Add(metadata);
+                                retList.Add(metadata);
+                            }
                         }
                     }
-                }
-                catch (Exception e)
-                {
-                    m_log.Error("[XASSETS DB]: MySql failure fetching asset set" + Environment.NewLine + e.ToString());
+                    catch (Exception e)
+                    {
+                        m_log.Error("[XASSETS DB]: MySql failure fetching asset set" + Environment.NewLine + e.ToString());
+                    }
                 }
             }
 

@@ -61,6 +61,8 @@ namespace OpenSim.Region.CoreModules.World.Region
         protected IDialogModule m_DialogModule = null;
         protected string m_MarkerPath = String.Empty;
         private int[] m_CurrentAlerts = null;
+        protected bool m_shortCircuitDelays = false;
+        protected bool m_rebootAll = false;
 
         public void Initialise(IConfigSource config)
         {
@@ -69,6 +71,9 @@ namespace OpenSim.Region.CoreModules.World.Region
             {
                 m_MarkerPath = restartConfig.GetString("MarkerPath", String.Empty);
             }
+            IConfig startupConfig = config.Configs["Startup"];
+            m_shortCircuitDelays = startupConfig.GetBoolean("SkipDelayOnEmptyRegion", false);
+            m_rebootAll = startupConfig.GetBoolean("InworldRestartShutsDown", false);
         }
 
         public void AddRegion(Scene scene)
@@ -78,22 +83,22 @@ namespace OpenSim.Region.CoreModules.World.Region
                         scene.RegionInfo.RegionID.ToString()));
 
             m_Scene = scene;
-            
+
             scene.RegisterModuleInterface<IRestartModule>(this);
             MainConsole.Instance.Commands.AddCommand("Regions",
                     false, "region restart bluebox",
                     "region restart bluebox <message> <delta seconds>+",
-                    "Schedule a region restart", 
+                    "Schedule a region restart",
                     "Schedule a region restart after a given number of seconds.  If one delta is given then the region is restarted in delta seconds time.  A time to restart is sent to users in the region as a dismissable bluebox notice.  If multiple deltas are given then a notice is sent when we reach each delta.",
                     HandleRegionRestart);
-            
+
             MainConsole.Instance.Commands.AddCommand("Regions",
                     false, "region restart notice",
                     "region restart notice <message> <delta seconds>+",
-                    "Schedule a region restart", 
+                    "Schedule a region restart",
                     "Schedule a region restart after a given number of seconds.  If one delta is given then the region is restarted in delta seconds time.  A time to restart is sent to users in the region as a transient notice.  If multiple deltas are given then a notice is sent when we reach each delta.",
                     HandleRegionRestart);
-            
+
             MainConsole.Instance.Commands.AddCommand("Regions",
                     false, "region restart abort",
                     "region restart abort [<message>]",
@@ -183,7 +188,7 @@ namespace OpenSim.Region.CoreModules.World.Region
                 nextAlert = m_Alerts[1];
                 break;
             }
-            
+
             int currentAlert = m_Alerts[0];
 
             m_Alerts.RemoveAt(0);
@@ -242,7 +247,7 @@ namespace OpenSim.Region.CoreModules.World.Region
             else
             {
                 m_log.WarnFormat(
-                    "[RESTART MODULE]: Tried to set restart timer to {0} in {1}, which is not a valid interval", 
+                    "[RESTART MODULE]: Tried to set restart timer to {0} in {1}, which is not a valid interval",
                     intervalSeconds, m_Scene.Name);
             }
         }
@@ -250,6 +255,14 @@ namespace OpenSim.Region.CoreModules.World.Region
         private void OnTimer(object source, ElapsedEventArgs e)
         {
             int nextInterval = DoOneNotice(true);
+            if (m_shortCircuitDelays)
+            {
+                if (CountAgents() == 0)
+                {
+                    m_Scene.RestartNow();
+                    return;
+                }
+            }
 
             SetTimer(nextInterval);
         }
@@ -286,7 +299,7 @@ namespace OpenSim.Region.CoreModules.World.Region
                 File.Delete(Path.Combine(m_MarkerPath,
                         m_Scene.RegionInfo.RegionID.ToString()));
         }
-        
+
         private void HandleRegionRestart(string module, string[] args)
         {
             if (!(MainConsole.Instance.ConsoleScene is Scene))
@@ -348,6 +361,36 @@ namespace OpenSim.Region.CoreModules.World.Region
             catch (Exception)
             {
             }
+        }
+
+        int CountAgents()
+        {
+            m_log.Info("[RESTART MODULE]: Counting affected avatars");
+            int agents = 0;
+
+            if (m_rebootAll)
+            {
+                foreach (Scene s in SceneManager.Instance.Scenes)
+                {
+                    foreach (ScenePresence sp in s.GetScenePresences())
+                    {
+                        if (!sp.IsChildAgent && !sp.IsNPC)
+                            agents++;
+                    }
+                }
+            }
+            else
+            {
+                foreach (ScenePresence sp in m_Scene.GetScenePresences())
+                {
+                    if (!sp.IsChildAgent && !sp.IsNPC)
+                        agents++;
+                }
+            }
+
+            m_log.InfoFormat("[RESTART MODULE]: Avatars in region: {0}", agents);
+
+            return agents;
         }
     }
 }

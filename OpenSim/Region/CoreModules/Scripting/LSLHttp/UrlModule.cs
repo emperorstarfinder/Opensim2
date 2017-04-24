@@ -83,17 +83,17 @@ namespace OpenSim.Region.CoreModules.Scripting.LSLHttp
                 LogManager.GetLogger(
                 MethodBase.GetCurrentMethod().DeclaringType);
 
-        private Dictionary<UUID, UrlData> m_RequestMap =
+        protected Dictionary<UUID, UrlData> m_RequestMap =
                 new Dictionary<UUID, UrlData>();
 
-        private Dictionary<string, UrlData> m_UrlMap =
+        protected Dictionary<string, UrlData> m_UrlMap =
                 new Dictionary<string, UrlData>();
 
-        private uint m_HttpsPort = 0;
-        private IHttpServer m_HttpServer = null;
-        private IHttpServer m_HttpsServer = null;
+        protected uint m_HttpsPort = 0;
+        protected IHttpServer m_HttpServer = null;
+        protected IHttpServer m_HttpsServer = null;
 
-        public string ExternalHostNameForLSL { get; private set; }
+        public string ExternalHostNameForLSL { get; protected set; }
 
         /// <summary>
         /// The default maximum number of urls
@@ -105,9 +105,9 @@ namespace OpenSim.Region.CoreModules.Scripting.LSLHttp
         /// </summary>
         public int TotalUrls { get; set; }
 
-        public Type ReplaceableInterface 
+        public Type ReplaceableInterface
         {
-            get { return null; }
+            get { return typeof(IUrlModule); }
         }
 
         public string Name
@@ -221,10 +221,10 @@ namespace OpenSim.Region.CoreModules.Scripting.LSLHttp
                     urlData.allowXss = true;
 
                 m_UrlMap[url] = urlData;
-                
+
                 string uri = "/lslhttp/" + urlcode.ToString() + "/";
-               
-                PollServiceEventArgs args 
+
+                PollServiceEventArgs args
                     = new PollServiceEventArgs(HttpRequestHandler, uri, HasEvents, GetEvents, NoEvents, urlcode, 25000);
                 args.Type = PollServiceEventArgs.EventType.LslHttp;
                 m_HttpServer.AddPollServiceHTTPHandler(uri, args);
@@ -270,12 +270,12 @@ namespace OpenSim.Region.CoreModules.Scripting.LSLHttp
 
                 if (options != null && options["allowXss"] != null)
                     urlData.allowXss = true;
-                
+
                 m_UrlMap[url] = urlData;
-                
+
                 string uri = "/lslhttps/" + urlcode.ToString() + "/";
-               
-                PollServiceEventArgs args 
+
+                PollServiceEventArgs args
                     = new PollServiceEventArgs(HttpRequestHandler, uri, HasEvents, GetEvents, NoEvents, urlcode, 25000);
                 args.Type = PollServiceEventArgs.EventType.LslHttp;
                 m_HttpsServer.AddPollServiceHTTPHandler(uri, args);
@@ -306,7 +306,7 @@ namespace OpenSim.Region.CoreModules.Scripting.LSLHttp
                     foreach (UUID req in data.requests.Keys)
                         m_RequestMap.Remove(req);
                 }
-                        
+
 //                m_log.DebugFormat(
 //                    "[URL MODULE]: Releasing url {0} for {1} in {2}",
 //                    url, data.itemID, data.hostID);
@@ -315,7 +315,7 @@ namespace OpenSim.Region.CoreModules.Scripting.LSLHttp
                 m_UrlMap.Remove(url);
             }
         }
-        
+
         public void HttpContentType(UUID request, string type)
         {
             lock (m_UrlMap)
@@ -331,7 +331,7 @@ namespace OpenSim.Region.CoreModules.Scripting.LSLHttp
                 }
             }
         }
-        
+
         public void HttpResponse(UUID request, int status, string body)
         {
             lock (m_RequestMap)
@@ -403,7 +403,7 @@ namespace OpenSim.Region.CoreModules.Scripting.LSLHttp
         public void ScriptRemoved(UUID itemID)
         {
 //            m_log.DebugFormat("[URL MODULE]: Removing script {0}", itemID);
-            
+
             lock (m_UrlMap)
             {
                 List<string> removeURLs = new List<string>();
@@ -453,7 +453,7 @@ namespace OpenSim.Region.CoreModules.Scripting.LSLHttp
         }
 
 
-        private void RemoveUrl(UrlData data)
+        protected void RemoveUrl(UrlData data)
         {
             if (data.isSsl)
                 m_HttpsServer.RemoveHTTPHandler("", "/lslhttps/"+data.urlcode.ToString()+"/");
@@ -461,7 +461,7 @@ namespace OpenSim.Region.CoreModules.Scripting.LSLHttp
                 m_HttpServer.RemoveHTTPHandler("", "/lslhttp/"+data.urlcode.ToString()+"/");
         }
 
-        private Hashtable NoEvents(UUID requestID, UUID sessionID)
+        protected Hashtable NoEvents(UUID requestID, UUID sessionID)
         {
             Hashtable response = new Hashtable();
             UrlData url;
@@ -495,14 +495,14 @@ namespace OpenSim.Region.CoreModules.Scripting.LSLHttp
                 return response;
             }
 
-            
+
             return response;
         }
 
-        private bool HasEvents(UUID requestID, UUID sessionID)
+        protected bool HasEvents(UUID requestID, UUID sessionID)
         {
             UrlData url=null;
-            
+
             lock (m_RequestMap)
             {
                 if (!m_RequestMap.ContainsKey(requestID))
@@ -530,7 +530,7 @@ namespace OpenSim.Region.CoreModules.Scripting.LSLHttp
                 }
             }
         }
-        private Hashtable GetEvents(UUID requestID, UUID sessionID)
+        protected Hashtable GetEvents(UUID requestID, UUID sessionID)
         {
             UrlData url = null;
             RequestData requestData = null;
@@ -545,10 +545,10 @@ namespace OpenSim.Region.CoreModules.Scripting.LSLHttp
             {
                 requestData = url.requests[requestID];
             }
-            
+
             if (!requestData.requestDone)
                 return NoEvents(requestID,sessionID);
-            
+
             Hashtable response = new Hashtable();
 
             if (System.Environment.TickCount - requestData.startTime > 25000)
@@ -569,7 +569,7 @@ namespace OpenSim.Region.CoreModules.Scripting.LSLHttp
 
             if (url.allowXss)
                 response["access_control_allow_origin"] = "*";
-            
+
             //remove from map
             lock (url.requests)
             {
@@ -627,7 +627,7 @@ namespace OpenSim.Region.CoreModules.Scripting.LSLHttp
                     }
 
                     //for llGetHttpHeader support we need to store original URI here
-                    //to make x-path-info / x-query-string / x-script-url / x-remote-ip headers 
+                    //to make x-path-info / x-query-string / x-script-url / x-remote-ip headers
                     //as per http://wiki.secondlife.com/wiki/LlGetHTTPHeader
 
                     RequestData requestData = new RequestData();
@@ -689,7 +689,7 @@ namespace OpenSim.Region.CoreModules.Scripting.LSLHttp
                                     else
                                     {
                                         queryString = queryString + val + "&";
-                                    }                                    
+                                    }
                                 }
                             }
                             if (queryString.Length > 1)
@@ -735,7 +735,7 @@ namespace OpenSim.Region.CoreModules.Scripting.LSLHttp
             }
         }
 
-        private void OnScriptReset(uint localID, UUID itemID)
+        protected void OnScriptReset(uint localID, UUID itemID)
         {
             ScriptRemoved(itemID);
         }

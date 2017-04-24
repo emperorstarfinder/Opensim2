@@ -63,7 +63,7 @@ namespace OpenSim.Region.ClientStack.Linden
         {
         }
 
-        public void Close() { } 
+        public void Close() { }
 
         public void AddRegion(Scene scene)
         {
@@ -80,11 +80,11 @@ namespace OpenSim.Region.ClientStack.Linden
         }
 
         public void PostInitialise() { }
-        #endregion 
+        #endregion
 
         private void OnRegisterCaps(UUID agentID, Caps caps)
         {
-            new BunchOfCaps(m_Scene, caps);
+            new BunchOfCaps(m_Scene, agentID, caps);
         }
 
     }

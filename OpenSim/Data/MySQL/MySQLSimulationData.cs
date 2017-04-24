@@ -55,7 +55,7 @@ namespace OpenSim.Data.MySQL
         /// <summary>
         /// This lock was being used to serialize database operations when the connection was shared, but this has
         /// been unnecessary for a long time after we switched to using MySQL's underlying connection pooling instead.
-        /// FIXME: However, the locks remain in many places since they are effectively providing a level of 
+        /// FIXME: However, the locks remain in many places since they are effectively providing a level of
         /// transactionality.  This should be replaced by more efficient database transactions which would not require
         /// unrelated operations to block each other or unrelated operations on the same tables from blocking each
         /// other.
@@ -167,7 +167,7 @@ namespace OpenSim.Data.MySQL
                                     "SitTargetOrientY, SitTargetOrientZ, " +
                                     "RegionUUID, CreatorID, " +
                                     "OwnerID, GroupID, " +
-                                    "LastOwnerID, SceneGroupID, " +
+                                    "LastOwnerID, RezzerID, SceneGroupID, " +
                                     "PayPrice, PayButton1, " +
                                     "PayButton2, PayButton3, " +
                                     "PayButton4, LoopedSound, " +
@@ -187,7 +187,7 @@ namespace OpenSim.Data.MySQL
                                     "LinkNumber, MediaURL, KeyframeMotion, AttachedPosX, " +
                                     "AttachedPosY, AttachedPosZ, " +
                                     "PhysicsShapeType, Density, GravityModifier, " +
-                                    "Friction, Restitution, Vehicle, DynAttrs, " +
+                                    "Friction, Restitution, Vehicle, PhysInertia, DynAttrs, " +
                                     "RotationAxisLocks" +
                                     ") values (" + "?UUID, " +
                                     "?CreationDate, ?Name, ?Text, " +
@@ -207,7 +207,7 @@ namespace OpenSim.Data.MySQL
                                     "?SitTargetOrientW, ?SitTargetOrientX, " +
                                     "?SitTargetOrientY, ?SitTargetOrientZ, " +
                                     "?RegionUUID, ?CreatorID, ?OwnerID, " +
-                                    "?GroupID, ?LastOwnerID, ?SceneGroupID, " +
+                                    "?GroupID, ?LastOwnerID, ?RezzerID, ?SceneGroupID, " +
                                     "?PayPrice, ?PayButton1, ?PayButton2, " +
                                     "?PayButton3, ?PayButton4, ?LoopedSound, " +
                                     "?LoopedSoundGain, ?TextureAnimation, " +
@@ -224,7 +224,7 @@ namespace OpenSim.Data.MySQL
                                     "?LinkNumber, ?MediaURL, ?KeyframeMotion, ?AttachedPosX, " +
                                     "?AttachedPosY, ?AttachedPosZ, " +
                                     "?PhysicsShapeType, ?Density, ?GravityModifier, " +
-                                    "?Friction, ?Restitution, ?Vehicle, ?DynAttrs," +
+                                    "?Friction, ?Restitution, ?Vehicle, ?PhysInertia, ?DynAttrs," +
                                     "?RotationAxisLocks)";
 
                             FillPrimCommand(cmd, prim, obj.UUID, regionUUID);
@@ -268,7 +268,7 @@ namespace OpenSim.Data.MySQL
         public virtual void RemoveObject(UUID obj, UUID regionUUID)
         {
 //            m_log.DebugFormat("[REGION DB]: Deleting scene object {0} from {1} in database", obj, regionUUID);
-            
+
             List<UUID> uuids = new List<UUID>();
 
             // Formerly, this used to check the region UUID.
@@ -509,7 +509,7 @@ namespace OpenSim.Data.MySQL
             #region Prim Inventory Loading
 
             // Instead of attempting to LoadItems on every prim,
-            // most of which probably have no items... get a 
+            // most of which probably have no items... get a
             // list from DB of all prims which have items and
             // LoadItems only on those
             List<SceneObjectPart> primsWithInventory = new List<SceneObjectPart>();
@@ -639,6 +639,53 @@ namespace OpenSim.Data.MySQL
             });
         }
 
+        public void StoreBakedTerrain(TerrainData terrData, UUID regionID)
+        {
+            Util.FireAndForget(delegate(object x)
+            {
+                m_log.Info("[REGION DB]: Storing Baked terrain");
+
+                lock (m_dbLock)
+                {
+                    using (MySqlConnection dbcon = new MySqlConnection(m_connectionString))
+                    {
+                        dbcon.Open();
+
+                        using (MySqlCommand cmd = dbcon.CreateCommand())
+                        {
+                            cmd.CommandText = "delete from bakedterrain where RegionUUID = ?RegionUUID";
+                            cmd.Parameters.AddWithValue("RegionUUID", regionID.ToString());
+
+                            using (MySqlCommand cmd2 = dbcon.CreateCommand())
+                            {
+                                try
+                                {
+                                    cmd2.CommandText = "insert into bakedterrain (RegionUUID, " +
+                                            "Revision, Heightfield) values (?RegionUUID, " +
+                                            "?Revision, ?Heightfield)";
+
+                                    int terrainDBRevision;
+                                    Array terrainDBblob;
+                                    terrData.GetDatabaseBlob(out terrainDBRevision, out terrainDBblob);
+
+                                    cmd2.Parameters.AddWithValue("RegionUUID", regionID.ToString());
+                                    cmd2.Parameters.AddWithValue("Revision", terrainDBRevision);
+                                    cmd2.Parameters.AddWithValue("Heightfield", terrainDBblob);
+
+                                    ExecuteNonQuery(cmd);
+                                    ExecuteNonQuery(cmd2);
+                                }
+                                catch (Exception e)
+                                {
+                                    m_log.ErrorFormat(e.ToString());
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
         // Legacy region loading
         public virtual double[,] LoadTerrain(UUID regionID)
         {
@@ -665,6 +712,41 @@ namespace OpenSim.Data.MySQL
                         cmd.CommandText = "select RegionUUID, Revision, Heightfield " +
                             "from terrain where RegionUUID = ?RegionUUID " +
                             "order by Revision desc limit 1";
+                        cmd.Parameters.AddWithValue("RegionUUID", regionID.ToString());
+
+                        using (IDataReader reader = ExecuteReader(cmd))
+                        {
+                            while (reader.Read())
+                            {
+                                int rev = Convert.ToInt32(reader["Revision"]);
+                                if ((reader["Heightfield"] != DBNull.Value))
+                                {
+                                    byte[] blob = (byte[])reader["Heightfield"];
+                                    terrData = TerrainData.CreateFromDatabaseBlobFactory(pSizeX, pSizeY, pSizeZ, rev, blob);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            return terrData;
+        }
+
+        public TerrainData LoadBakedTerrain(UUID regionID, int pSizeX, int pSizeY, int pSizeZ)
+        {
+            TerrainData terrData = null;
+
+            lock (m_dbLock)
+            {
+                using (MySqlConnection dbcon = new MySqlConnection(m_connectionString))
+                {
+                    dbcon.Open();
+
+                    using (MySqlCommand cmd = dbcon.CreateCommand())
+                    {
+                        cmd.CommandText = "select RegionUUID, Revision, Heightfield " +
+                            "from bakedterrain where RegionUUID = ?RegionUUID ";
                         cmd.Parameters.AddWithValue("RegionUUID", regionID.ToString());
 
                         using (IDataReader reader = ExecuteReader(cmd))
@@ -725,7 +807,7 @@ namespace OpenSim.Data.MySQL
                             "UserLocationX, UserLocationY, UserLocationZ, " +
                             "UserLookAtX, UserLookAtY, UserLookAtZ, " +
                             "AuthbuyerID, OtherCleanTime, Dwell, MediaType, MediaDescription, " +
-                            "MediaSize, MediaLoop, ObscureMusic, ObscureMedia, " + 
+                            "MediaSize, MediaLoop, ObscureMusic, ObscureMedia, " +
                             "SeeAVs, AnyAVSounds, GroupAVSounds) values (" +
                             "?UUID, ?RegionUUID, " +
                             "?LocalLandID, ?Bitmap, ?Name, ?Description, " +
@@ -999,7 +1081,7 @@ namespace OpenSim.Data.MySQL
                     cmd.Parameters.AddWithValue("cloud_scroll_y", wl.cloudScrollY);
                     cmd.Parameters.AddWithValue("cloud_scroll_y_lock", wl.cloudScrollYLock);
                     cmd.Parameters.AddWithValue("draw_classic_clouds", wl.drawClassicClouds);
-                    
+
                     ExecuteNonQuery(cmd);
                 }
             }
@@ -1191,12 +1273,16 @@ namespace OpenSim.Data.MySQL
         {
             SceneObjectPart prim = new SceneObjectPart();
 
-            // depending on the MySQL connector version, CHAR(36) may be already converted to Guid! 
+            // depending on the MySQL connector version, CHAR(36) may be already converted to Guid!
             prim.UUID = DBGuid.FromDB(row["UUID"]);
             prim.CreatorIdentification = (string)row["CreatorID"];
             prim.OwnerID = DBGuid.FromDB(row["OwnerID"]);
             prim.GroupID = DBGuid.FromDB(row["GroupID"]);
             prim.LastOwnerID = DBGuid.FromDB(row["LastOwnerID"]);
+            if (row["RezzerID"] != DBNull.Value)
+                prim.RezzerID = DBGuid.FromDB(row["RezzerID"]);
+            else
+                prim.RezzerID = UUID.Zero;
 
             // explicit conversion of integers is required, which sort
             // of sucks.  No idea if there is a shortcut here or not.
@@ -1315,11 +1401,11 @@ namespace OpenSim.Data.MySQL
 
             prim.CollisionSound = DBGuid.FromDB(row["CollisionSound"]);
             prim.CollisionSoundVolume = (float)(double)row["CollisionSoundVolume"];
-            
+
             prim.PassTouches = ((sbyte)row["PassTouches"] != 0);
             prim.PassCollisions = ((sbyte)row["PassCollisions"] != 0);
             prim.LinkNum = (int)row["LinkNumber"];
-            
+
             if (!(row["MediaURL"] is System.DBNull))
                 prim.MediaUrl = (string)row["MediaURL"];
 
@@ -1335,7 +1421,7 @@ namespace OpenSim.Data.MySQL
             if (!(row["DynAttrs"] is System.DBNull))
                 prim.DynAttrs = DAMap.FromXml((string)row["DynAttrs"]);
             else
-                prim.DynAttrs = new DAMap();        
+                prim.DynAttrs = new DAMap();
 
             if (!(row["KeyframeMotion"] is DBNull))
             {
@@ -1365,6 +1451,11 @@ namespace OpenSim.Data.MySQL
                 if (vehicle != null)
                     prim.VehicleParams = vehicle;
             }
+
+            PhysicsInertiaData pdata = null;
+            if (row["PhysInertia"].ToString() != String.Empty)
+                pdata = PhysicsInertiaData.FromXml2(row["PhysInertia"].ToString());
+            prim.PhysicsInertia = pdata;
 
             return prim;
         }
@@ -1457,10 +1548,10 @@ namespace OpenSim.Data.MySQL
             newSettings.Covenant = DBGuid.FromDB(row["covenant"]);
             newSettings.CovenantChangedDateTime = Convert.ToInt32(row["covenant_datetime"]);
             newSettings.LoadedCreationDateTime = Convert.ToInt32(row["loaded_creation_datetime"]);
-            
+
             if (row["loaded_creation_id"] is DBNull)
                 newSettings.LoadedCreationID = "";
-            else 
+            else
                 newSettings.LoadedCreationID = (String) row["loaded_creation_id"];
 
             newSettings.TerrainImageID = DBGuid.FromDB(row["map_tile_ID"]);
@@ -1600,6 +1691,7 @@ namespace OpenSim.Data.MySQL
             cmd.Parameters.AddWithValue("OwnerID", prim.OwnerID.ToString());
             cmd.Parameters.AddWithValue("GroupID", prim.GroupID.ToString());
             cmd.Parameters.AddWithValue("LastOwnerID", prim.LastOwnerID.ToString());
+            cmd.Parameters.AddWithValue("RezzerID", prim.RezzerID.ToString());
             cmd.Parameters.AddWithValue("OwnerMask", prim.OwnerMask);
             cmd.Parameters.AddWithValue("NextOwnerMask", prim.NextOwnerMask);
             cmd.Parameters.AddWithValue("GroupMask", prim.GroupMask);
@@ -1722,6 +1814,11 @@ namespace OpenSim.Data.MySQL
                 cmd.Parameters.AddWithValue("KeyframeMotion", prim.KeyframeMotion.Serialize());
             else
                 cmd.Parameters.AddWithValue("KeyframeMotion", new Byte[0]);
+
+            if (prim.PhysicsInertia != null)
+                cmd.Parameters.AddWithValue("PhysInertia", prim.PhysicsInertia.ToXml2());
+            else
+                cmd.Parameters.AddWithValue("PhysInertia", String.Empty);
 
             if (prim.VehicleParams != null)
                 cmd.Parameters.AddWithValue("Vehicle", prim.VehicleParams.ToXml2());
@@ -1936,7 +2033,7 @@ namespace OpenSim.Data.MySQL
 
             s.State = (byte)(int)row["State"];
             s.LastAttachPoint = (byte)(int)row["LastAttachPoint"];
-            
+
             if (!(row["Media"] is System.DBNull))
                 s.Media = PrimitiveBaseShape.MediaList.FromXml((string)row["Media"]);
 
@@ -2016,13 +2113,13 @@ namespace OpenSim.Data.MySQL
                                 "?flags, ?itemID, ?primID, ?assetID, " +
                                 "?parentFolderID, ?creatorID, ?ownerID, " +
                                 "?groupID, ?lastOwnerID)";
-    
+
                         foreach (TaskInventoryItem item in items)
                         {
                             cmd.Parameters.Clear();
-    
+
                             FillItemCommand(cmd, item);
-    
+
                             ExecuteNonQuery(cmd);
                         }
                     }

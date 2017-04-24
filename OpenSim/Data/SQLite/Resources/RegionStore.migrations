@@ -352,3 +352,28 @@ BEGIN;
 ALTER TABLE prims ADD COLUMN `RotationAxisLocks` tinyint(4) NOT NULL default '0';
 
 COMMIT;
+
+:VERSION 34         #---- add baked terrain store
+
+BEGIN;
+
+CREATE TABLE IF NOT EXISTS bakedterrain(
+       RegionUUID varchar(255),
+       Revision integer,
+       Heightfield blob);
+
+COMMIT;
+
+:VERSION 35         #----- Add RezzerID field in table prims
+
+BEGIN;
+
+ALTER TABLE `prims` ADD COLUMN `RezzerID` char(36) DEFAULT NULL;
+
+COMMIT;
+
+:VERSION 36         #----- Add physics inertia data
+
+BEGIN;
+ALTER TABLE `prims` ADD COLUMN `PhysInertia` TEXT default NULL;
+COMMIT;

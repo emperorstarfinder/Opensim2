@@ -46,13 +46,16 @@ namespace OpenSim.Services.Connectors
                 LogManager.GetLogger(
                 MethodBase.GetCurrentMethod().DeclaringType);
 
+        const int MAXSENDRETRIESLEN = 30;
+
         private string m_ServerURI = String.Empty;
-        private IImprovedAssetCache m_Cache = null;
+        private IAssetCache m_Cache = null;
         private int m_retryCounter;
-        private Dictionary<int, List<AssetBase>> m_retryQueue = new Dictionary<int, List<AssetBase>>();
+        private bool m_inRetries;
+        private List<AssetBase>[] m_sendRetries = new  List<AssetBase>[MAXSENDRETRIESLEN];
         private System.Timers.Timer m_retryTimer;
         private int m_maxAssetRequestConcurrency = 30;
-        
+
         private delegate void AssetRetrievedEx(AssetBase asset);
 
         // Keeps track of concurrent requests for the same asset, so that it's only loaded once.
@@ -110,9 +113,9 @@ namespace OpenSim.Services.Connectors
                 throw new Exception("Asset connector init error");
             }
 
-
             m_retryTimer = new System.Timers.Timer();
             m_retryTimer.Elapsed += new ElapsedEventHandler(retryCheck);
+            m_retryTimer.AutoReset = true;
             m_retryTimer.Interval = 60000;
 
             Uri serverUri = new Uri(m_ServerURI);
@@ -147,7 +150,7 @@ namespace OpenSim.Services.Connectors
             string prefix = id.Substring(0, 2).ToLower();
 
             string host;
-            
+
             // HG URLs will not be valid UUIDS
             if (m_UriMap.ContainsKey(prefix))
                 host = m_UriMap[prefix];
@@ -166,52 +169,71 @@ namespace OpenSim.Services.Connectors
 
         protected void retryCheck(object source, ElapsedEventArgs e)
         {
-            m_retryCounter++;
-            if (m_retryCounter > 60)
-                m_retryCounter -= 60;
-
-            List<int> keys = new List<int>();
-            foreach (int a in m_retryQueue.Keys)
+            lock(m_sendRetries)
             {
-                keys.Add(a);
+                if(m_inRetries)
+                    return;
+                m_inRetries = true;
             }
-            foreach (int a in keys)
+
+            m_retryCounter++;
+            if(m_retryCounter >= 61 ) // avoid overflow 60 is max in use below
+                m_retryCounter = 1;
+
+            int inUse = 0;
+            int nextlevel;
+            int timefactor;
+            List<AssetBase> retrylist;
+            // we need to go down
+            for(int i = MAXSENDRETRIESLEN - 1; i >= 0; i--)
             {
+                lock(m_sendRetries)
+                    retrylist = m_sendRetries[i];
+
+                if(retrylist == null)
+                    continue;
+
+                inUse++;
+                nextlevel = i + 1;
+
                 //We exponentially fall back on frequency until we reach one attempt per hour
                 //The net result is that we end up in the queue for roughly 24 hours..
                 //24 hours worth of assets could be a lot, so the hope is that the region admin
                 //will have gotten the asset connector back online quickly!
-
-                int timefactor = a ^ 2; 
-                if (timefactor > 60)
+                if(i == 0)
+                    timefactor = 1;
+                else
                 {
-                    timefactor = 60;
+                    timefactor = 1 << nextlevel;
+                    if (timefactor > 60)
+                        timefactor = 60;
                 }
 
-                //First, find out if we care about this timefactor
-                if (timefactor % a == 0)
-                {
-                    //Yes, we do!   
-                    List<AssetBase> retrylist = m_retryQueue[a];
-                    m_retryQueue.Remove(a);
+                if(m_retryCounter < timefactor)
+                    continue; // to update inUse;
 
-                    foreach(AssetBase ass in retrylist)
-                    {
-                        Store(ass); //Store my ass. This function will put it back in the dictionary if it fails
-                    }
-                }
+                if (m_retryCounter % timefactor != 0)
+                    continue;
+
+                // a list to retry
+                lock(m_sendRetries)
+                    m_sendRetries[i] = null;
+
+                // we are the only ones with a copy of this retrylist now
+                foreach(AssetBase ass in retrylist)
+                   retryStore(ass, nextlevel);
             }
 
-            if (m_retryQueue.Count == 0)
+            lock(m_sendRetries)
             {
-                //It might only be one tick per minute, but I have
-                //repented and abandoned my wasteful ways
-                m_retryCounter = 0;
-                m_retryTimer.Stop();
+                if(inUse == 0 )
+                    m_retryTimer.Stop();
+
+                m_inRetries = false;
             }
         }
 
-        protected void SetCache(IImprovedAssetCache cache)
+        protected void SetCache(IAssetCache cache)
         {
             m_Cache = cache;
         }
@@ -221,9 +243,13 @@ namespace OpenSim.Services.Connectors
             string uri = MapServer(id) + "/assets/" + id;
 
             AssetBase asset = null;
+
             if (m_Cache != null)
-                asset = m_Cache.Get(id);
-            
+            {
+                if (!m_Cache.Get(id, out asset))
+                    return null;
+            }
+
             if (asset == null || asset.Data == null || asset.Data.Length == 0)
             {
                 // XXX: Commented out for now since this has either never been properly operational or not for some time
@@ -237,8 +263,14 @@ namespace OpenSim.Services.Connectors
 
                 asset = SynchronousRestObjectRequester.MakeRequest<int, AssetBase>("GET", uri, 0, m_Auth);
 
+
                 if (m_Cache != null)
-                    m_Cache.Cache(asset);
+                {
+                    if (asset != null)
+                        m_Cache.Cache(asset);
+                    else
+                        m_Cache.CacheNegative(id);
+                }
             }
             return asset;
         }
@@ -247,17 +279,22 @@ namespace OpenSim.Services.Connectors
         {
 //            m_log.DebugFormat("[ASSET SERVICE CONNECTOR]: Cache request for {0}", id);
 
+            AssetBase asset = null;
             if (m_Cache != null)
-                return m_Cache.Get(id);
+            {
+                m_Cache.Get(id, out asset);
+            }
 
-            return null;
+            return asset;
         }
 
         public AssetMetadata GetMetadata(string id)
         {
             if (m_Cache != null)
             {
-                AssetBase fullAsset = m_Cache.Get(id);
+                AssetBase fullAsset;
+                if (!m_Cache.Get(id, out fullAsset))
+                    return null;
 
                 if (fullAsset != null)
                     return fullAsset.Metadata;
@@ -273,7 +310,9 @@ namespace OpenSim.Services.Connectors
         {
             if (m_Cache != null)
             {
-                AssetBase fullAsset = m_Cache.Get(id);
+                AssetBase fullAsset;
+                if (!m_Cache.Get(id, out fullAsset))
+                    return null;
 
                 if (fullAsset != null)
                     return fullAsset.Data;
@@ -324,58 +363,34 @@ namespace OpenSim.Services.Connectors
                 string uri = r.uri;
                 string id = r.id;
 
-                bool success = false;
                 try
                 {
                     AssetBase a = SynchronousRestObjectRequester.MakeRequest<int, AssetBase>("GET", uri, 0, 30000, m_Auth);
-                    if (a != null)
+
+                    if (a != null && m_Cache != null)
+                        m_Cache.Cache(a);
+
+                    List<AssetRetrievedEx> handlers;
+                    lock (m_AssetHandlers)
                     {
-                        if (m_Cache != null)
-                            m_Cache.Cache(a);
+                        handlers = m_AssetHandlers[id];
+                        m_AssetHandlers.Remove(id);
+                    }
 
-                        List<AssetRetrievedEx> handlers;
-                        lock (m_AssetHandlers)
-                        {
-                            handlers = m_AssetHandlers[id];
-                            m_AssetHandlers.Remove(id);
-                        }
-
+                    if(handlers != null)
+                    {
                         Util.FireAndForget(x =>
-                            {
-
-                                foreach (AssetRetrievedEx h in handlers)
-                                {
-                                    // Util.FireAndForget(x =>
-                                    // {
-                                    try { h.Invoke(a); }
-                                    catch { }
-                                    // });
-                                }
-
-                                if (handlers != null)
-                                    handlers.Clear();
-
-                            });
-
-//                        if (handlers != null)
-//                            handlers.Clear();
-                        success = true;
-                    }
-                }
-                finally
-                {
-                    if (!success)
-                    {
-                        List<AssetRetrievedEx> handlers;
-                        lock (m_AssetHandlers)
                         {
-                            handlers = m_AssetHandlers[id];
-                            m_AssetHandlers.Remove(id);
-                        }
-                        if (handlers != null)
+                            foreach (AssetRetrievedEx h in handlers)
+                            {
+                                try { h.Invoke(a); }
+                                catch { }
+                            }
                             handlers.Clear();
+                        });
                     }
                 }
+                catch { }
             }
         }
 
@@ -385,7 +400,10 @@ namespace OpenSim.Services.Connectors
 
             AssetBase asset = null;
             if (m_Cache != null)
-                asset = m_Cache.Get(id);
+            {
+                if (!m_Cache.Get(id, out asset))
+                    return false;
+            }
 
             if (asset == null || asset.Data == null || asset.Data.Length == 0)
             {
@@ -393,29 +411,24 @@ namespace OpenSim.Services.Connectors
                 {
                     AssetRetrievedEx handlerEx = new AssetRetrievedEx(delegate(AssetBase _asset) { handler(id, sender, _asset); });
 
-//                    AssetRetrievedEx handlers;
                     List<AssetRetrievedEx> handlers;
                     if (m_AssetHandlers.TryGetValue(id, out handlers))
                     {
                         // Someone else is already loading this asset. It will notify our handler when done.
-//                        handlers += handlerEx;
                         handlers.Add(handlerEx);
                         return true;
                     }
 
-                    // Load the asset ourselves
-//                    handlers += handlerEx;
                     handlers = new List<AssetRetrievedEx>();
                     handlers.Add(handlerEx);
 
                     m_AssetHandlers.Add(id, handlers);
+
+                    QueuedAssetRequest request = new QueuedAssetRequest();
+                    request.id = id;
+                    request.uri = uri;
+                    m_requestQueue.Enqueue(request);
                 }
-
-                QueuedAssetRequest request = new QueuedAssetRequest();
-                request.id = id;
-                request.uri = uri;
-
-                m_requestQueue.Enqueue(request);
             }
             else
             {
@@ -439,7 +452,7 @@ namespace OpenSim.Services.Connectors
                 // This is most likely to happen because the server doesn't support this function,
                 // so just silently return "doesn't exist" for all the assets.
             }
-            
+
             if (exist == null)
                 exist = new bool[ids.Length];
 
@@ -495,43 +508,34 @@ namespace OpenSim.Services.Connectors
                 newID = SynchronousRestObjectRequester.
                         MakeRequest<AssetBase, string>("POST", uri, asset, 100000, m_Auth);
             }
-            catch {}
+            catch
+            {
+                newID = null;
+            }
 
             if (newID == null || newID == String.Empty || newID == stringUUIDZero)
             {
-                //The asset upload failed, put it in a queue for later
-                asset.UploadAttempts++;
-                if (asset.UploadAttempts > 30)
+                //The asset upload failed, try later
+                lock(m_sendRetries)
                 {
-                    //By this stage we've been in the queue for a good few hours;
-                    //We're going to drop the asset.
-                    m_log.ErrorFormat("[Assets] Dropping asset {0} - Upload has been in the queue for too long.", asset.ID.ToString());
-                }
-                else
-                {
-                    if (!m_retryQueue.ContainsKey(asset.UploadAttempts))
-                    {
-                        m_retryQueue.Add(asset.UploadAttempts, new List<AssetBase>());
-                    }
-                    List<AssetBase> m_queue = m_retryQueue[asset.UploadAttempts];
+                    if (m_sendRetries[0] == null)
+                        m_sendRetries[0] = new List<AssetBase>();
+                    List<AssetBase> m_queue = m_sendRetries[0];
                     m_queue.Add(asset);
-                    m_log.WarnFormat("[Assets] Upload failed: {0} - Requeuing asset for another run.", asset.ID.ToString());
+                    m_log.WarnFormat("[Assets] Upload failed: {0} type {1} will retry later",
+                            asset.ID.ToString(), asset.Type.ToString());
                     m_retryTimer.Start();
                 }
             }
             else
             {
-                if (asset.UploadAttempts > 0)
-                {
-                    m_log.InfoFormat("[Assets] Upload of {0} succeeded after {1} failed attempts", asset.ID.ToString(), asset.UploadAttempts.ToString());
-                }
                 if (newID != asset.ID)
                 {
                     // Placing this here, so that this work with old asset servers that don't send any reply back
                     // SynchronousRestObjectRequester returns somethins that is not an empty string
 
                     asset.ID = newID;
-// what about FullID ????
+
                     if (m_Cache != null)
                         m_Cache.Cache(asset);
                 }
@@ -539,12 +543,68 @@ namespace OpenSim.Services.Connectors
             return asset.ID;
         }
 
+        public void retryStore(AssetBase asset, int nextRetryLevel)
+        {
+/* this may be bad, so excluding
+            if (m_Cache != null && !m_Cache.Check(asset.ID))
+            {
+                m_log.WarnFormat("[Assets] Upload giveup asset bc no longer in local cache: {0}",
+                    asset.ID.ToString();
+                return; // if no longer in cache, it was deleted or expired
+            }
+*/
+            string uri = MapServer(asset.FullID.ToString()) + "/assets/";
+
+            string newID = null;
+            try
+            {
+                newID = SynchronousRestObjectRequester.
+                        MakeRequest<AssetBase, string>("POST", uri, asset, 100000, m_Auth);
+            }
+            catch
+            {
+                newID = null;
+            }
+
+            if (newID == null || newID == String.Empty || newID == stringUUIDZero)
+            {
+                if(nextRetryLevel >= MAXSENDRETRIESLEN)
+                    m_log.WarnFormat("[Assets] Upload giveup after several retries id: {0} type {1}",
+                            asset.ID.ToString(), asset.Type.ToString());
+                else
+                {
+                    lock(m_sendRetries)
+                    {
+                        if (m_sendRetries[nextRetryLevel] == null)
+                        {
+                            m_sendRetries[nextRetryLevel] = new List<AssetBase>();
+                        }
+                        List<AssetBase> m_queue = m_sendRetries[nextRetryLevel];
+                        m_queue.Add(asset);
+                    m_log.WarnFormat("[Assets] Upload failed: {0} type {1} will retry later",
+                            asset.ID.ToString(), asset.Type.ToString());
+                    }
+                }
+            }
+            else
+            {
+                m_log.InfoFormat("[Assets] Upload of {0} succeeded after {1} failed attempts", asset.ID.ToString(), nextRetryLevel.ToString());
+                if (newID != asset.ID)
+                {
+                     asset.ID = newID;
+
+                    if (m_Cache != null)
+                        m_Cache.Cache(asset);
+                }
+            }
+        }
+
         public bool UpdateContent(string id, byte[] data)
         {
             AssetBase asset = null;
 
             if (m_Cache != null)
-                asset = m_Cache.Get(id);
+                m_Cache.Get(id, out asset);
 
             if (asset == null)
             {
@@ -568,6 +628,7 @@ namespace OpenSim.Services.Connectors
             }
             return false;
         }
+
 
         public bool Delete(string id)
         {

@@ -41,7 +41,7 @@ using OpenSim.Services.Interfaces;
 namespace OpenSim.Region.CoreModules.Asset
 {
     [Extension(Path = "/OpenSim/RegionModules", NodeName = "RegionModule", Id = "GlynnTuckerAssetCache")]
-    public class GlynnTuckerAssetCache : ISharedRegionModule, IImprovedAssetCache
+    public class GlynnTuckerAssetCache : ISharedRegionModule, IAssetCache
     {
         private static readonly ILog m_log =
                 LogManager.GetLogger(
@@ -55,7 +55,7 @@ namespace OpenSim.Region.CoreModules.Asset
         // Instrumentation
         private uint m_DebugRate;
 
-        public Type ReplaceableInterface 
+        public Type ReplaceableInterface
         {
             get { return null; }
         }
@@ -100,7 +100,7 @@ namespace OpenSim.Region.CoreModules.Asset
         public void AddRegion(Scene scene)
         {
             if (m_Enabled)
-                scene.RegisterModuleInterface<IImprovedAssetCache>(this);
+                scene.RegisterModuleInterface<IAssetCache>(this);
         }
 
         public void RemoveRegion(Scene scene)
@@ -112,7 +112,7 @@ namespace OpenSim.Region.CoreModules.Asset
         }
 
         ////////////////////////////////////////////////////////////
-        // IImprovedAssetCache
+        // IAssetCache
         //
 
         public bool Check(string id)
@@ -126,14 +126,20 @@ namespace OpenSim.Region.CoreModules.Asset
                 m_Cache.AddOrUpdate(asset.ID, asset);
         }
 
-        public AssetBase Get(string id)
+        public void CacheNegative(string id)
         {
-            Object asset = null;
-            m_Cache.TryGet(id, out asset);
+            // We don't do negative caching
+        }
 
-            Debug(asset);
+        public bool Get(string id, out AssetBase asset)
+        {
+            Object a = null;
+            m_Cache.TryGet(id, out a);
 
-            return (AssetBase)asset;
+            Debug(a);
+
+            asset = (AssetBase)a;
+            return true;
         }
 
         public void Expire(string id)

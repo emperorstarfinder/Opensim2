@@ -71,7 +71,7 @@ namespace OpenSim.Region.Framework.Scenes.Tests
             m_so1.ScriptSetTemporaryStatus(false);
 
             Assert.That(m_so1.RootPart.Flags, Is.EqualTo(PrimFlags.None));
-            Assert.That(m_so1.Backup, Is.True);          
+            Assert.That(m_so1.Backup, Is.True);
         }
 
         [Test]
@@ -91,7 +91,7 @@ namespace OpenSim.Region.Framework.Scenes.Tests
 
             m_so1.ScriptSetPhantomStatus(false);
 
-            Assert.That(rootPart.Flags, Is.EqualTo(PrimFlags.None));            
+            Assert.That(rootPart.Flags, Is.EqualTo(PrimFlags.None));
         }
 
         [Test]
@@ -107,11 +107,12 @@ namespace OpenSim.Region.Framework.Scenes.Tests
             m_so1.ScriptSetVolumeDetect(true);
 
 //            Console.WriteLine("so.RootPart.Flags [{0}]", so.RootPart.Flags);
-            Assert.That(rootPart.Flags, Is.EqualTo(PrimFlags.Phantom));
+            // PrimFlags.JointLP2P is incorrect it now means VolumeDetect (as defined by viewers)
+            Assert.That(rootPart.Flags, Is.EqualTo(PrimFlags.Phantom | PrimFlags.JointLP2P));
 
             m_so1.ScriptSetVolumeDetect(false);
 
-            Assert.That(rootPart.Flags, Is.EqualTo(PrimFlags.None));            
+            Assert.That(rootPart.Flags, Is.EqualTo(PrimFlags.None));
         }
 
         [Test]
@@ -146,13 +147,14 @@ namespace OpenSim.Region.Framework.Scenes.Tests
             m_so1.ScriptSetPhysicsStatus(true);
             m_so1.ScriptSetVolumeDetect(true);
 
-            Assert.That(rootPart.Flags, Is.EqualTo(PrimFlags.Phantom | PrimFlags.Physics));
+            // PrimFlags.JointLP2P is incorrect it now means VolumeDetect (as defined by viewers)
+            Assert.That(rootPart.Flags, Is.EqualTo(PrimFlags.Phantom | PrimFlags.Physics | PrimFlags.JointLP2P));
 
             m_so1.ScriptSetVolumeDetect(false);
 
-            Assert.That(rootPart.Flags, Is.EqualTo(PrimFlags.Physics));            
+            Assert.That(rootPart.Flags, Is.EqualTo(PrimFlags.Physics));
         }
-        
+
         [Test]
         public void TestSetPhysicsLinkset()
         {

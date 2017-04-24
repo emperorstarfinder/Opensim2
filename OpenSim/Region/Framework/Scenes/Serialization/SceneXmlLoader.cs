@@ -70,6 +70,7 @@ namespace OpenSim.Region.Framework.Scenes.Serialization
                     //obj.RegenerateFullIDs();
 
                     scene.AddNewSceneObject(obj, true);
+                    obj.AggregateDeepPerms();
                 }
             }
             else
@@ -265,6 +266,7 @@ namespace OpenSim.Region.Framework.Scenes.Serialization
             foreach (XmlNode aPrimNode in rootNode.ChildNodes)
             {
                 SceneObjectGroup obj = DeserializeGroupFromXml2(aPrimNode.OuterXml);
+                scene.AddNewSceneObject(obj, true);
                 if (startScripts)
                     sceneObjects.Add(obj);
             }

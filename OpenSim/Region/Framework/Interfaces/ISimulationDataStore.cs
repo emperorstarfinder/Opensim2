@@ -45,7 +45,7 @@ namespace OpenSim.Region.Framework.Interfaces
         /// Dispose the database
         /// </summary>
         void Dispose();
-        
+
         /// <summary>
         /// Stores all object's details apart from inventory
         /// </summary>
@@ -75,17 +75,25 @@ namespace OpenSim.Region.Framework.Interfaces
         List<SceneObjectGroup> LoadObjects(UUID regionUUID);
 
         /// <summary>
-        /// Store a terrain revision in region storage
+        /// Store a terrain in region storage
         /// </summary>
         /// <param name="ter">HeightField data</param>
         /// <param name="regionID">region UUID</param>
         void StoreTerrain(TerrainData terrain, UUID regionID);
 
+        /// <summary>
+        /// Store baked terrain in region storage
+        /// </summary>
+        /// <param name="ter">HeightField data</param>
+        /// <param name="regionID">region UUID</param>
+        void StoreBakedTerrain(TerrainData terrain, UUID regionID);
+
+
         // Legacy version kept for downward compabibility
         void StoreTerrain(double[,] terrain, UUID regionID);
-        
+
         /// <summary>
-        /// Load the latest terrain revision from region storage
+        /// Load terrain from region storage
         /// </summary>
         /// <param name="regionID">the region UUID</param>
         /// <param name="pSizeX">the X dimension of the terrain being filled</param>
@@ -93,12 +101,13 @@ namespace OpenSim.Region.Framework.Interfaces
         /// <param name="pSizeZ">the Z dimension of the terrain being filled</param>
         /// <returns>Heightfield data</returns>
         TerrainData LoadTerrain(UUID regionID, int pSizeX, int pSizeY, int pSizeZ);
+        TerrainData LoadBakedTerrain(UUID regionID, int pSizeX, int pSizeY, int pSizeZ);
 
         // Legacy version kept for downward compabibility
         double[,] LoadTerrain(UUID regionID);
 
         void StoreLandObject(ILandObject Parcel);
-        
+
         /// <summary>
         /// <list type="bullet">
         /// <item>delete from land where UUID=globalID</item>
@@ -107,7 +116,7 @@ namespace OpenSim.Region.Framework.Interfaces
         /// </summary>
         /// <param name="globalID"></param>
         void RemoveLandObject(UUID globalID);
-        
+
         List<LandData> LoadLandObjects(UUID regionUUID);
 
         void StoreRegionSettings(RegionSettings rs);

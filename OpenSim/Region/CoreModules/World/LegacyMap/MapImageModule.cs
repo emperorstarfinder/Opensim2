@@ -82,11 +82,11 @@ namespace OpenSim.Region.CoreModules.World.LegacyMap
 
             string[] configSections = new string[] { "Map", "Startup" };
 
-            drawPrimVolume 
+            drawPrimVolume
                 = Util.GetConfigVarFromSections<bool>(m_config, "DrawPrimOnMapTile", configSections, drawPrimVolume);
-            textureTerrain 
+            textureTerrain
                 = Util.GetConfigVarFromSections<bool>(m_config, "TextureOnMapTile", configSections, textureTerrain);
-            generateMaptiles 
+            generateMaptiles
                 = Util.GetConfigVarFromSections<bool>(m_config, "GenerateMaptiles", configSections, generateMaptiles);
 
             if (generateMaptiles)
@@ -126,15 +126,15 @@ namespace OpenSim.Region.CoreModules.World.LegacyMap
                     catch (Exception)
                     {
                         m_log.ErrorFormat(
-                            "[MAPTILE]: Failed to load Static map image texture file: {0} for {1}", 
+                            "[MAPTILE]: Failed to load Static map image texture file: {0} for {1}",
                             m_scene.RegionInfo.MaptileStaticFile, m_scene.Name);
                         //mapbmp = new Bitmap((int)m_scene.Heightmap.Width, (int)m_scene.Heightmap.Height, System.Drawing.Imaging.PixelFormat.Format24bppRgb);
                         mapbmp = null;
                     }
 
-                    if (mapbmp != null) 
+                    if (mapbmp != null)
                         m_log.DebugFormat(
-                            "[MAPTILE]: Static map image texture file {0} found for {1}", 
+                            "[MAPTILE]: Static map image texture file {0} found for {1}",
                             m_scene.RegionInfo.MaptileStaticFile, m_scene.Name);
                 }
             }
@@ -308,7 +308,7 @@ namespace OpenSim.Region.CoreModules.World.LegacyMap
             List<uint> z_localIDs = new List<uint>();
             Dictionary<uint, DrawStruct> z_sort = new Dictionary<uint, DrawStruct>();
 
-            try 
+            try
             {
                 lock (objs)
                 {
@@ -382,7 +382,7 @@ namespace OpenSim.Region.CoreModules.World.LegacyMap
 
                                     Vector3 pos = part.GetWorldPosition();
 
-                                    // skip prim outside of retion
+                                    // skip prim outside of region
                                     if (!m_scene.PositionIsInCurrentRegion(pos))
                                         continue;
 
@@ -406,12 +406,13 @@ namespace OpenSim.Region.CoreModules.World.LegacyMap
                                     {
                                         // Translate scale by rotation so scale is represented properly when object is rotated
                                         Vector3 lscale = new Vector3(part.Shape.Scale.X, part.Shape.Scale.Y, part.Shape.Scale.Z);
+                                        lscale *= 0.5f;
+
                                         Vector3 scale = new Vector3();
                                         Vector3 tScale = new Vector3();
                                         Vector3 axPos = new Vector3(pos.X, pos.Y, pos.Z);
 
-                                        Quaternion llrot = part.GetWorldRotation();
-                                        Quaternion rot = new Quaternion(llrot.W, llrot.X, llrot.Y, llrot.Z);
+                                        Quaternion rot = part.GetWorldRotation();
                                         scale = lscale * rot;
 
                                         // negative scales don't work in this situation
@@ -470,7 +471,6 @@ namespace OpenSim.Region.CoreModules.World.LegacyMap
 
                                         tScale = new Vector3(lscale.X, -lscale.Y, -lscale.Z);
                                         scale = ((tScale * rot));
-
                                         vertexes[2] = (new Vector3((pos.X + scale.X), (pos.Y + scale.Y), (pos.Z + scale.Z)));
 
                                         //vertexes[2].x = pos.X + vertexes[2].x;

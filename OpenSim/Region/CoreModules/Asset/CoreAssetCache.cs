@@ -40,7 +40,7 @@ using OpenSim.Services.Interfaces;
 namespace OpenSim.Region.CoreModules.Asset
 {
     [Extension(Path = "/OpenSim/RegionModules", NodeName = "RegionModule", Id = "CoreAssetCache")]
-    public class CoreAssetCache : ISharedRegionModule, IImprovedAssetCache
+    public class CoreAssetCache : ISharedRegionModule, IAssetCache
     {
         private static readonly ILog m_log =
                 LogManager.GetLogger(
@@ -54,7 +54,7 @@ namespace OpenSim.Region.CoreModules.Asset
             get { return "CoreAssetCache"; }
         }
 
-        public Type ReplaceableInterface 
+        public Type ReplaceableInterface
         {
             get { return null; }
         }
@@ -98,7 +98,7 @@ namespace OpenSim.Region.CoreModules.Asset
         public void AddRegion(Scene scene)
         {
             if (m_Enabled)
-                scene.RegisterModuleInterface<IImprovedAssetCache>(this);
+                scene.RegisterModuleInterface<IAssetCache>(this);
         }
 
         public void RemoveRegion(Scene scene)
@@ -110,12 +110,15 @@ namespace OpenSim.Region.CoreModules.Asset
         }
 
         ////////////////////////////////////////////////////////////
-        // IImprovedAssetCache
+        // IAssetCache
         //
         public bool Check(string id)
         {
             // XXX This is probably not an efficient implementation.
-            return Get(id) != null;
+            AssetBase asset;
+            if (!Get(id, out asset))
+                return false;
+            return asset != null;
         }
 
         public void Cache(AssetBase asset)
@@ -124,9 +127,15 @@ namespace OpenSim.Region.CoreModules.Asset
                 m_Cache.Store(asset.ID, asset);
         }
 
-        public AssetBase Get(string id)
+        public void CacheNegative(string id)
         {
-            return (AssetBase)m_Cache.Get(id);
+            // We don't do negative caching
+        }
+
+        public bool Get(string id, out AssetBase asset)
+        {
+            asset = (AssetBase)m_Cache.Get(id);
+            return true;
         }
 
         public void Expire(string id)

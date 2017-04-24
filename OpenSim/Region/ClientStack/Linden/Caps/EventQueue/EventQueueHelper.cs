@@ -105,7 +105,7 @@ namespace OpenSim.Region.ClientStack.Linden
 
             return BuildEvent("DisableSimulator", llsdBody);
         }
-        
+
         public static OSD CrossRegion(ulong handle, Vector3 pos, Vector3 lookAt,
                                       IPEndPoint newRegionExternalEndPoint,
                                       string capsURL, UUID agentID, UUID sessionID,
@@ -194,13 +194,13 @@ namespace OpenSim.Region.ClientStack.Linden
             script.Add("ItemID", OSD.FromUUID(itemID));
             script.Add("Running", OSD.FromBoolean(running));
             script.Add("Mono", OSD.FromBoolean(mono));
-            
+
             OSDArray scriptArr = new OSDArray();
             scriptArr.Add(script);
-            
+
             OSDMap body = new OSDMap();
             body.Add("Script", scriptArr);
-            
+
             return BuildEvent("ScriptRunningReply", body);
         }
 
@@ -243,7 +243,7 @@ namespace OpenSim.Region.ClientStack.Linden
         {
             OSDMap messageParams = new OSDMap(15);
             messageParams.Add("type", new OSDInteger((int)dialog));
-            
+
             OSDArray positionArray = new OSDArray(3);
             positionArray.Add(OSD.FromReal(position.X));
             positionArray.Add(OSD.FromReal(position.Y));
@@ -342,6 +342,18 @@ namespace OpenSim.Region.ClientStack.Linden
             return chatterBoxSessionAgentListUpdates;
         }
 
+        public static OSD ChatterBoxForceClose(UUID sessionID, string reason)
+        {
+            OSDMap body = new OSDMap(2);
+            body.Add("session_id", new OSDUUID(sessionID));
+            body.Add("reason", new OSDString(reason));
+
+            OSDMap chatterBoxForceClose = new OSDMap(2);
+            chatterBoxForceClose.Add("message", new OSDString("ForceCloseChatterBoxSession"));
+            chatterBoxForceClose.Add("body", body);
+            return chatterBoxForceClose;
+        }
+
         public static OSD GroupMembershipData(UUID receiverAgent, GroupMembershipData[] data)
         {
             OSDArray AgentData = new OSDArray(1);
@@ -411,7 +423,7 @@ namespace OpenSim.Region.ClientStack.Linden
                 QueryDataMap.Add("SnapShotID", OSD.FromUUID(groupDataBlock.SnapshotID));
                 QueryDataMap.Add("ProductSku", OSD.FromInteger(0));
                 QueryDataMap.Add("Price", OSD.FromInteger(groupDataBlock.Price));
-                
+
                 QueryData.Add(QueryDataMap);
             }
             body.Add("QueryData", QueryData);
@@ -432,7 +444,7 @@ namespace OpenSim.Region.ClientStack.Linden
         public static OSD partPhysicsProperties(uint localID, byte physhapetype,
                         float density, float friction, float bounce, float gravmod)
         {
-            
+
             OSDMap physinfo = new OSDMap(6);
             physinfo["LocalID"] = localID;
             physinfo["Density"] = density;

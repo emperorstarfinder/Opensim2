@@ -42,6 +42,7 @@ namespace OpenSim.Services.Interfaces
         string GetUserUUI(UUID uuid);
         bool GetUserUUI(UUID userID, out string uui);
         string GetUserServerURL(UUID uuid, string serverType);
+        Dictionary<UUID,string> GetUsersNames(string[] ids);
 
         /// <summary>
         /// Get user ID by the given name.
@@ -78,7 +79,7 @@ namespace OpenSim.Services.Interfaces
         /// <param name="uuid"></param>
         /// <param name="firstName"></param>
         /// <param name="lastName"></param>
-        void AddUser(UUID uuid, string firstName, string lastName);
+        void AddUser(UUID uuid, string first, string last, bool isNPC = false);
 
         /// <summary>
         /// Add a user.

@@ -74,6 +74,11 @@ namespace OpenSim.Data.Null
             m_store.StoreTerrain(terrain, regionID);
         }
 
+        public void StoreBakedTerrain(TerrainData terrain, UUID regionID)
+        {
+            m_store.StoreBakedTerrain(terrain, regionID);
+        }
+
         public double[,] LoadTerrain(UUID regionID)
         {
             return m_store.LoadTerrain(regionID);
@@ -82,6 +87,11 @@ namespace OpenSim.Data.Null
         public TerrainData LoadTerrain(UUID regionID, int pSizeX, int pSizeY, int pSizeZ)
         {
             return m_store.LoadTerrain(regionID, pSizeX, pSizeY, pSizeZ);
+        }
+
+        public TerrainData LoadBakedTerrain(UUID regionID, int pSizeX, int pSizeY, int pSizeZ)
+        {
+            return m_store.LoadBakedTerrain(regionID, pSizeX, pSizeY, pSizeZ);
         }
 
         public void StoreLandObject(ILandObject Parcel)
@@ -164,14 +174,15 @@ namespace OpenSim.Data.Null
     public class NullDataStore : ISimulationDataStore
     {
 //        private static readonly ILog m_log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
-        
+
         protected Dictionary<UUID, RegionSettings> m_regionSettings = new Dictionary<UUID, RegionSettings>();
         protected Dictionary<UUID, SceneObjectPart> m_sceneObjectParts = new Dictionary<UUID, SceneObjectPart>();
-        protected Dictionary<UUID, ICollection<TaskInventoryItem>> m_primItems 
+        protected Dictionary<UUID, ICollection<TaskInventoryItem>> m_primItems
             = new Dictionary<UUID, ICollection<TaskInventoryItem>>();
         protected Dictionary<UUID, TerrainData> m_terrains = new Dictionary<UUID, TerrainData>();
+        protected Dictionary<UUID, TerrainData> m_bakedterrains = new Dictionary<UUID, TerrainData>();
         protected Dictionary<UUID, LandData> m_landData = new Dictionary<UUID, LandData>();
-        
+
         public void Initialise(string dbfile)
         {
             return;
@@ -185,14 +196,14 @@ namespace OpenSim.Data.Null
         {
             m_regionSettings[rs.RegionUUID] = rs;
         }
-        
+
         public RegionLightShareData LoadRegionWindlightSettings(UUID regionUUID)
         {
             //This connector doesn't support the windlight module yet
             //Return default LL windlight settings
             return new RegionLightShareData();
         }
-        
+
         public void RemoveRegionWindlightSettings(UUID regionID)
         {
         }
@@ -227,7 +238,7 @@ namespace OpenSim.Data.Null
 
             if (rs == null)
                 rs = new RegionSettings();
-            
+
             return rs;
         }
 
@@ -239,9 +250,9 @@ namespace OpenSim.Data.Null
             foreach (SceneObjectPart prim in obj.Parts)
             {
 //                m_log.DebugFormat(
-//                    "[MOCK REGION DATA PLUGIN]: Storing part {0} {1} in object {2} {3} in region {4}", 
+//                    "[MOCK REGION DATA PLUGIN]: Storing part {0} {1} in object {2} {3} in region {4}",
 //                    prim.Name, prim.UUID, obj.Name, obj.UUID, regionUUID);
-                            
+
                 m_sceneObjectParts[prim.UUID] = prim;
             }
         }
@@ -255,7 +266,7 @@ namespace OpenSim.Data.Null
                 if (part.ParentGroup.UUID == obj)
                 {
 //                    m_log.DebugFormat(
-//                        "[MOCK REGION DATA PLUGIN]: Removing part {0} {1} as part of object {2} from {3}", 
+//                        "[MOCK REGION DATA PLUGIN]: Removing part {0} {1} as part of object {2} from {3}",
 //                        part.Name, part.UUID, obj, regionUUID);
                     m_sceneObjectParts.Remove(part.UUID);
                 }
@@ -270,7 +281,7 @@ namespace OpenSim.Data.Null
         public List<SceneObjectGroup> LoadObjects(UUID regionUUID)
         {
             Dictionary<UUID, SceneObjectGroup> objects = new Dictionary<UUID, SceneObjectGroup>();
-            
+
             // Create all of the SOGs from the root prims first
             foreach (SceneObjectPart prim in m_sceneObjectParts.Values)
             {
@@ -307,16 +318,21 @@ namespace OpenSim.Data.Null
                     }
                 }
             }
-            
+
             // TODO: Load items.  This is assymetric - we store items as a separate method but don't retrieve them that
             // way!
-            
+
             return new List<SceneObjectGroup>(objects.Values);
         }
 
         public void StoreTerrain(TerrainData ter, UUID regionID)
         {
             m_terrains[regionID] = ter;
+        }
+
+        public void StoreBakedTerrain(TerrainData ter, UUID regionID)
+        {
+            m_bakedterrains[regionID] = ter;
         }
 
         public void StoreTerrain(double[,] ter, UUID regionID)
@@ -328,6 +344,14 @@ namespace OpenSim.Data.Null
         {
             if (m_terrains.ContainsKey(regionID))
                 return m_terrains[regionID];
+            else
+                return null;
+        }
+
+        public TerrainData LoadBakedTerrain(UUID regionID, int pSizeX, int pSizeY, int pSizeZ)
+        {
+            if (m_bakedterrains.ContainsKey(regionID))
+                return m_bakedterrains[regionID];
             else
                 return null;
         }

@@ -27,6 +27,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using Mono.Addins;
 using Nini.Config;
 using OpenMetaverse;
@@ -39,16 +40,20 @@ namespace OpenSim.Region.CoreModules.World
     [Extension(Path = "/OpenSim/RegionModules", NodeName = "RegionModule", Id = "CloudModule")]
     public class CloudModule : ICloudModule, INonSharedRegionModule
     {
-//        private static readonly log4net.ILog m_log 
+//        private static readonly log4net.ILog m_log
 //            = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         private uint m_frame = 0;
         private int m_frameUpdateRate = 1000;
-        private Random m_rndnums = new Random(Environment.TickCount);
+        private Random m_rndnums;
         private Scene m_scene = null;
         private bool m_ready = false;
         private bool m_enabled = false;
         private float m_cloudDensity = 1.0F;
         private float[] cloudCover = new float[16 * 16];
+        private int m_dataVersion;
+        private bool m_busy;
+        private object cloudlock = new object();
+
 
         public void Initialise(IConfigSource config)
         {
@@ -70,11 +75,17 @@ namespace OpenSim.Region.CoreModules.World
 
             m_scene = scene;
 
-            scene.EventManager.OnNewClient += CloudsToClient;
             scene.RegisterModuleInterface<ICloudModule>(this);
-            scene.EventManager.OnFrame += CloudUpdate;
+            int seed = Environment.TickCount;
+            seed += (int)(scene.RegionInfo.RegionLocX << 16);
+            seed += (int)(scene.RegionInfo.RegionLocY);
+            m_rndnums = new Random(seed);
 
             GenerateCloudCover();
+            m_dataVersion = (int)m_scene.AllocateLocalId();
+
+            scene.EventManager.OnNewClient += CloudsToClient;
+            scene.EventManager.OnFrame += CloudUpdate;
 
             m_ready = true;
         }
@@ -89,7 +100,6 @@ namespace OpenSim.Region.CoreModules.World
             m_scene.EventManager.OnNewClient -= CloudsToClient;
             m_scene.EventManager.OnFrame -= CloudUpdate;
             m_scene.UnregisterModuleInterface<ICloudModule>(this);
-
             m_scene = null;
         }
 
@@ -127,7 +137,8 @@ namespace OpenSim.Region.CoreModules.World
 
             if (cloudCover != null)
             {
-                cover = cloudCover[y * 16 + x];
+                lock(cloudlock)
+                    cover = cloudCover[y * 16 + x];
             }
 
             return cover;
@@ -152,7 +163,7 @@ namespace OpenSim.Region.CoreModules.World
                     columnRight = 0;
                     columnLeft = x - 1;
                 }
-                else 
+                else
                 {
                     columnRight = x + 1;
                     columnLeft = x - 1;
@@ -174,40 +185,65 @@ namespace OpenSim.Region.CoreModules.World
                         rowAbove = y + 1;
                         rowBelow = y - 1;
                     }
-                    float neighborAverage = (cloudCover[rowBelow * 16 + columnLeft] + 
-                                             cloudCover[y * 16 + columnLeft] + 
-                                             cloudCover[rowAbove * 16 + columnLeft] + 
-                                             cloudCover[rowBelow * 16 + x] + 
-                                             cloudCover[rowAbove * 16 + x] + 
-                                             cloudCover[rowBelow * 16 + columnRight] + 
-                                             cloudCover[y * 16 + columnRight] + 
-                                             cloudCover[rowAbove * 16 + columnRight] + 
+                    float neighborAverage = (cloudCover[rowBelow * 16 + columnLeft] +
+                                             cloudCover[y * 16 + columnLeft] +
+                                             cloudCover[rowAbove * 16 + columnLeft] +
+                                             cloudCover[rowBelow * 16 + x] +
+                                             cloudCover[rowAbove * 16 + x] +
+                                             cloudCover[rowBelow * 16 + columnRight] +
+                                             cloudCover[y * 16 + columnRight] +
+                                             cloudCover[rowAbove * 16 + columnRight] +
                                              cloudCover[y * 16 + x]) / 9;
                     newCover[y * 16 + x] = ((neighborAverage / m_cloudDensity) + 0.175f) % 1.0f;
                     newCover[y * 16 + x] *= m_cloudDensity;
                 }
             }
             Array.Copy(newCover, cloudCover, 16 * 16);
+            m_dataVersion++;
         }
-  
-       private void CloudUpdate()
-       {
-           if (((m_frame++ % m_frameUpdateRate) != 0) || !m_ready || (m_cloudDensity == 0))
-           {
-               return;
-           }
-           UpdateCloudCover();
+
+        private void CloudUpdate()
+        {
+            if ((!m_ready ||  m_busy || m_cloudDensity == 0 ||
+                    (m_frame++ % m_frameUpdateRate) != 0))
+                return;
+
+            if(Monitor.TryEnter(cloudlock))
+            {
+                m_busy = true;
+                Util.FireAndForget(delegate
+                    {
+                        try
+                        {
+                            lock(cloudlock)
+                            {
+                                UpdateCloudCover();
+                                m_scene.ForEachClient(delegate(IClientAPI client)
+                                {
+                                    client.SendCloudData(m_dataVersion, cloudCover);
+                                });
+                            }
+                        }
+                        finally
+                        {
+                            m_busy = false;
+                        }
+                    },
+                    null, "CloudModuleUpdate");
+                Monitor.Exit(cloudlock);
+            }
         }
 
         public void CloudsToClient(IClientAPI client)
         {
             if (m_ready)
             {
-                client.SendCloudData(cloudCover);
+                lock(cloudlock)
+                       client.SendCloudData(m_dataVersion, cloudCover);
             }
         }
 
-       
+
         /// <summary>
         /// Calculate the cloud cover over the region.
         /// </summary>

@@ -38,6 +38,7 @@ using LSL_Integer = OpenSim.Region.ScriptEngine.Shared.LSL_Types.LSLInteger;
 using LSL_Float = OpenSim.Region.ScriptEngine.Shared.LSL_Types.LSLFloat;
 using LSL_Key = OpenSim.Region.ScriptEngine.Shared.LSL_Types.LSLString;
 
+
 namespace OpenSim.Region.ScriptEngine.Shared.Api.Interfaces
 {
     /// <summary>
@@ -50,11 +51,10 @@ namespace OpenSim.Region.ScriptEngine.Shared.Api.Interfaces
     /// </summary>
     public enum ThreatLevel
     {
-        // Not documented, presumably means permanently disabled ?
         NoAccess = -1,
 
         /// <summary>
-        /// Function is no threat at all. It doesn't constitute a threat to 
+        /// Function is no threat at all. It doesn't constitute a threat to
         /// either users or the system and has no known side effects.
         /// </summary>
         None = 0,
@@ -66,7 +66,7 @@ namespace OpenSim.Region.ScriptEngine.Shared.Api.Interfaces
         Nuisance = 1,
 
         /// <summary>
-        /// Extreme levels of abuse of this function can cause impaired 
+        /// Extreme levels of abuse of this function can cause impaired
         /// functioning of the region, or very gullible users can be tricked
         /// into experiencing harmless effects.
         /// </summary>
@@ -81,7 +81,7 @@ namespace OpenSim.Region.ScriptEngine.Shared.Api.Interfaces
 
         /// <summary>
         /// Intentional abuse can cause denial of service and crashes with
-        /// potential of data or state loss; or trusting users can be tricked 
+        /// potential of data or state loss; or trusting users can be tricked
         /// into embarrassing or uncomfortable situations.
         /// </summary>
         Moderate = 4,
@@ -145,7 +145,7 @@ namespace OpenSim.Region.ScriptEngine.Shared.Api.Interfaces
         // Avatar Info Commands
         string osGetAgentIP(string agent);
         LSL_List osGetAgents();
-        
+
         // Teleport commands
         void osTeleportAgent(string agent, string regionName, LSL_Types.Vector3 position, LSL_Types.Vector3 lookat);
         void osTeleportAgent(string agent, int regionX, int regionY, LSL_Types.Vector3 position, LSL_Types.Vector3 lookat);
@@ -317,6 +317,13 @@ namespace OpenSim.Region.ScriptEngine.Shared.Api.Interfaces
         void osForceBreakAllLinks();
 
         /// <summary>
+        /// Similar to llDie but given an object UUID
+        /// </summary>
+        /// <param name="objectUUID"></param>
+
+        void osDie(LSL_Key objectUUID);
+
+        /// <summary>
         /// Check if the given key is an npc
         /// </summary>
         /// <param name="npc"></param>
@@ -343,6 +350,8 @@ namespace OpenSim.Region.ScriptEngine.Shared.Api.Interfaces
         rotation    osNpcGetRot(key npc);
         void        osNpcSetRot(LSL_Key npc, rotation rot);
         void        osNpcStopMoveToTarget(LSL_Key npc);
+        void        osNpcSetProfileAbout(LSL_Key npc, string about);
+        void        osNpcSetProfileImage(LSL_Key npc, string image);
         void        osNpcSay(key npc, string message);
         void        osNpcSay(key npc, int channel, string message);
         void        osNpcShout(key npc, int channel, string message);
@@ -476,5 +485,17 @@ namespace OpenSim.Region.ScriptEngine.Shared.Api.Interfaces
 
         LSL_String osRequestURL(LSL_List options);
         LSL_String osRequestSecureURL(LSL_List options);
+        void osCollisionSound(string impact_sound, double impact_volume);
+
+        void osVolumeDetect(int detect);
+
+        LSL_List osGetInertiaData();
+        void osClearInertia();
+        void osSetInertiaAsBox(LSL_Float mass, vector boxSize, vector centerOfMass, rotation rot);
+        void osSetInertiaAsSphere(LSL_Float mass,  LSL_Float radius, vector centerOfMass);
+        void osSetInertiaAsCylinder(LSL_Float mass,  LSL_Float radius, LSL_Float lenght, vector centerOfMass,rotation lslrot);
+
+        LSL_Integer osTeleportObject(LSL_Key objectUUID, vector targetPos, rotation targetrotation, LSL_Integer flags);
+        LSL_Integer osGetLinkNumber(LSL_String name);
     }
 }

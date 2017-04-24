@@ -27,6 +27,7 @@
 using System;
 using System.Reflection;
 using System.Threading;
+using System.Runtime.InteropServices;
 using System.Collections.Generic;
 using OpenSim.Framework;
 using OpenSim.Services.Interfaces;
@@ -43,12 +44,15 @@ namespace OpenSim.Region.CoreModules.ServiceConnectorsOut.Grid
 //        private static readonly ILog m_log =
 //                LogManager.GetLogger(
 //                MethodBase.GetCurrentMethod().DeclaringType);
-        
-        private RegionsExpiringCache m_Cache;
+
+        private static RegionsExpiringCache m_Cache;
+        private int numberInstances;
 
         public RegionInfoCache()
         {
-            m_Cache = new RegionsExpiringCache();
+            if(m_Cache == null)
+                m_Cache = new RegionsExpiringCache();
+            numberInstances++;
         }
 
         public void Cache(GridRegion rinfo)
@@ -56,12 +60,12 @@ namespace OpenSim.Region.CoreModules.ServiceConnectorsOut.Grid
             if (rinfo != null)
                 this.Cache(rinfo.ScopeID, rinfo);
         }
-        
+
         public void Cache(UUID scopeID, GridRegion rinfo)
         {
             if (rinfo == null)
                 return;
-            
+
             m_Cache.AddOrUpdate(scopeID, rinfo, CACHE_EXPIRATION_SECONDS);
         }
 
@@ -69,7 +73,7 @@ namespace OpenSim.Region.CoreModules.ServiceConnectorsOut.Grid
         {
             if (rinfo == null)
                 return;
-            
+
             m_Cache.AddOrUpdate(rinfo.ScopeID, rinfo, 1e7f);
         }
 
@@ -77,22 +81,26 @@ namespace OpenSim.Region.CoreModules.ServiceConnectorsOut.Grid
         {
             if (rinfo == null)
                 return;
-            
-//            m_Cache.AddOrUpdate(scopeID, rinfo, CACHE_EXPIRATION_SECONDS);
-            m_Cache.Add(scopeID, rinfo, CACHE_EXPIRATION_SECONDS); // don't override local regions
+
+            m_Cache.AddOrUpdate(scopeID, rinfo, CACHE_EXPIRATION_SECONDS);
         }
 
         public void Cache(UUID scopeID, GridRegion rinfo, float expireSeconds)
         {
             if (rinfo == null)
                 return;
-            
+
             m_Cache.AddOrUpdate(scopeID, rinfo, expireSeconds);
         }
 
-        public void Remove(UUID scopeID, UUID regionID)
+        public void Remove(UUID scopeID, GridRegion rinfo)
         {
-            m_Cache.Remove(scopeID, regionID);
+            m_Cache.Remove(scopeID, rinfo);
+        }
+
+        public void Remove(UUID scopeID, ulong regionHandle)
+        {
+            m_Cache.Remove(scopeID, regionHandle);
         }
 
         public GridRegion Get(UUID scopeID, UUID regionID, out bool inCache)
@@ -133,11 +141,11 @@ namespace OpenSim.Region.CoreModules.ServiceConnectorsOut.Grid
                 inCache = true;
                 return rinfo;
             }
-            
+
             return null;
         }
 
-        public GridRegion Get(UUID scopeID, int x, int y, out bool inCache)
+        public GridRegion Get(UUID scopeID, uint x, uint y, out bool inCache)
         {
             inCache = false;
 
@@ -147,127 +155,478 @@ namespace OpenSim.Region.CoreModules.ServiceConnectorsOut.Grid
                 inCache = true;
                 return rinfo;
             }
-            
+
             return null;
         }
     }
 
-
-    // following code partialy adapted from lib OpenMetaverse
-    public class RegionKey 
+    //  dont care about endianess
+    [StructLayout(LayoutKind.Explicit, Size = 8, Pack = 8)]
+    public class fastRegionHandle
     {
-        public UUID m_scopeID;
-        public UUID m_RegionID;
-        private DateTime m_expirationDate;
+        [FieldOffset(0)] public ulong handle;
+        [FieldOffset(0)] public uint y;
+        [FieldOffset(4)] public uint x;
 
-        public RegionKey(UUID scopeID, UUID id)
+        public fastRegionHandle(ulong h)
         {
-            m_scopeID = scopeID;
-            m_RegionID = id;
+            handle = h;
         }
 
-        public UUID ScopeID
+        public fastRegionHandle(uint px, uint py)
         {
-            get { return m_scopeID; }
+            y = py & 0xffffff00;
+            x = px & 0xffffff00;
         }
-        public DateTime ExpirationDate
+        // actually do care
+        public ulong toHandle()
         {
-            get { return m_expirationDate; }
-            set { m_expirationDate = value; }
+            if(BitConverter.IsLittleEndian)
+                return handle;
+            return  (ulong) x << 32 | (ulong)y ;
         }
 
+        public static bool operator ==(fastRegionHandle value1, fastRegionHandle value2)
+        {
+            return value1.handle == value2.handle;
+        }
+        public static bool operator !=(fastRegionHandle value1, fastRegionHandle value2)
+        {
+            return value1.handle != value2.handle;
+        }
         public override int GetHashCode()
         {
-            int hash = m_scopeID.GetHashCode();
-            hash += hash * 23 + m_RegionID.GetHashCode();
-            return hash;
+            return handle.GetHashCode();
         }
-
-        public override bool Equals(Object b)
+        public override bool Equals(Object obj)
         {
-            if(b == null)
+            if(obj == null)
                 return false;
-            RegionKey kb = b as RegionKey;
-            return (m_scopeID == kb.m_scopeID && m_RegionID == kb.m_RegionID);    
+            fastRegionHandle p = obj as fastRegionHandle;
+            return p.handle == handle;
         }
     }
 
-    class RegionKeyEqual : EqualityComparer<RegionKey>
+/*
+    [StructLayout(LayoutKind.Explicit, Size = 8, Pack = 8)]
+    public class regionHandle
     {
-        public override int GetHashCode(RegionKey rk)
+        [FieldOffset(0)] private ulong handle;
+        [FieldOffset(0)] public uint a;
+        [FieldOffset(4)] public uint b;
+
+        public regionHandle(ulong h)
         {
-            int hash = rk.m_scopeID.GetHashCode();
-            hash += hash * 23 + rk.m_RegionID.GetHashCode();
-            return hash;
+            handle = h;
         }
 
-        public override bool Equals(RegionKey a, RegionKey b)
+        public regionHandle(uint px, uint py)
         {
-            return (a.m_scopeID == b.m_scopeID && a.m_RegionID == b.m_RegionID);    
+            if(BitConverter.IsLittleEndian)
+            {
+                a = py & 0xffffff00;
+                b = px & 0xffffff00;
+            }
+            else
+            {
+                a = px & 0xffffff00;
+                b = py & 0xffffff00;
+            }
+        }
+
+        public uint x
+        {
+            get
+            {
+                if(BitConverter.IsLittleEndian)
+                    return b;
+                return a;
+            }
+            set
+            {
+                if(BitConverter.IsLittleEndian)
+                    b = value & 0xffffff00;
+                else
+                    a = value & 0xffffff00;
+             }
+        }
+
+        public uint y
+        {
+            get
+            {
+                if(BitConverter.IsLittleEndian)
+                    return a;
+                return b;
+            }
+            set
+            {
+                if(BitConverter.IsLittleEndian)
+                    a = value;
+                else
+                    b = value;
+             }
+        }
+
+        public static bool operator ==(regionHandle value1, regionHandle value2)
+        {
+            return value1.handle == value2.handle;
+        }
+        public static bool operator !=(regionHandle value1, regionHandle value2)
+        {
+            return value1.handle != value2.handle;
+        }
+        public override int GetHashCode()
+        {
+            return handle.GetHashCode();
+        }
+        public override bool Equals(Object obj)
+        {
+            if(obj == null)
+                return false;
+            regionHandle p = obj as regionHandle;
+            return p.handle == handle;
         }
     }
+*/
 
-    public class RegionInfoByScope
+    public class RegionInfoForScope
     {
-        private Dictionary<string, RegionKey> byname;
-        private Dictionary<ulong, RegionKey> byhandle;
+        public const ulong HANDLEMASK = 0xffffff00ffffff00ul;
+        public const ulong HANDLECOORDMASK = 0xffffff00ul;
 
-        public RegionInfoByScope()
+        private Dictionary<ulong, GridRegion> storage;
+        private Dictionary<ulong, DateTime> expires;
+        private Dictionary<string, ulong> byname;
+        private Dictionary<UUID, ulong> byuuid;
+        // includes handles to the inside of large regions
+        private Dictionary<ulong, ulong> innerHandles = new Dictionary<ulong, ulong>();
+
+        public RegionInfoForScope()
         {
-            byname = new Dictionary<string, RegionKey>();
-            byhandle = new Dictionary<ulong, RegionKey>();
+            storage = new Dictionary<ulong, GridRegion>();
+            expires = new Dictionary<ulong, DateTime>();
+            byname = new Dictionary<string, ulong>();
+            byuuid = new Dictionary<UUID, ulong>();
         }
 
-        public RegionInfoByScope(GridRegion region, RegionKey key)
+        public RegionInfoForScope(GridRegion region, DateTime expire)
         {
-           byname = new Dictionary<string, RegionKey>();
-           byhandle = new Dictionary<ulong, RegionKey>();
+           storage = new Dictionary<ulong, GridRegion>();
+           expires = new Dictionary<ulong, DateTime>();
+           byname = new Dictionary<string, ulong>();
+           byuuid = new Dictionary<UUID, ulong>();
 
-           byname[region.RegionName] = key;
-           byhandle[region.RegionHandle] = key;
+           ulong handle = region.RegionHandle & HANDLEMASK;
+           storage[handle] = region;
+           expires[handle] = expire;
+           byname[region.RegionName] = handle;
+           byuuid[region.RegionID] = handle;
+           addToInner(region);
         }
 
-        public void AddRegion(GridRegion region, RegionKey key)
+        public void Add(GridRegion region, DateTime expire)
         {
+            ulong handle = region.RegionHandle & HANDLEMASK;
+
+            if(storage != null && storage.ContainsKey(handle))
+                return;
+
+            if(storage == null)
+               storage = new Dictionary<ulong, GridRegion>();
+            if(expires == null)
+               expires = new Dictionary<ulong, DateTime>();
             if(byname == null)
-                byname = new Dictionary<string, RegionKey>();
-            if(byhandle == null)
-                byhandle = new Dictionary<ulong, RegionKey>();
+                byname = new Dictionary<string, ulong>();
+            if(byuuid == null)
+                byuuid = new Dictionary<UUID, ulong>();
 
-           byname[region.RegionName] = key;
-           byhandle[region.RegionHandle] = key;
+            storage[handle] = region;
+            expires[handle] = expire;
+            byname[region.RegionName] = handle;
+            byuuid[region.RegionID] = handle;
+
+            addToInner(region);
         }
 
-        public void RemoveRegion(GridRegion region)
+        public void AddUpdate(GridRegion region, DateTime expire)
         {
+            if(storage == null)
+               storage = new Dictionary<ulong, GridRegion>();
+            if(expires == null)
+               expires = new Dictionary<ulong, DateTime>();
+            if(byname == null)
+                byname = new Dictionary<string, ulong>();
+            if(byuuid == null)
+                byuuid = new Dictionary<UUID, ulong>();
+
+            ulong handle = region.RegionHandle & HANDLEMASK;
+
+            if(expires.ContainsKey(handle))
+            {
+                if(expires[handle] < expire)
+                    expires[handle] = expire;
+                if(storage.ContainsKey(handle))
+                {
+                    GridRegion oldr = storage[handle];
+                    if (oldr.RegionSizeX != region.RegionSizeX
+                        || oldr.RegionSizeY != region.RegionSizeY)
+                    {
+                        removeFromInner(oldr);
+                        addToInner(region);
+                    }
+                }
+            }
+            else
+            {
+                expires[handle] = expire;
+                addToInner(region);
+            }
+            storage[handle] = region;
+            byname[region.RegionName] = handle;
+            byuuid[region.RegionID] = handle;
+
+        }
+
+        public void Remove(GridRegion region)
+        {
+            if(region == null)
+                return;
+
             if(byname != null)
                 byname.Remove(region.RegionName);
-            if(byhandle != null)
-                byhandle.Remove(region.RegionHandle);
+            if(byuuid != null)
+                byuuid.Remove(region.RegionID);
+
+            ulong handle = region.RegionHandle & HANDLEMASK;
+            if(storage != null)
+               storage.Remove(handle);
+            removeFromInner(region);
+            if(expires != null)
+            {
+                expires.Remove(handle);
+                if(expires.Count == 0)
+                    Clear();
+            }
+        }
+
+        public void Remove(ulong handle)
+        {
+            handle &= HANDLEMASK;
+
+            if(storage != null)
+            {
+                if(storage.ContainsKey(handle))
+                {
+                    GridRegion r = storage[handle];
+                    if(byname != null)
+                        byname.Remove(r.RegionName);
+                    if(byuuid != null)
+                        byuuid.Remove(r.RegionID);
+                    removeFromInner(r);
+                }
+                storage.Remove(handle);
+            }
+            if(expires != null)
+            {
+                expires.Remove(handle);
+                if(expires.Count == 0)
+                    Clear();
+            }
         }
 
         public void Clear()
         {
+            if(expires != null)
+                expires.Clear();
+            if(storage != null)
+                storage.Clear();
             if(byname != null)
                 byname.Clear();
-            if(byhandle != null)
-                byhandle.Clear();
+            if(byuuid != null)
+                byuuid.Clear();
             byname = null;
-            byhandle = null;
+            byuuid = null;
+            storage = null;
+            expires = null;
+            innerHandles.Clear();
         }
 
-        public RegionKey get(string name)
+        public bool Contains(GridRegion region)
+        {
+            if(storage == null)
+                return false;
+            if(region == null)
+                return false;
+
+            ulong handle = region.RegionHandle & HANDLEMASK;
+            return storage.ContainsKey(handle);
+        }
+
+        public bool Contains(ulong handle)
+        {
+            if(storage == null)
+                return false;
+
+            handle &= HANDLEMASK;
+            return storage.ContainsKey(handle);
+        }
+
+        public GridRegion get(ulong handle)
+        {
+            if(storage == null)
+                return null;
+
+            handle &= HANDLEMASK;
+            if(storage.ContainsKey(handle))
+                return storage[handle];
+
+            if(!innerHandles.ContainsKey(handle))
+                return null;
+
+            ulong rhandle = innerHandles[handle];
+            if(storage.ContainsKey(rhandle))
+                return storage[rhandle];
+
+            return null;
+        }
+
+        public GridRegion get(string name)
         {
             if(byname == null || !byname.ContainsKey(name))
                 return null;
-            return byname[name];
+
+            ulong handle = byname[name];
+            if(storage.ContainsKey(handle))
+                return storage[handle];
+            return null;
         }
 
-        public RegionKey get(ulong handle)
+        public GridRegion get(UUID id)
         {
-            if(byhandle == null || !byhandle.ContainsKey(handle))
+            if(byuuid == null || !byuuid.ContainsKey(id))
                 return null;
-            return byhandle[handle];
+
+            ulong handle = byuuid[id];
+            if(storage.ContainsKey(handle))
+                return storage[handle];
+            return null;
+        }
+
+        public GridRegion get(uint x, uint y)
+        {
+            if(storage == null)
+                return null;
+
+            // look for a handle first this should find normal size regions
+            ulong handle = (ulong)x & HANDLECOORDMASK;
+            handle <<= 32;
+            handle |= ((ulong)y & HANDLECOORDMASK);
+
+            if(storage.ContainsKey(handle))
+                return storage[handle];
+
+            if(!innerHandles.ContainsKey(handle))
+                return null;
+
+            ulong rhandle = innerHandles[handle];
+            if(!storage.ContainsKey(rhandle))
+                return null;
+
+            GridRegion r = storage[rhandle];
+            if(r == null)
+                return null;
+
+            // extra check, possible redundant
+
+            int test = r.RegionLocX;
+            if(x < test)
+                return null;
+            test += r.RegionSizeX;
+            if(x >= test)
+                return null;
+            test = r.RegionLocY;
+            if (y < test)
+                return null;
+            test +=  r.RegionSizeY;
+            if (y < test)
+                return r;
+
+/*
+            // next do the harder work
+            foreach(KeyValuePair<ulong, GridRegion> kvp in storage)
+            {
+                GridRegion r = kvp.Value;
+                if(r == null) // ??
+                    continue;
+
+                int test = r.RegionLocX;
+                if(x < test)
+                    continue;
+                test += r.RegionSizeX;
+                if(x >= test)
+                    continue;
+                test = r.RegionLocY;
+                if (y < test)
+                    continue;
+                test +=  r.RegionSizeY;
+                if (y < test)
+                    return r;
+            }
+*/
+            return null;
+        }
+
+        public int expire(DateTime now )
+        {
+            if(expires == null || expires.Count == 0)
+                return 0;
+
+            List<ulong> toexpire = new List<ulong>();
+            foreach(KeyValuePair<ulong, DateTime> kvp in expires)
+            {
+                if(kvp.Value < now)
+                    toexpire.Add(kvp.Key);
+            }
+
+            if(toexpire.Count == 0)
+                return expires.Count;
+
+            if(toexpire.Count == expires.Count)
+            {
+                Clear();
+                return 0;
+            }
+
+            foreach(ulong h in toexpire)
+            {
+                if(storage != null)
+                {
+                    if(storage.ContainsKey(h))
+                    {
+                        GridRegion r = storage[h];
+                        if(byname != null)
+                            byname.Remove(r.RegionName);
+                        if(byuuid != null)
+                            byuuid.Remove(r.RegionID);
+                        removeFromInner(r);
+                    }
+                   storage.Remove(h);
+                }
+                if(expires != null)
+                   expires.Remove(h);
+            }
+
+            if(expires.Count == 0)
+            {
+                byname = null;
+                byuuid = null;
+                storage = null;
+                expires = null;
+                return 0;
+            }
+
+            return expires.Count;
         }
 
         public int Count()
@@ -277,21 +636,72 @@ namespace OpenSim.Region.CoreModules.ServiceConnectorsOut.Grid
             else
                 return byname.Count;
         }
+
+        private void addToInner(GridRegion region)
+        {
+            int rsx = region.RegionSizeX;
+            int rsy = region.RegionSizeY;
+
+            if(rsx < 512 && rsy < 512)
+                return;
+
+            rsx >>= 8;
+            rsy >>= 8;
+
+            ulong handle = region.RegionHandle & HANDLEMASK;
+            fastRegionHandle fh = new fastRegionHandle(handle);
+            uint startY = fh.y;
+            for(int i = 0; i < rsx; i++)
+            {
+                for(int j = 0; j < rsy ; j++)
+                {
+                    innerHandles[fh.toHandle()] = handle;
+                    fh.y += 256;
+                }
+
+                fh.y = startY;
+                fh.x += 256;
+            }
+        }
+
+        private void removeFromInner(GridRegion region)
+        {
+            int rsx = region.RegionSizeX;
+            int rsy = region.RegionSizeY;
+
+            if(rsx < 512 && rsy < 512)
+                return;
+
+            rsx >>= 8;
+            rsy >>= 8;
+            ulong handle = region.RegionHandle & HANDLEMASK;
+            fastRegionHandle fh = new fastRegionHandle(handle);
+            uint startY = fh.y;
+            for(int i = 0; i < rsx; i++)
+            {
+                for(int j = 0; j < rsy ; j++)
+                {
+                    innerHandles.Remove(fh.toHandle());
+                    fh.y += 256;
+                }
+
+                fh.y = startY;
+                fh.x += 256;
+            }
+        }
     }
-  
+
     public class RegionsExpiringCache
     {
         const double CACHE_PURGE_HZ = 60; // seconds
         const int MAX_LOCK_WAIT = 10000; // milliseconds
- 
+
         /// <summary>For thread safety</summary>
         object syncRoot = new object();
         /// <summary>For thread safety</summary>
         object isPurging = new object();
 
-        static RegionKeyEqual keyequal = new RegionKeyEqual();
-        Dictionary<RegionKey, GridRegion> timedStorage = new Dictionary<RegionKey, GridRegion>(keyequal);
-        Dictionary<UUID, RegionInfoByScope> InfobyScope = new Dictionary<UUID, RegionInfoByScope>();
+        Dictionary<UUID, RegionInfoForScope> InfobyScope = new Dictionary<UUID, RegionInfoForScope>();
         private System.Timers.Timer timer = new System.Timers.Timer(TimeSpan.FromSeconds(CACHE_PURGE_HZ).TotalMilliseconds);
 
         public RegionsExpiringCache()
@@ -300,70 +710,28 @@ namespace OpenSim.Region.CoreModules.ServiceConnectorsOut.Grid
             timer.Start();
         }
 
-        public bool Add(UUID scope, GridRegion region, float expirationSeconds)
-        {
-            if (!Monitor.TryEnter(syncRoot, MAX_LOCK_WAIT))
-                throw new ApplicationException("Lock could not be acquired after " + MAX_LOCK_WAIT + "ms");
-
-            RegionKey key = new RegionKey(scope , region.RegionID);
-         
-            try
-            {
-                if (timedStorage.ContainsKey(key))
-                    return false;
-
-                key.ExpirationDate = DateTime.UtcNow + TimeSpan.FromSeconds(expirationSeconds);
-                timedStorage.Add(key, region);
-
-                RegionInfoByScope ris = null;
-                if(!InfobyScope.TryGetValue(scope, out ris) || ris == null)
-                {
-                    ris = new RegionInfoByScope(region, key);
-                    InfobyScope[scope] = ris;
-                }
-                else 
-                    ris.AddRegion(region, key);
-
-                return true;
-            }
-            finally { Monitor.Exit(syncRoot);}
-        }
-
         public bool AddOrUpdate(UUID scope, GridRegion region, float expirationSeconds)
         {
+            if(region == null)
+                return false;
+
             if (!Monitor.TryEnter(syncRoot, MAX_LOCK_WAIT))
                 throw new ApplicationException("Lock could not be acquired after " + MAX_LOCK_WAIT + "ms");
-            
+
             try
             {
-                RegionKey key = new RegionKey(scope, region.RegionID);
-                key.ExpirationDate = DateTime.UtcNow + TimeSpan.FromSeconds(expirationSeconds);
+                DateTime expire = DateTime.UtcNow + TimeSpan.FromSeconds(expirationSeconds);
 
-                if (timedStorage.ContainsKey(key))
+                RegionInfoForScope ris = null;
+                if(!InfobyScope.TryGetValue(scope, out ris) || ris == null)
                 {
-                    timedStorage.Remove(key);
-                    timedStorage.Add(key, region);
-
-                    if(!InfobyScope.ContainsKey(scope))
-                    {
-                        RegionInfoByScope ris = new RegionInfoByScope(region, key);
-                        InfobyScope[scope] = ris;
-                    }
-                    return false;
+                    ris = new RegionInfoForScope(region, expire);
+                    InfobyScope[scope] = ris;
                 }
                 else
-                {
-                    timedStorage.Add(key, region);
-                    RegionInfoByScope ris = null;
-                    if(!InfobyScope.TryGetValue(scope, out ris) || ris == null)
-                    {
-                        ris = new RegionInfoByScope(region,key);
-                        InfobyScope[scope] = ris;
-                    }
-                    else 
-                        ris.AddRegion(region,key);
-                    return true;
-                }
+                    ris.AddUpdate(region, expire);
+
+                return true;
             }
             finally { Monitor.Exit(syncRoot); }
         }
@@ -374,216 +742,193 @@ namespace OpenSim.Region.CoreModules.ServiceConnectorsOut.Grid
                 throw new ApplicationException("Lock could not be acquired after " + MAX_LOCK_WAIT + "ms");
             try
             {
-                timedStorage.Clear();
+                foreach(RegionInfoForScope ris in InfobyScope.Values)
+                     ris.Clear();
                 InfobyScope.Clear();
             }
             finally { Monitor.Exit(syncRoot); }
         }
-        
+
         public bool Contains(UUID scope, GridRegion region)
         {
-            RegionKey key = new RegionKey(scope, region.RegionID);
-            return Contains(key);
-        }
-
-        public bool Contains(RegionKey key)
-        {
-            if (!Monitor.TryEnter(syncRoot, MAX_LOCK_WAIT))
-                throw new ApplicationException("Lock could not be acquired after " + MAX_LOCK_WAIT + "ms");
-            try
-            {
-                return timedStorage.ContainsKey(key);
-            }
-            finally { Monitor.Exit(syncRoot); }
-        }
-
-        public int Count
-        {
-            get
-            {
-                return timedStorage.Count;
-            }
-        }
-        public bool Remove(UUID scope, GridRegion region)
-        {
-            return Remove(scope, region.RegionID);
-        }
-        public bool Remove(UUID scope, UUID regionID)
-        {
-            RegionKey key = new RegionKey(scope, regionID);
+            if(region == null)
+                return false;
 
             if (!Monitor.TryEnter(syncRoot, MAX_LOCK_WAIT))
                 throw new ApplicationException("Lock could not be acquired after " + MAX_LOCK_WAIT + "ms");
-            try
-            {               
-                if (timedStorage.ContainsKey(key))
-                {
-                    RegionInfoByScope ris = null;
-                    if(InfobyScope.TryGetValue(scope, out ris) && ris != null)
-                    {
-                        GridRegion r = timedStorage[key];
-                        if(r != null)
-                            ris.RemoveRegion(r);
-                        if(ris.Count() == 0)
-                            InfobyScope.Remove(scope);
-                    }
-                    timedStorage.Remove(key);
-                    return true;
-                }
-                else
-                    return false;
-            }
-            finally { Monitor.Exit(syncRoot); }
-        }
 
-        public bool TryGetValue(RegionKey key, out GridRegion value)
-        {
-            if (!Monitor.TryEnter(syncRoot, MAX_LOCK_WAIT))
-                throw new ApplicationException("Lock could not be acquired after " + MAX_LOCK_WAIT + "ms");
             try
             {
-                if (timedStorage.ContainsKey(key))
-                {
-                    value = timedStorage[key];
-                    return true;
-                }
-            }
-            finally { Monitor.Exit(syncRoot); }
-
-            value = null;
-            return false;
-        }
-
-        public bool TryGetValue(UUID scope, UUID id, out GridRegion value)
-        {
-            if (!Monitor.TryEnter(syncRoot, MAX_LOCK_WAIT))
-                throw new ApplicationException("Lock could not be acquired after " + MAX_LOCK_WAIT + "ms");
-            try
-            {
-                RegionKey rk = new RegionKey(scope, id);
-                if(timedStorage.ContainsKey(rk))
-                {
-                    value = timedStorage[rk];
-                    return true;
-                }
-            }
-            finally { Monitor.Exit(syncRoot); }
-
-            value = null;
-            return false;
-        }
-
-        public bool TryGetValue(UUID scope, string name, out GridRegion value)
-        {
-            if (!Monitor.TryEnter(syncRoot, MAX_LOCK_WAIT))
-                throw new ApplicationException("Lock could not be acquired after " + MAX_LOCK_WAIT + "ms");
-            try
-            {
-                value = null;
-                RegionInfoByScope ris = null;
+                RegionInfoForScope ris = null;
                 if(!InfobyScope.TryGetValue(scope, out ris) || ris == null)
                     return false;
 
-                RegionKey key = ris.get(name);
-                if(key == null)
-                    return false;
-
-                if(timedStorage.ContainsKey(key))
-                {
-                    value = timedStorage[key];
-                    return true;
-                }
+                return ris.Contains(region);
             }
             finally { Monitor.Exit(syncRoot); }
+        }
 
-            return false;
+        public bool Contains(UUID scope, ulong handle)
+        {
+            if (!Monitor.TryEnter(syncRoot, MAX_LOCK_WAIT))
+                throw new ApplicationException("Lock could not be acquired after " + MAX_LOCK_WAIT + "ms");
+
+            try
+            {
+                RegionInfoForScope ris = null;
+                if(!InfobyScope.TryGetValue(scope, out ris) || ris == null)
+                    return false;
+
+                return ris.Contains(handle);
+            }
+            finally { Monitor.Exit(syncRoot); }
+        }
+
+        public int Count()
+        {
+            if (!Monitor.TryEnter(syncRoot, MAX_LOCK_WAIT))
+                throw new ApplicationException("Lock could not be acquired after " + MAX_LOCK_WAIT + "ms");
+
+            try
+            {
+                int count = 0;
+                foreach(RegionInfoForScope ris in InfobyScope.Values)
+                    count += ris.Count();
+                return count;
+            }
+            finally { Monitor.Exit(syncRoot); }
+        }
+
+        public bool Remove(UUID scope, ulong handle)
+        {
+            if (!Monitor.TryEnter(syncRoot, MAX_LOCK_WAIT))
+                throw new ApplicationException("Lock could not be acquired after " + MAX_LOCK_WAIT + "ms");
+            try
+            {
+                RegionInfoForScope ris = null;
+                if(!InfobyScope.TryGetValue(scope, out ris) || ris == null)
+                    return false;
+
+                ris.Remove(handle);
+                if(ris.Count() == 0)
+                    InfobyScope.Remove(scope);
+                return true;
+            }
+            finally { Monitor.Exit(syncRoot); }
+        }
+
+        public bool Remove(UUID scope, GridRegion region)
+        {
+            if(region == null)
+                return false;
+
+            if (!Monitor.TryEnter(syncRoot, MAX_LOCK_WAIT))
+                throw new ApplicationException("Lock could not be acquired after " + MAX_LOCK_WAIT + "ms");
+            try
+            {
+                RegionInfoForScope ris = null;
+                if(!InfobyScope.TryGetValue(scope, out ris) || ris == null)
+                    return false;
+
+                ris.Remove(region);
+                if(ris.Count() == 0)
+                    InfobyScope.Remove(scope);
+                return true;
+            }
+            finally { Monitor.Exit(syncRoot); }
         }
 
         public bool TryGetValue(UUID scope, ulong handle, out GridRegion value)
         {
             if (!Monitor.TryEnter(syncRoot, MAX_LOCK_WAIT))
                 throw new ApplicationException("Lock could not be acquired after " + MAX_LOCK_WAIT + "ms");
+
+            value = null;
             try
             {
-                value = null;
-                RegionInfoByScope ris = null;
+                RegionInfoForScope ris = null;
                 if(!InfobyScope.TryGetValue(scope, out ris) || ris == null)
                     return false;
-
-                RegionKey key = ris.get(handle);
-                if(key == null)
-                    return false;
-
-                if(timedStorage.ContainsKey(key))
-                {
-                    value = timedStorage[key];
-                    return true;
-                }
+                value = ris.get(handle);
             }
             finally { Monitor.Exit(syncRoot); }
 
+            return value != null;
+        }
+
+        public bool TryGetValue(UUID scope, string name, out GridRegion value)
+        {
+            if (!Monitor.TryEnter(syncRoot, MAX_LOCK_WAIT))
+                throw new ApplicationException("Lock could not be acquired after " + MAX_LOCK_WAIT + "ms");
+
             value = null;
-            return false;
+            try
+            {
+                RegionInfoForScope ris = null;
+                if(!InfobyScope.TryGetValue(scope, out ris) || ris == null)
+                    return false;
+                value = ris.get(name);
+            }
+            finally { Monitor.Exit(syncRoot); }
+
+            return value != null;
+        }
+
+        public bool TryGetValue(UUID scope, UUID id, out GridRegion value)
+        {
+            if (!Monitor.TryEnter(syncRoot, MAX_LOCK_WAIT))
+                throw new ApplicationException("Lock could not be acquired after " + MAX_LOCK_WAIT + "ms");
+
+            value = null;
+            try
+            {
+                RegionInfoForScope ris = null;
+                if(!InfobyScope.TryGetValue(scope, out ris) || ris == null)
+                    return false;
+                value = ris.get(id);
+            }
+            finally { Monitor.Exit(syncRoot); }
+
+            return value != null;
         }
 
         // gets a region that contains world position (x,y)
         // hopefull will not take ages
-        public bool TryGetValue(UUID scope, int x, int y, out GridRegion value)
+        public bool TryGetValue(UUID scope, uint x, uint y, out GridRegion value)
         {
             if (!Monitor.TryEnter(syncRoot, MAX_LOCK_WAIT))
                 throw new ApplicationException("Lock could not be acquired after " + MAX_LOCK_WAIT + "ms");
+
+            value = null;
             try
             {
-                value = null;
-
-                if(timedStorage.Count == 0)
+                RegionInfoForScope ris = null;
+                if(!InfobyScope.TryGetValue(scope, out ris) || ris == null)
                     return false;
 
-                foreach(KeyValuePair<RegionKey, GridRegion> kvp in timedStorage)
-                {
-                    if(kvp.Key.ScopeID != scope)
-                        continue;
-
-                    GridRegion r = kvp.Value;
-                    if(r == null) // ??
-                        continue;
-                    int test = r.RegionLocX;
-                    if(x < test)
-                        continue;
-                    test += r.RegionSizeX;
-                    if(x >= test)
-                        continue;
-                    test = r.RegionLocY;
-                    if(y < test)
-                        continue;
-                    test += r.RegionSizeY;
-                    if (y < test)
-                    {
-                        value = r;
-                        return true;
-                    }
-                 }
+                value = ris.get(x, y);
             }
             finally { Monitor.Exit(syncRoot); }
 
-            value = null;
-            return false;
+            return value != null;
         }
 
         public bool Update(UUID scope, GridRegion region, double expirationSeconds)
         {
+            if(region == null)
+                return false;
+
             if (!Monitor.TryEnter(syncRoot, MAX_LOCK_WAIT))
                 throw new ApplicationException("Lock could not be acquired after " + MAX_LOCK_WAIT + "ms");
 
-            RegionKey key = new RegionKey(scope, region.RegionID);
             try
             {
-                if (!timedStorage.ContainsKey(key))
+                RegionInfoForScope ris = null;
+                if(!InfobyScope.TryGetValue(scope, out ris) || ris == null)
                     return false;
 
-                timedStorage.Remove(key);
-                key.ExpirationDate = DateTime.UtcNow + TimeSpan.FromSeconds(expirationSeconds);
-                timedStorage.Add(key, region);
+                DateTime expire = DateTime.UtcNow + TimeSpan.FromSeconds(expirationSeconds);
+                ris.AddUpdate(region,expire);
                 return true;
             }
             finally { Monitor.Exit(syncRoot); }
@@ -595,12 +940,12 @@ namespace OpenSim.Region.CoreModules.ServiceConnectorsOut.Grid
         private void PurgeCache(object sender, System.Timers.ElapsedEventArgs e)
         {
             // Only let one thread purge at once - a buildup could cause a crash
-            // This could cause the purge to be delayed while there are lots of read/write ops 
+            // This could cause the purge to be delayed while there are lots of read/write ops
             // happening on the cache
             if (!Monitor.TryEnter(isPurging))
                 return;
 
-            DateTime signalTime = DateTime.UtcNow;
+            DateTime now = DateTime.UtcNow;
 
             try
             {
@@ -609,39 +954,18 @@ namespace OpenSim.Region.CoreModules.ServiceConnectorsOut.Grid
                     return;
                 try
                 {
-                    OpenMetaverse.Lazy<List<object>> expiredItems = new OpenMetaverse.Lazy<List<object>>();
+                    List<UUID> expiredscopes = new List<UUID>();
 
-                    foreach (RegionKey timedKey in timedStorage.Keys)
+                    foreach (KeyValuePair<UUID, RegionInfoForScope> kvp in InfobyScope)
                     {
-                        if (timedKey.ExpirationDate < signalTime)
-                        {
-                            // Mark the object for purge
-                            expiredItems.Value.Add(timedKey);
-                        }
-                        else
-                        {
-                            break;
-                        }
+                        if (kvp.Value.expire(now) == 0)
+                            expiredscopes.Add(kvp.Key);
                     }
 
-
-                    RegionInfoByScope ris;
-                    if (expiredItems.IsValueCreated)
+                    if (expiredscopes.Count > 0)
                     {
-                        foreach (RegionKey key in expiredItems.Value)
-                        {
-                            ris = null;
-                            if(InfobyScope.TryGetValue(key.ScopeID, out ris) && ris != null)
-                            {
-                                GridRegion r = timedStorage[key];
-                                if(r != null)
-                                    ris.RemoveRegion(r);
-                                
-                                if(ris.Count() == 0)
-                                    InfobyScope.Remove(key.ScopeID);
-                            }
-                            timedStorage.Remove(key);
-                        }
+                        foreach (UUID sid in expiredscopes)
+                            InfobyScope.Remove(sid);
                     }
                 }
                 finally { Monitor.Exit(syncRoot); }

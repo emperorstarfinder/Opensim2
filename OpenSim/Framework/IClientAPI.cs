@@ -47,9 +47,10 @@ namespace OpenSim.Framework
 
     public delegate void ImprovedInstantMessage(IClientAPI remoteclient, GridInstantMessage im);
 
-    public delegate void RezObject(IClientAPI remoteClient, UUID itemID, Vector3 RayEnd, Vector3 RayStart,
-                                   UUID RayTargetID, byte BypassRayCast, bool RayEndIsIntersection,
-                                   bool RezSelected, bool RemoveItem, UUID fromTaskID);
+    public delegate void RezObject(IClientAPI remoteClient, UUID itemID, UUID GroupID,
+                                Vector3 RayEnd, Vector3 RayStart,
+                                UUID RayTargetID, byte BypassRayCast, bool RayEndIsIntersection,
+                                bool RezSelected, bool RemoveItem, UUID fromTaskID);
 
     public delegate void RezRestoreToWorld(IClientAPI remoteClient, UUID itemId);
     public delegate ISceneEntity RezSingleAttachmentFromInv(IClientAPI remoteClient, UUID itemID, uint AttachmentPt);
@@ -59,7 +60,7 @@ namespace OpenSim.Framework
     public delegate void ObjectAttach(
         IClientAPI remoteClient, uint objectLocalID, uint AttachmentPt, bool silent);
 
-    public delegate void ModifyTerrain(UUID user, 
+    public delegate void ModifyTerrain(UUID user,
         float height, float seconds, byte size, byte action, float north, float west, float south, float east,
         UUID agentId);
 
@@ -106,7 +107,7 @@ namespace OpenSim.Framework
     public delegate void GenericCall4(Packet packet, IClientAPI remoteClient);
 
     public delegate void DeRezObject(
-        IClientAPI remoteClient, List<uint> localIDs, UUID groupID, DeRezAction action, UUID destinationID);
+        IClientAPI remoteClient, List<uint> localIDs, UUID groupID, DeRezAction action, UUID destinationID, bool AddToReturns = true);
 
     public delegate void GenericCall5(IClientAPI remoteClient, bool status);
 
@@ -116,7 +117,7 @@ namespace OpenSim.Framework
 
     public delegate void ObjectExtraParams(UUID agentID, uint localID, ushort type, bool inUse, byte[] data);
 
-    public delegate void ObjectSelect(uint localID, IClientAPI remoteClient);
+    public delegate void ObjectSelect(List<uint> localID, IClientAPI remoteClient);
 
     public delegate void ObjectRequest(uint localID, IClientAPI remoteClient);
 
@@ -226,10 +227,10 @@ namespace OpenSim.Framework
         byte RayEndIsIntersection);
 
     public delegate void RequestGodlikePowers(
-        UUID AgentID, UUID SessionID, UUID token, bool GodLike, IClientAPI remote_client);
+        UUID AgentID, UUID SessionID, UUID token, bool GodLike);
 
     public delegate void GodKickUser(
-        UUID GodAgentID, UUID GodSessionID, UUID AgentID, uint kickflags, byte[] reason);
+        UUID GodAgentID, UUID AgentID, uint kickflags, byte[] reason);
 
     public delegate void CreateInventoryFolder(
         IClientAPI remoteClient, UUID folderID, ushort folderType, string folderName, UUID parentID);
@@ -472,46 +473,46 @@ namespace OpenSim.Framework
     public delegate void PlacesQuery(UUID QueryID, UUID TransactionID, string QueryText, uint QueryFlags, byte Category, string SimName, IClientAPI client);
 
     public delegate void AgentFOV(IClientAPI client, float verticalAngle);
-    
+
     public delegate void MuteListEntryUpdate(IClientAPI client, UUID MuteID, string Name, int type, uint flags);
-    
+
     public delegate void MuteListEntryRemove(IClientAPI client, UUID MuteID, string Name);
-    
+
     public delegate void AvatarInterestReply(IClientAPI client,UUID target, uint wantmask, string wanttext, uint skillsmask, string skillstext, string languages);
-    
+
     public delegate void FindAgentUpdate(IClientAPI client, UUID hunter, UUID target);
-    
+
     public delegate void TrackAgentUpdate(IClientAPI client, UUID hunter, UUID target);
-    
+
     public delegate void FreezeUserUpdate(IClientAPI client, UUID parcelowner,uint flags, UUID target);
-    
+
     public delegate void EjectUserUpdate(IClientAPI client, UUID parcelowner,uint flags, UUID target);
-    
+
     public delegate void NewUserReport(IClientAPI client, string regionName,UUID abuserID, byte catagory, byte checkflags, string details, UUID objectID, Vector3 postion, byte reportType ,UUID screenshotID, string Summary, UUID reporter);
-    
+
     public delegate void GodUpdateRegionInfoUpdate(IClientAPI client, float BillableFactor, ulong EstateID, ulong RegionFlags, byte[] SimName,int RedirectX, int RedirectY);
-    
+
     public delegate void GodlikeMessage(IClientAPI client, UUID requester, byte[] Method, byte[] Parameter);
-    
+
     public delegate void SaveStateHandler(IClientAPI client,UUID agentID);
-    
+
     public delegate void GroupAccountSummaryRequest(IClientAPI client,UUID agentID, UUID groupID);
-    
+
     public delegate void GroupAccountDetailsRequest(IClientAPI client,UUID agentID, UUID groupID, UUID transactionID, UUID sessionID);
-    
+
     public delegate void GroupAccountTransactionsRequest(IClientAPI client,UUID agentID, UUID groupID, UUID transactionID, UUID sessionID);
-    
+
     public delegate void ParcelBuyPass(IClientAPI client, UUID agentID, int ParcelLocalID);
-    
+
     public delegate void ParcelGodMark(IClientAPI client, UUID agentID, int ParcelLocalID);
-    
+
     public delegate void GroupActiveProposalsRequest(IClientAPI client,UUID agentID, UUID groupID, UUID transactionID, UUID sessionID);
-    
+
     public delegate void GroupVoteHistoryRequest(IClientAPI client,UUID agentID, UUID groupID, UUID transactionID, UUID sessionID);
-    
-    
+
+
     public delegate void SimWideDeletesDelegate(IClientAPI client,UUID agentID, int flags, UUID targetID);
-    
+
     public delegate void SendPostcard(IClientAPI client);
     public delegate void ChangeInventoryItemFlags(IClientAPI client, UUID itemID, uint flags);
 
@@ -584,10 +585,10 @@ namespace OpenSim.Framework
         public float dwell;
     }
 
-    public class IEntityUpdate
+    public class EntityUpdate
     {
         private ISceneEntity m_entity;
-        private uint m_flags;
+        private PrimUpdateFlags m_flags;
         private int m_updateTime;
 
         public ISceneEntity Entity
@@ -595,7 +596,7 @@ namespace OpenSim.Framework
             get { return m_entity; }
         }
 
-        public uint Flags
+        public PrimUpdateFlags Flags
         {
             get { return m_flags; }
         }
@@ -605,50 +606,34 @@ namespace OpenSim.Framework
             get { return m_updateTime; }
         }
 
-        public virtual void Update(IEntityUpdate update)
+        public virtual void Update(EntityUpdate oldupdate)
         {
-            m_flags |= update.Flags;
+            // we are on the new one
+            PrimUpdateFlags updateFlags = oldupdate.Flags;
+            if(m_flags.HasFlag(PrimUpdateFlags.CancelKill))
+                m_flags = PrimUpdateFlags.FullUpdate;
+            else if(updateFlags.HasFlag(PrimUpdateFlags.Kill))
+                return;
+            else // kill case will just merge in
+                m_flags |= updateFlags;
 
             // Use the older of the updates as the updateTime
-            if (Util.EnvironmentTickCountCompare(UpdateTime, update.UpdateTime) > 0)
-                m_updateTime = update.UpdateTime;
+            if (Util.EnvironmentTickCountCompare(UpdateTime, oldupdate.UpdateTime) > 0)
+                m_updateTime = oldupdate.UpdateTime;
         }
 
-        public IEntityUpdate(ISceneEntity entity, uint flags)
+        public EntityUpdate(ISceneEntity entity, PrimUpdateFlags flags)
         {
             m_entity = entity;
             m_flags = flags;
             m_updateTime = Util.EnvironmentTickCount();
         }
 
-        public IEntityUpdate(ISceneEntity entity, uint flags, Int32 updateTime)
+        public EntityUpdate(ISceneEntity entity, PrimUpdateFlags flags, Int32 updateTime)
         {
             m_entity = entity;
             m_flags = flags;
             m_updateTime = updateTime;
-        }
-    }
-
-    public class EntityUpdate : IEntityUpdate
-    {
-        private float m_timeDilation;
-
-        public float TimeDilation
-        {
-            get { return m_timeDilation; }
-        }
-
-        public EntityUpdate(ISceneEntity entity, PrimUpdateFlags flags, float timedilation)
-            : base(entity, (uint)flags)
-        {
-            // Flags = flags;
-            m_timeDilation = timedilation;
-        }
-
-        public EntityUpdate(ISceneEntity entity, PrimUpdateFlags flags, float timedilation, Int32 updateTime)
-            : base(entity,(uint)flags,updateTime)
-        {
-            m_timeDilation = timedilation;
         }
     }
 
@@ -700,9 +685,13 @@ namespace OpenSim.Framework
         ExtraData = 1 << 20,
         Sound = 1 << 21,
         Joint = 1 << 22,
-        FullUpdate = UInt32.MaxValue
+        FullUpdate =    0x0fffffff,
+        SendInTransit = 0x20000000, 
+        CancelKill =    0x4fffffff, // 1 << 30 
+        Kill =          0x80000000 // 1 << 31
     }
 
+/* included in .net 4.0
     public static class PrimUpdateFlagsExtensions
     {
         public static bool HasFlag(this PrimUpdateFlags updateFlags, PrimUpdateFlags flag)
@@ -710,7 +699,7 @@ namespace OpenSim.Framework
             return (updateFlags & flag) == flag;
         }
     }
-
+*/
     public interface IClientAPI
     {
         Vector3 StartPos { get; set; }
@@ -775,7 +764,7 @@ namespace OpenSim.Framework
         /// Only set for root agents.
         /// </remarks>
         bool IsLoggingOut { get; set; }
-        
+
         bool SendLogoutPacketWhenClosing { set; }
 
         // [Obsolete("LLClientView Specific - Circuits are unique to LLClientView")]
@@ -1046,7 +1035,7 @@ namespace OpenSim.Framework
         event MuteListRequest OnMuteListRequest;
 
         event PlacesQuery OnPlacesQuery;
-        
+
         event FindAgentUpdate OnFindAgent;
         event TrackAgentUpdate OnTrackAgent;
         event NewUserReport OnUserReport;
@@ -1091,12 +1080,12 @@ namespace OpenSim.Framework
         void Close(bool sendStop, bool force);
 
         void Kick(string message);
-        
+
         /// <summary>
         /// Start processing for this client.
         /// </summary>
         void Start();
-        
+
         void Stop();
 
         //     void ActivateGesture(UUID assetId, UUID gestureId);
@@ -1124,7 +1113,7 @@ namespace OpenSim.Framework
         /// <param name="localID"></param>
         void SendKillObject(List<uint> localID);
 
-        void SendPartFullUpdate(ISceneEntity ent, uint? parentID);
+//        void SendPartFullUpdate(ISceneEntity ent, uint? parentID);
 
         void SendAnimations(UUID[] animID, int[] seqs, UUID sourceAgentId, UUID[] objectIDs);
         void SendRegionHandshake(RegionInfo regionInfo, RegionHandshakeArgs args);
@@ -1154,8 +1143,8 @@ namespace OpenSim.Framework
         void SendLayerData(float[] map);
         void SendLayerData(int px, int py, float[] map);
 
-        void SendWindData(Vector2[] windSpeeds);
-        void SendCloudData(float[] cloudCover);
+        void SendWindData(int version, Vector2[] windSpeeds);
+        void SendCloudData(int version, float[] cloudCover);
 
         /// <summary>
         /// Sent when an agent completes its movement into a region.
@@ -1167,7 +1156,7 @@ namespace OpenSim.Framework
         void MoveAgentIntoRegion(RegionInfo regInfo, Vector3 pos, Vector3 look);
 
         void InformClientOfNeighbour(ulong neighbourHandle, IPEndPoint neighbourExternalEndPoint);
-        
+
         /// <summary>
         /// Return circuit information for this client.
         /// </summary>
@@ -1199,7 +1188,8 @@ namespace OpenSim.Framework
         void SetAgentThrottleSilent(int throttle, int setting);
         int GetAgentThrottleSilent(int throttle);
 
-        void SendAvatarDataImmediate(ISceneEntity avatar);
+        void SendEntityFullUpdateImmediate(ISceneEntity entity);
+        void SendEntityTerseUpdateImmediate(ISceneEntity entity);
 
         /// <summary>
         /// Send a positional, velocity, etc. update to the viewer for a given entity.
@@ -1235,10 +1225,10 @@ namespace OpenSim.Framework
         /// <summary>
         /// Used by the server to inform the client of new inventory items and folders.
         /// </summary>
-        /// 
+        ///
         /// If the node is a folder then the contents will be transferred
         /// (including all descendent folders) as well as the folder itself.
-        /// 
+        ///
         /// <param name="node"></param>
         void SendBulkUpdateInventory(InventoryNodeBase node);
 
@@ -1268,9 +1258,11 @@ namespace OpenSim.Framework
         void SendAttachedSoundGainChange(UUID objectID, float gain);
 
         void SendNameReply(UUID profileId, string firstname, string lastname);
-        void SendAlertMessage(string message);
 
+        void SendAlertMessage(string message);
+        void SendAlertMessage(string message, string into);
         void SendAgentAlertMessage(string message, bool modal);
+
         void SendLoadURL(string objectname, UUID objectID, UUID ownerID, bool groupOwned, string message, string url);
 
         /// <summary>
@@ -1299,11 +1291,11 @@ namespace OpenSim.Framework
         /// <param name="OrbitalPosition">The orbital position is given in radians, and must be "adjusted" for the linden client, see LLClientView</param>
         void SendSunPos(Vector3 sunPos, Vector3 sunVel, ulong CurrentTime, uint SecondsPerSunCycle, uint SecondsPerYear,
                         float OrbitalPosition);
-        
+
         void SendViewerEffect(ViewerEffectPacket.EffectBlock[] effectBlocks);
         void SendViewerTime(int phase);
 
-        void SendAvatarProperties(UUID avatarID, string aboutText, string bornOn, Byte[] charterMember, string flAbout,
+        void SendAvatarProperties(UUID avatarID, string aboutText, string bornOn, Byte[] membershipType, string flAbout,
                                   uint flags, UUID flImageID, UUID imageID, string profileURL, UUID partnerID);
 
         void SendScriptQuestion(UUID taskID, string taskName, string ownerName, UUID itemID, int question);
@@ -1367,7 +1359,7 @@ namespace OpenSim.Framework
         void SendImageFirstPart(ushort numParts, UUID ImageUUID, uint ImageSize, byte[] ImageData, byte imageCodec);
 
         /// <summary>
-        /// Send the next packet for a series of packets making up a single texture, 
+        /// Send the next packet for a series of packets making up a single texture,
         /// as established by SendImageFirstPart()
         /// </summary>
         /// <param name="partNumber"></param>
@@ -1391,6 +1383,8 @@ namespace OpenSim.Framework
         void SendObjectPropertiesFamilyData(ISceneEntity Entity, uint RequestFlags);
 
         void SendObjectPropertiesReply(ISceneEntity Entity);
+
+        void SendSelectedPartsProprieties(List<ISceneEntity> parts);
 
         void SendPartPhysicsProprieties(ISceneEntity Entity);
 
@@ -1489,7 +1483,7 @@ namespace OpenSim.Framework
         void SendParcelDwellReply(int localID, UUID parcelID, float dwell);
 
         void SendUserInfoReply(bool imViaEmail, bool visible, string email);
-        
+
         void SendUseCachedMuteList();
 
         void SendMuteListUpdate(string filename);
@@ -1503,13 +1497,13 @@ namespace OpenSim.Framework
         void SendRebakeAvatarTextures(UUID textureID);
 
         void SendAvatarInterestsReply(UUID avatarID, uint wantMask, string wantText, uint skillsMask, string skillsText, string languages);
-        
+
         void SendGroupAccountingDetails(IClientAPI sender,UUID groupID, UUID transactionID, UUID sessionID, int amt);
-        
+
         void SendGroupAccountingSummary(IClientAPI sender,UUID groupID, uint moneyAmt, int totalTier, int usedTier);
-        
+
         void SendGroupTransactionsSummaryDetails(IClientAPI sender,UUID groupID, UUID transactionID, UUID sessionID,int amt);
-        
+
         void SendChangeUserRights(UUID agentID, UUID friendID, int rights);
         void SendTextBoxRequest(string message, int chatChannel, string objectname, UUID ownerID, string ownerFirstName, string ownerLastName, UUID objectId);
 

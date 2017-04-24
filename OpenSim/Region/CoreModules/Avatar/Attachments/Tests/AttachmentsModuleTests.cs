@@ -55,6 +55,7 @@ using OpenSim.Tests.Common;
 
 namespace OpenSim.Region.CoreModules.Avatar.Attachments.Tests
 {
+/*
     /// <summary>
     /// Attachment tests
     /// </summary>
@@ -484,7 +485,7 @@ namespace OpenSim.Region.CoreModules.Avatar.Attachments.Tests
 
             // Test wearing a second attachment at the same position
             // Until multiple attachments at one point is implemented, this will remove the first attachment
-            // This test relies on both attachments having the same default attachment point (in this case LeftHand 
+            // This test relies on both attachments having the same default attachment point (in this case LeftHand
             // since none other has been set).
             {
                 scene.AttachmentsModule.RezSingleAttachmentFromInventory(sp, attItem2.ID, (uint)AttachmentPoint.Default);
@@ -804,7 +805,7 @@ namespace OpenSim.Region.CoreModules.Avatar.Attachments.Tests
             Assert.That(m_numberOfAttachEventsFired, Is.EqualTo(0));
         }
 
-/*
+
         [Test]
         public void TestSameSimulatorNeighbouringRegionsTeleportV1()
         {
@@ -844,7 +845,7 @@ namespace OpenSim.Region.CoreModules.Avatar.Attachments.Tests
                 sceneB, config, new CapabilitiesModule(), etmB, attModB, new BasicInventoryAccessModule());
 
             // FIXME: Hack - this is here temporarily to revert back to older entity transfer behaviour
-            lscm.ServiceVersion = 0.1f;
+            //lscm.ServiceVersion = 0.1f;
 
             UserAccount ua1 = UserAccountHelpers.CreateUserWithInventory(sceneA, 0x1);
 
@@ -912,7 +913,7 @@ namespace OpenSim.Region.CoreModules.Avatar.Attachments.Tests
             // Check events
             Assert.That(m_numberOfAttachEventsFired, Is.EqualTo(0));
         }
-*/
+
 
         [Test]
         public void TestSameSimulatorNeighbouringRegionsTeleportV2()
@@ -974,8 +975,8 @@ namespace OpenSim.Region.CoreModules.Avatar.Attachments.Tests
             // Both these operations will occur on different threads and will wait for each other.
             // We have to do this via ThreadPool directly since FireAndForget has been switched to sync for the V1
             // test protocol, where we are trying to avoid unpredictable async operations in regression tests.
-            tc.OnTestClientSendRegionTeleport 
-                += (regionHandle, simAccess, regionExternalEndPoint, locationID, flags, capsURL) 
+            tc.OnTestClientSendRegionTeleport
+                += (regionHandle, simAccess, regionExternalEndPoint, locationID, flags, capsURL)
                     => ThreadPool.UnsafeQueueUserWorkItem(o => destinationTestClients[0].CompleteMovement(), null);
 
             m_numberOfAttachEventsFired = 0;
@@ -1025,4 +1026,5 @@ namespace OpenSim.Region.CoreModules.Avatar.Attachments.Tests
             Assert.That(m_numberOfAttachEventsFired, Is.EqualTo(0));
         }
     }
+*/
 }

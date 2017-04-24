@@ -55,7 +55,7 @@ namespace OpenSim.Capabilities.Handlers
         private IAssetService m_assetService;
 
         public const string DefaultFormat = "x-j2c";
-  
+
         public GetTextureHandler(IAssetService assService)
         {
             m_assetService = assService;
@@ -83,7 +83,7 @@ namespace OpenSim.Capabilities.Handlers
             if (!String.IsNullOrEmpty(textureStr) && UUID.TryParse(textureStr, out textureID))
             {
 //                m_log.DebugFormat("[GETTEXTURE]: Received request for texture id {0}", textureID);
-                
+
                 string[] formats;
                 if (!string.IsNullOrEmpty(format))
                 {
@@ -129,7 +129,7 @@ namespace OpenSim.Capabilities.Handlers
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="httpRequest"></param>
         /// <param name="httpResponse"></param>
@@ -190,7 +190,7 @@ namespace OpenSim.Capabilities.Handlers
 
             //response = new Hashtable();
 
-           
+
             //WriteTextureData(request,response,null,format);
             // not found
             //m_log.Warn("[GETTEXTURE]: Texture " + textureID + " not found");
@@ -287,7 +287,7 @@ namespace OpenSim.Capabilities.Handlers
                     response["content_type"] = texture.Metadata.ContentType;
                 else
                     response["content_type"] = "image/" + format;
-                
+
                 response["bin_response_data"] = texture.Data;
                 response["int_bytes"] = texture.Data.Length;
 
@@ -354,9 +354,9 @@ namespace OpenSim.Capabilities.Handlers
             byte[] data = new byte[0];
 
             MemoryStream imgstream = new MemoryStream();
-            Bitmap mTexture = new Bitmap(1, 1);
-            ManagedImage managedImage;
-            Image image = (Image)mTexture;
+            Bitmap mTexture = null;
+            ManagedImage managedImage = null;
+            Image image = null;
 
             try
             {
@@ -365,25 +365,26 @@ namespace OpenSim.Capabilities.Handlers
                 imgstream = new MemoryStream();
 
                 // Decode image to System.Drawing.Image
-                if (OpenJPEG.DecodeToImage(texture.Data, out managedImage, out image))
+                if (OpenJPEG.DecodeToImage(texture.Data, out managedImage, out image) && image != null)
                 {
                     // Save to bitmap
                     mTexture = new Bitmap(image);
 
-                    EncoderParameters myEncoderParameters = new EncoderParameters();
-                    myEncoderParameters.Param[0] = new EncoderParameter(Encoder.Quality, 95L);
-
-                    // Save bitmap to stream
-                    ImageCodecInfo codec = GetEncoderInfo("image/" + format);
-                    if (codec != null)
+                    using(EncoderParameters myEncoderParameters = new EncoderParameters())
                     {
-                        mTexture.Save(imgstream, codec, myEncoderParameters);
-                        // Write the stream to a byte array for output
-                        data = imgstream.ToArray();
-                    }
-                    else
-                        m_log.WarnFormat("[GETTEXTURE]: No such codec {0}", format);
+                        myEncoderParameters.Param[0] = new EncoderParameter(Encoder.Quality,95L);
 
+                        // Save bitmap to stream
+                        ImageCodecInfo codec = GetEncoderInfo("image/" + format);
+                        if (codec != null)
+                        {
+                            mTexture.Save(imgstream, codec, myEncoderParameters);
+                        // Write the stream to a byte array for output
+                            data = imgstream.ToArray();
+                        }
+                        else
+                            m_log.WarnFormat("[GETTEXTURE]: No such codec {0}", format);
+                    }
                 }
             }
             catch (Exception e)
@@ -400,6 +401,8 @@ namespace OpenSim.Capabilities.Handlers
                 if (image != null)
                     image.Dispose();
 
+                if(managedImage != null)
+                    managedImage.Clear();
                 if (imgstream != null)
                 {
                     imgstream.Close();

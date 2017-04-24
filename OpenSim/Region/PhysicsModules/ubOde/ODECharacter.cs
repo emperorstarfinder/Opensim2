@@ -67,7 +67,7 @@ namespace OpenSim.Region.PhysicsModule.ubOde
         StopERP3 = 7 + 512,
         StopCFM3 = 8 + 512
     }
- 
+
     public class OdeCharacter : PhysicsActor
     {
         private static readonly ILog m_log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
@@ -112,7 +112,6 @@ namespace OpenSim.Region.PhysicsModule.ubOde
         private bool _zeroFlag = false;
         private bool m_haveLastFallVel = false;
 
-
         private uint m_localID = 0;
         public bool m_returnCollisions = false;
         // taints and their non-tainted counterparts
@@ -122,7 +121,6 @@ namespace OpenSim.Region.PhysicsModule.ubOde
         private float m_buoyancy = 0f;
 
         private bool m_freemove = false;
-        // private CollisionLocker ode;
 
 //        private string m_name = String.Empty;
         // other filter control
@@ -150,14 +148,14 @@ namespace OpenSim.Region.PhysicsModule.ubOde
 
         public int m_eventsubscription = 0;
         private int m_cureventsubscription = 0;
-        private CollisionEventUpdate CollisionEventsThisFrame = null;
+        private CollisionEventUpdate CollisionEventsThisFrame = new CollisionEventUpdate();
         private bool SentEmptyCollisionsEvent;
 
         // unique UUID of this character object
         public UUID m_uuid;
         public bool bad = false;
 
-        float mu;       
+        float mu;
 
         // HoverHeight control
         private float m_PIDHoverHeight;
@@ -220,7 +218,7 @@ namespace OpenSim.Region.PhysicsModule.ubOde
             walkDivisor = walk_divisor;
             runDivisor = rundivisor;
 
-            m_mass = m_density * m_size.X * m_size.Y * m_size.Z; ; // sure we have a default           
+            m_mass = m_density * m_size.X * m_size.Y * m_size.Z; ; // sure we have a default
 
             PID_D = basePID_D * m_mass * invtimeStep;
             PID_P = basePID_P * m_mass * invtimeStep;
@@ -258,7 +256,7 @@ namespace OpenSim.Region.PhysicsModule.ubOde
 
         public override uint LocalID
         {
-            get { return m_localID; }     
+            get { return m_localID; }
             set { m_localID = value; }
         }
 
@@ -510,7 +508,7 @@ namespace OpenSim.Region.PhysicsModule.ubOde
             {
                 m_log.Warn("[PHYSICS]: Got a NaN AvatarSize from Scene on a Character");
             }
-            
+
         }
         /// <summary>
         /// This creates the Avatar's physical Surrogate at the position supplied
@@ -634,6 +632,25 @@ namespace OpenSim.Region.PhysicsModule.ubOde
             }
         }
 
+        public override Vector3 TargetVelocity
+        {
+            get
+            {
+                return m_targetVelocity;
+            }
+            set
+            {
+                if (value.IsFinite())
+                {
+                    AddChange(changes.TargetVelocity, value);
+                }
+                else
+                {
+                    m_log.Warn("[PHYSICS]: Got a NaN velocity from Scene in a Character");
+                }
+            }
+        }
+
         public override Vector3 Torque
         {
             get { return Vector3.Zero; }
@@ -691,7 +708,7 @@ namespace OpenSim.Region.PhysicsModule.ubOde
                 }
                 else
                 {
-                    AddChange(changes.Velocity, force);
+                    AddChange(changes.TargetVelocity, force);
                 }
             }
             else
@@ -757,7 +774,7 @@ namespace OpenSim.Region.PhysicsModule.ubOde
 
             PID_D = basePID_D * m_mass / _parent_scene.ODE_STEPSIZE;
             PID_P = basePID_P * m_mass / _parent_scene.ODE_STEPSIZE;
-            
+
             Body = d.BodyCreate(_parent_scene.world);
 
             _zeroFlag = false;
@@ -883,7 +900,7 @@ namespace OpenSim.Region.PhysicsModule.ubOde
             x = tx * cos - y * sin;
             y = tx * sin + y * cos;
         }
-      
+
         public bool Collide(IntPtr me, IntPtr other, bool reverse, ref d.ContactGeom contact,
                 ref d.ContactGeom altContact , ref bool useAltcontact, ref bool feetcollision)
         {
@@ -927,7 +944,7 @@ namespace OpenSim.Region.PhysicsModule.ubOde
                         }
                     }
                     return true;
-                }               
+                }
 /*
                 d.AABB aabb;
                 d.GeomGetAABB(other,out aabb);
@@ -1108,7 +1125,24 @@ namespace OpenSim.Region.PhysicsModule.ubOde
                 vec.Z = depth * PID_P * 50;
 
                 if (!flying)
+                {
                     vec.Z += -vel.Z * PID_D;
+                    if(n.Z < 0.4f)
+                    {
+                        vec.X = depth * PID_P * 50 - vel.X * PID_D;
+                        vec.X *= n.X;
+                        vec.Y = depth * PID_P * 50 - vel.Y * PID_D;
+                        vec.Y *= n.Y;
+                        vec.Z *= n.Z;
+                        if(n.Z < 0.1f)
+                        {
+                            // cancel the slope pose
+                            n.X = 0f;
+                            n.Y = 0f;
+                            n.Z = 1.0f;
+                         }
+                    }
+                }
 
                 if (depth < 0.2f)
                 {
@@ -1189,7 +1223,7 @@ namespace OpenSim.Region.PhysicsModule.ubOde
                         break;
                 }     // end switch (m_PIDHoverType)
 
-                    // don't go underground 
+                    // don't go underground
                 if (m_targetHoverHeight > terrainheight + 0.5f * (aabb.MaxZ - aabb.MinZ))
                 {
                     float fz = (m_targetHoverHeight - localpos.Z);
@@ -1214,7 +1248,7 @@ namespace OpenSim.Region.PhysicsModule.ubOde
                     }
                 }
             }
-            
+
             //******************************************
             if (!m_iscolliding)
                 m_collideNormal.Z = 0;
@@ -1461,7 +1495,7 @@ namespace OpenSim.Region.PhysicsModule.ubOde
         /// Used to copy variables from unmanaged space at heartbeat rate and also trigger scene updates acording
         /// also outbounds checking
         /// copy and outbounds now done in move(..) at ode rate
-        /// 
+        ///
         /// </summary>
         public void UpdatePositionAndVelocity()
         {
@@ -1540,62 +1574,50 @@ namespace OpenSim.Region.PhysicsModule.ubOde
 
         public override float APIDDamping { set { return; } }
 
-
         public override void SubscribeEvents(int ms)
         {
             m_eventsubscription = ms;
             m_cureventsubscription = 0;
-            if (CollisionEventsThisFrame == null)
-                CollisionEventsThisFrame = new CollisionEventUpdate();
+            CollisionEventsThisFrame.Clear();
             SentEmptyCollisionsEvent = false;
         }
 
         public override void UnSubscribeEvents()
         {
-            if (CollisionEventsThisFrame != null)
-            {
-                lock (CollisionEventsThisFrame)
-                {
-                    CollisionEventsThisFrame.Clear();
-                    CollisionEventsThisFrame = null;
-                }
-            }
             m_eventsubscription = 0;
+            _parent_scene.RemoveCollisionEventReporting(this);
+            lock(CollisionEventsThisFrame)
+                CollisionEventsThisFrame.Clear();
         }
 
         public override void AddCollisionEvent(uint CollidedWith, ContactPoint contact)
         {
-            if (CollisionEventsThisFrame == null)
-                CollisionEventsThisFrame = new CollisionEventUpdate();
-            lock (CollisionEventsThisFrame)
-            {
+            lock(CollisionEventsThisFrame)
                 CollisionEventsThisFrame.AddCollider(CollidedWith, contact);
-                _parent_scene.AddCollisionEventReporting(this);
-            }
+            _parent_scene.AddCollisionEventReporting(this);
         }
 
-        public void SendCollisions()
+        public void SendCollisions(int timestep)
         {
-            if (CollisionEventsThisFrame == null)
+            if (m_cureventsubscription < 50000)
+                m_cureventsubscription += timestep;
+
+            if (m_cureventsubscription < m_eventsubscription)
                 return;
 
-            lock (CollisionEventsThisFrame)
+            lock(CollisionEventsThisFrame)
             {
-                if (m_cureventsubscription < m_eventsubscription)
-                    return;
-
-                m_cureventsubscription = 0;
-
                 int ncolisions = CollisionEventsThisFrame.m_objCollisionList.Count;
 
                 if (!SentEmptyCollisionsEvent || ncolisions > 0)
                 {
                     base.SendCollisionUpdate(CollisionEventsThisFrame);
+                    m_cureventsubscription = 0;
 
                     if (ncolisions == 0)
                     {
                         SentEmptyCollisionsEvent = true;
-                        _parent_scene.RemoveCollisionEventReporting(this);
+    //                  _parent_scene.RemoveCollisionEventReporting(this);
                     }
                     else
                     {
@@ -1603,14 +1625,7 @@ namespace OpenSim.Region.PhysicsModule.ubOde
                         CollisionEventsThisFrame.Clear();
                     }
                 }
-            }           
-        }
-
-        internal void AddCollisionFrameTime(int t)
-        {
-            // protect it from overflow crashing
-            if (m_cureventsubscription < 50000)
-                m_cureventsubscription += t;
+            }
         }
 
         public override bool SubscribedEvents()
@@ -1675,16 +1690,14 @@ namespace OpenSim.Region.PhysicsModule.ubOde
                 {
                     AvatarGeomAndBodyDestroy();
 
-
                     float oldsz = m_size.Z;
                     m_size = pSize;
-
 
                     AvatarGeomAndBodyCreation(_position.X, _position.Y,
                                       _position.Z + (m_size.Z - oldsz) * 0.5f);
 
-                    Velocity = Vector3.Zero;
-                    
+//                    Velocity = Vector3.Zero;
+                    m_targetVelocity = Vector3.Zero;
 
                     _parent_scene.actor_name_map[collider] = (PhysicsActor)this;
                     _parent_scene.actor_name_map[capsule] = (PhysicsActor)this;
@@ -1704,7 +1717,7 @@ namespace OpenSim.Region.PhysicsModule.ubOde
                     d.BodySetPosition(Body, newPos.X, newPos.Y, newPos.Z);
                 _position = newPos;
                 m_freemove = false;
-                m_pidControllerActive = true;               
+                m_pidControllerActive = true;
             }
 
         private void changeOrientation(Quaternion newOri)
@@ -1743,6 +1756,15 @@ namespace OpenSim.Region.PhysicsModule.ubOde
 
         private void changeVelocity(Vector3 newVel)
         {
+            _velocity = newVel;
+            setFreeMove();
+
+            if (Body != IntPtr.Zero)
+                d.BodySetLinearVel(Body, newVel.X, newVel.Y, newVel.Z);
+        }
+
+        private void changeTargetVelocity(Vector3 newVel)
+        {
             m_pidControllerActive = true;
             m_freemove = false;
             _target_velocity = newVel;
@@ -1750,35 +1772,35 @@ namespace OpenSim.Region.PhysicsModule.ubOde
 
         private void changeSetTorque(Vector3 newTorque)
         {
-        }                                 
+        }
 
         private void changeAddForce(Vector3 newForce)
         {
-        }                                 
+        }
 
         private void changeAddAngularForce(Vector3 arg)
         {
-        }                                 
+        }
 
         private void changeAngularLock(byte arg)
         {
-        }                                 
+        }
 
         private void changeFloatOnWater(bool arg)
         {
-        }                                 
+        }
 
         private void changeVolumedetetion(bool arg)
         {
-        }                                 
+        }
 
         private void changeSelectedStatus(bool arg)
         {
-        }                                 
+        }
 
         private void changeDisable(bool arg)
         {
-        }                                 
+        }
 
         private void changeBuilding(bool arg)
         {
@@ -1883,6 +1905,10 @@ namespace OpenSim.Region.PhysicsModule.ubOde
 
                 case changes.Velocity:
                     changeVelocity((Vector3)arg);
+                    break;
+
+                case changes.TargetVelocity:
+                    changeTargetVelocity((Vector3)arg);
                     break;
 
                 //                case changes.Acceleration:

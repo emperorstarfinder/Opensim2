@@ -1,21 +1,21 @@
 ﻿/* The MIT License
- * 
+ *
  * Copyright (c) 2010 Intel Corporation.
  * All rights reserved.
  *
- * Based on the convexdecomposition library from 
+ * Based on the convexdecomposition library from
  * <http://codesuppository.googlecode.com> by John W. Ratcliff and Stan Melax.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -763,7 +763,7 @@ namespace OpenSim.Region.PhysicsModules.ConvexDecompositionDotNet
                     }
                     else if ((vertflag[edge0.v].planetest | vertflag[edge1.v].planetest) == (0))
                     {
-                        // both endpoints coplanar 
+                        // both endpoints coplanar
                         // must check a 3rd point to see if UNDER
                         int e2 = e1 + 1;
                         if (e2 >= convex.edges.Count || convex.edges[e2].p != currentplane)
@@ -792,7 +792,7 @@ namespace OpenSim.Region.PhysicsModules.ConvexDecompositionDotNet
                     }
                     else if (vertflag[edge0.v].planetest == (1) && vertflag[edge1.v].planetest == (2))
                     {
-                        // first is under 2nd is over 
+                        // first is under 2nd is over
 
                         edgeflag[e0].undermap = (short)under_edge_count;
                         tmpunderedges[under_edge_count].v = vertflag[edge0.v].undermap;
@@ -815,7 +815,7 @@ namespace OpenSim.Region.PhysicsModules.ConvexDecompositionDotNet
                             vout = vertcountunder++;
                         }
                         under_edge_count++;
-                        /// hmmm something to think about: i might be able to output this edge regarless of 
+                        /// hmmm something to think about: i might be able to output this edge regarless of
                         // wheter or not we know v-in yet.  ok i;ll try this now:
                         tmpunderedges[under_edge_count].v = (byte)vout;
                         tmpunderedges[under_edge_count].p = (byte)underplanescount;
@@ -834,7 +834,7 @@ namespace OpenSim.Region.PhysicsModules.ConvexDecompositionDotNet
                     }
                     else if (vertflag[edge0.v].planetest == (0) && vertflag[edge1.v].planetest == (2))
                     {
-                        // first is coplanar 2nd is over 
+                        // first is coplanar 2nd is over
 
                         edgeflag[e0].undermap = -1;
                         vout = vertflag[edge0.v].undermap;
@@ -858,7 +858,7 @@ namespace OpenSim.Region.PhysicsModules.ConvexDecompositionDotNet
                     }
                     else if (vertflag[edge0.v].planetest == (2) && vertflag[edge1.v].planetest == (1))
                     {
-                        // first is over next is under 
+                        // first is over next is under
                         // new vertex!!!
                         Debug.Assert(vin == -1);
                         if (e0 < edge0.ea)
@@ -901,7 +901,7 @@ namespace OpenSim.Region.PhysicsModules.ConvexDecompositionDotNet
                     }
                     else if (vertflag[edge0.v].planetest == (2) && vertflag[edge1.v].planetest == (0))
                     {
-                        // first is over next is coplanar 
+                        // first is over next is coplanar
 
                         edgeflag[e0].undermap = -1;
                         vin = vertflag[edge1.v].undermap;
@@ -1074,14 +1074,27 @@ namespace OpenSim.Region.PhysicsModules.ConvexDecompositionDotNet
         public static int maxdirfiltered(List<float3> p, int count, float3 dir, byte[] allow)
         {
             //Debug.Assert(count != 0);
-            int m = 0;
-            float currDotm = float3.dot(p[0], dir);
+            int m = -1;
+            float currDotm = 0;
             float currDoti;
 
-            while (allow[m] == 0)
-                m++;
+            for (int i = 0; i < count; i++)
+            {
+                if (allow[i] != 0)
+                {
+                    currDotm = float3.dot(p[i], dir);
+                    m = i;
+                    break;
+               }
+            }
 
-            for (int i = 1; i < count; i++)
+            if(m == -1)
+            {
+                Debug.Assert(false);
+                return m;
+            }
+
+            for (int i = m + 1; i < count; i++)
             {
                 if (allow[i] != 0)
                 {
@@ -1093,7 +1106,8 @@ namespace OpenSim.Region.PhysicsModules.ConvexDecompositionDotNet
                     }
                 }
             }
-            //Debug.Assert(m != -1);
+
+//            Debug.Assert(m != -1);
             return m;
         }
 
@@ -1112,8 +1126,8 @@ namespace OpenSim.Region.PhysicsModules.ConvexDecompositionDotNet
                 {
                     int mb;
                     {
-                        float s = (float)Math.Sin((3.14159264f / 180.0f) * (x));
-                        float c = (float)Math.Cos((3.14159264f / 180.0f) * (x));
+                        float s = (float)Math.Sin(0.01745329f * x);
+                        float c = (float)Math.Cos(0.01745329f * x);
                         mb = maxdirfiltered(p, count, dir + (u * s + v * c) * 0.025f, allow);
                     }
                     if (ma == m && mb == m)
@@ -1126,8 +1140,8 @@ namespace OpenSim.Region.PhysicsModules.ConvexDecompositionDotNet
                         int mc = ma;
                         for (float xx = x - 40.0f; xx <= x; xx += 5.0f)
                         {
-                            float s = (float)Math.Sin((3.14159264f / 180.0f) * (xx));
-                            float c = (float)Math.Cos((3.14159264f / 180.0f) * (xx));
+                            float s = (float)Math.Sin(0.01745329f * xx);
+                            float c = (float)Math.Cos(0.01745329f * xx);
                             int md = maxdirfiltered(p, count, dir + (u * s + v * c) * 0.025f, allow);
                             if (mc == m && md == m)
                             {
@@ -1176,7 +1190,7 @@ namespace OpenSim.Region.PhysicsModules.ConvexDecompositionDotNet
             Debug.Assert(!(p0 == p1 || p0 == p2 || p0 == p3 || p1 == p2 || p1 == p3 || p2 == p3));
             if (float3.dot(verts[p3] - verts[p0], float3.cross(verts[p1] - verts[p0], verts[p2] - verts[p0])) < 0)
             {
-                Swap(ref p2, ref p3);
+                return new int4(p0, p1, p3, p2);
             }
             return new int4(p0, p1, p2, p3);
         }
@@ -1207,12 +1221,12 @@ namespace OpenSim.Region.PhysicsModules.ConvexDecompositionDotNet
             int j;
             float3 bmin = new float3(verts[0]);
             float3 bmax = new float3(verts[0]);
-            List<int> isextreme = new List<int>(verts.Count);
+            byte[] isextreme = new byte[verts.Count];
             byte[] allow = new byte[verts.Count];
             for (j = 0; j < verts.Count; j++)
             {
                 allow[j] = 1;
-                isextreme.Add(0);
+                isextreme[j] = 0;
                 bmin = float3.VectorMin(bmin, verts[j]);
                 bmax = float3.VectorMax(bmax, verts[j]);
             }
@@ -1526,6 +1540,19 @@ namespace OpenSim.Region.PhysicsModules.ConvexDecompositionDotNet
             }
         }
 
+        public static bool ComputeHull(List<float3> vertices, out List<int> indices)
+        {
+            List<HullTriangle> tris = new List<HullTriangle>();
+
+            bool ret = calchull(vertices, out indices, 0, tris);
+            if (ret == false)
+            {
+                indices = new List<int>();
+                return false;
+            }
+            return true;
+        }
+
         private static bool CleanupVertices(List<float3> svertices, out List<float3> vertices, float normalepsilon, out float3 scale)
         {
             const float EPSILON = 0.000001f;
@@ -1609,7 +1636,7 @@ namespace OpenSim.Region.PhysicsModules.ConvexDecompositionDotNet
                 addPoint(ref vcount, vertices, x2, y2, z2);
                 addPoint(ref vcount, vertices, x1, y2, z2);
 
-                return true; // return cube	
+                return true; // return cube
             }
             else
             {

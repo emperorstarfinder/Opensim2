@@ -68,11 +68,11 @@ namespace OpenSim.Region.CoreModules.ServiceConnectorsOut.MapImage
         private int m_refreshtime = 0;
         private int m_lastrefresh = 0;
         private System.Timers.Timer m_refreshTimer;
-        
+
         #region ISharedRegionModule
-        
+
         public Type ReplaceableInterface { get { return null; } }
-        public string Name { get { return "MapImageServiceModule"; } }        
+        public string Name { get { return "MapImageServiceModule"; } }
         public void RegionLoaded(Scene scene) { }
         public void Close() { }
         public void PostInitialise() { }
@@ -115,12 +115,12 @@ namespace OpenSim.Region.CoreModules.ServiceConnectorsOut.MapImage
                 m_log.WarnFormat("[MAP IMAGE SERVICE MODULE]: Unable to load LocalServiceModule from {0}. MapService module disabled. Please fix the configuration.", service);
                 return;
             }
-   
+
             // we don't want the timer if the interval is zero, but we still want this module enables
             if(refreshminutes > 0)
             {
                 m_refreshtime = refreshminutes * 60 * 1000; // convert from minutes to ms
-   
+
                 m_refreshTimer = new System.Timers.Timer();
                 m_refreshTimer.Enabled = true;
                 m_refreshTimer.AutoReset = true;
@@ -131,7 +131,7 @@ namespace OpenSim.Region.CoreModules.ServiceConnectorsOut.MapImage
                 m_log.InfoFormat("[MAP IMAGE SERVICE MODULE]: enabled with refresh time {0} min and service object {1}",
                              refreshminutes, service);
             }
-            else 
+            else
             {
                 m_log.InfoFormat("[MAP IMAGE SERVICE MODULE]: enabled with no refresh and service object {0}", service);
             }
@@ -171,7 +171,7 @@ namespace OpenSim.Region.CoreModules.ServiceConnectorsOut.MapImage
         }
 
         #endregion ISharedRegionModule
-        
+
         ///<summary>
         ///
         ///</summary>
@@ -210,7 +210,6 @@ namespace OpenSim.Region.CoreModules.ServiceConnectorsOut.MapImage
                 return;
             }
 
-            m_log.DebugFormat("{0} Upload maptile for {1}", LogHeader, scene.Name);
 
             // mapTile.Save(   // DEBUG DEBUG
             //     String.Format("maptiles/raw-{0}-{1}-{2}.jpg", regionName, scene.RegionInfo.RegionLocX, scene.RegionInfo.RegionLocY),
@@ -218,12 +217,17 @@ namespace OpenSim.Region.CoreModules.ServiceConnectorsOut.MapImage
             // If the region/maptile is legacy sized, just upload the one tile like it has always been done
             if (mapTile.Width == Constants.RegionSize && mapTile.Height == Constants.RegionSize)
             {
+                m_log.DebugFormat("{0} Upload maptile for {1}", LogHeader, scene.Name);
                 ConvertAndUploadMaptile(scene, mapTile,
                                         scene.RegionInfo.RegionLocX, scene.RegionInfo.RegionLocY,
                                         scene.RegionInfo.RegionName);
             }
             else
             {
+            m_log.DebugFormat("{0} Upload {1} maptiles for {2}", LogHeader,
+                    (mapTile.Width * mapTile.Height) / (Constants.RegionSize * Constants.RegionSize),
+                    scene.Name);
+
                 // For larger regions (varregion) we must cut the region image into legacy sized
                 //    pieces since that is how the maptile system works.
                 // Note the assumption that varregions are always a multiple of legacy size.

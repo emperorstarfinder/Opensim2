@@ -120,7 +120,7 @@ namespace OpenSim.Services.Connectors
             // If we don't have them, load them from the server
             List<EstateSettings> estates = null;
             if (!m_EstateCache.TryGetValue("estates", out estates))
-                LoadEstateSettingsAll();
+                estates = LoadEstateSettingsAll();
 
             foreach (EstateSettings es in estates)
                 eids.Add((int)es.EstateID);
@@ -133,7 +133,7 @@ namespace OpenSim.Services.Connectors
             // If we don't have them, load them from the server
             List<EstateSettings> estates = null;
             if (!m_EstateCache.TryGetValue("estates", out estates))
-                LoadEstateSettingsAll();
+                estates = LoadEstateSettingsAll();
 
             List<int> eids = new List<int>();
             foreach (EstateSettings es in estates)
@@ -148,7 +148,7 @@ namespace OpenSim.Services.Connectors
             // If we don't have them, load them from the server
             List<EstateSettings> estates = null;
             if (!m_EstateCache.TryGetValue("estates", out estates))
-                LoadEstateSettingsAll();
+                estates = LoadEstateSettingsAll();
 
             List<int> eids = new List<int>();
             foreach (EstateSettings es in estates)
@@ -323,7 +323,7 @@ namespace OpenSim.Services.Connectors
                     }
                     else
                         m_log.Error(string.Format(
-                            "[ESTATE CONNECTOR]: WebException for {0} {1} {2} ",
+                            "[ESTATE CONNECTOR]: WebException for {0} {1} {2} {3}",
                             verb, uri, formdata, e));
                 }
             }
