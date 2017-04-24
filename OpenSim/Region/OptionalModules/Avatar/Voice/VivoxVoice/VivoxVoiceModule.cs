@@ -121,9 +121,6 @@ namespace OpenSim.Region.OptionalModules.Avatar.Voice.VivoxVoice
 
             m_config = config.Configs["VivoxVoice"];
 
-            if (null == m_config)
-                return;
-
             if (!m_config.GetBoolean("enabled", false))
                 return;
 
