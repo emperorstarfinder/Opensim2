@@ -62,7 +62,7 @@ namespace OpenSim.Region.ClientStack.LindenUDP
     /// Handles new client connections
     /// Constructor takes a single Packet and authenticates everything
     /// </summary>
-    public class LLClientView : IClientAPI, IClientCore, IClientIM, IClientChat, IClientInventory, IStatsCollector
+    public class LLClientView : IClientAPI, IClientCore, IClientIM, IClientChat, IClientInventory, IStatsCollector, IClientIPEndpoint
     {
         /// <value>
         /// Debug packet level.  See OpenSim.RegisterConsoleCommands() for more details.
@@ -3111,10 +3111,6 @@ namespace OpenSim.Region.ClientStack.LindenUDP
 
         public void SendParcelInfo(RegionInfo info, LandData land, UUID parcelID, uint x, uint y)
         {
-            float dwell = 0.0f;
-            IDwellModule dwellModule = m_scene.RequestModuleInterface<IDwellModule>();
-            if (dwellModule != null)
-                dwell = dwellModule.GetDwell(land.GlobalID);
             ParcelInfoReplyPacket reply = (ParcelInfoReplyPacket)PacketPool.Instance.GetPacket(PacketType.ParcelInfoReply);
             reply.AgentData.AgentID = m_agentId;
             reply.Data.ParcelID = parcelID;
@@ -3141,7 +3137,7 @@ namespace OpenSim.Region.ClientStack.LindenUDP
             reply.Data.GlobalZ = pos.Z;
             reply.Data.SimName = Utils.StringToBytes(info.RegionName);
             reply.Data.SnapshotID = land.SnapshotID;
-            reply.Data.Dwell = dwell;
+            reply.Data.Dwell = land.Dwell;
             reply.Data.SalePrice = land.SalePrice;
             reply.Data.AuctionID = (int)land.AuctionID;
 
@@ -4212,12 +4208,13 @@ namespace OpenSim.Region.ClientStack.LindenUDP
                     SceneObjectGroup grp = part.ParentGroup;
                     if (grp.inTransit && !update.Flags.HasFlag(PrimUpdateFlags.SendInTransit))
                         continue;
+/* debug
                     if (update.Flags.HasFlag(PrimUpdateFlags.SendInTransit))
                     {
 
 
                     }
-
+*/
                     if (grp.IsDeleted)
                     {
                         // Don't send updates for objects that have been marked deleted.
@@ -4274,14 +4271,6 @@ namespace OpenSim.Region.ClientStack.LindenUDP
                         {
                             part.Shape.LightEntry = false;
                         }
-
-                        if (part.Shape != null && (part.Shape.SculptType == (byte)SculptType.Mesh))
-                        {
-                            // Ensure that mesh has at least 8 valid faces
-                            part.Shape.ProfileBegin = 12500;
-                            part.Shape.ProfileEnd = 0;
-                            part.Shape.ProfileHollow = 27500;
-                        }
                     }
 
                     if(doCulling && !grp.IsAttachment)
@@ -4308,14 +4297,6 @@ namespace OpenSim.Region.ClientStack.LindenUDP
                             GroupsNeedFullUpdate.Add(grp);
                             continue;
                         }
-                    }
-
-                    if (part.Shape != null && (part.Shape.SculptType == (byte)SculptType.Mesh))
-                    {
-                        // Ensure that mesh has at least 8 valid faces
-                        part.Shape.ProfileBegin = 12500;
-                        part.Shape.ProfileEnd = 0;
-                        part.Shape.ProfileHollow = 27500;
                     }
                 }
                 else if (update.Entity is ScenePresence)
@@ -5877,6 +5858,12 @@ namespace OpenSim.Region.ClientStack.LindenUDP
             update.PCode = part.Shape.PCode;
             update.ProfileBegin = part.Shape.ProfileBegin;
             update.ProfileCurve = part.Shape.ProfileCurve;
+
+            if(part.Shape.SculptType == (byte)SculptType.Mesh) // filter out hack 
+                update.ProfileCurve = (byte)(part.Shape.ProfileCurve & 0x0f);
+            else
+                update.ProfileCurve = part.Shape.ProfileCurve;
+
             update.ProfileEnd = part.Shape.ProfileEnd;
             update.ProfileHollow = part.Shape.ProfileHollow;
             update.PSBlock = part.ParticleSystem ?? Utils.EmptyBytes;
@@ -12578,11 +12565,11 @@ namespace OpenSim.Region.ClientStack.LindenUDP
             }
 
             int maxWearablesLoop = cachedtex.WearableData.Length;
-            if (maxWearablesLoop > cacheItems.Length)
-                maxWearablesLoop = cacheItems.Length;
 
             if (cacheItems != null)
             {
+                if (maxWearablesLoop > cacheItems.Length)
+                    maxWearablesLoop = cacheItems.Length;
                 for (int i = 0; i < maxWearablesLoop; i++)
                 {
                     int idx = cachedtex.WearableData[i].TextureIndex;

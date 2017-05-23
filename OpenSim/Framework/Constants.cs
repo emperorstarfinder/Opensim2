@@ -24,7 +24,6 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
 using System;
 
 namespace OpenSim.Framework
@@ -106,5 +105,6 @@ namespace OpenSim.Framework
             /// <summary>Agent coming into the grid from another grid</summary>
             ViaHGLogin = 1 << 30
         }
+
     }
 }

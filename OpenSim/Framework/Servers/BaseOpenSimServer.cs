@@ -108,11 +108,18 @@ namespace OpenSim.Framework.Servers
 
         protected override void ShutdownSpecific()
         {
-            m_log.Info("[SHUTDOWN]: Shutdown processing on main thread complete.  Exiting...");
 
-            RemovePIDFile();
 
             base.ShutdownSpecific();
+
+            MainServer.Stop();
+
+            Thread.Sleep(5000);
+
+            WorkManager.Stop();
+
+            RemovePIDFile();
+            m_log.Info("[SHUTDOWN]: Shutdown processing on main thread complete.  Exiting...");
 
             if (!SuppressExit)
                 Environment.Exit(0);
@@ -163,8 +170,7 @@ namespace OpenSim.Framework.Servers
             }
             catch(Exception e)
             {
-                m_log.FatalFormat("Fatal error: {0}",
-                    (e.Message == null || e.Message == String.Empty) ? "Unknown reason":e.Message );
+                m_log.Fatal("Fatal error: " + e.ToString());
                 Environment.Exit(1);
             }
 

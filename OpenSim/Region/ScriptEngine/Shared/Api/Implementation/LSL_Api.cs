@@ -28,6 +28,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -40,7 +41,7 @@ using Nini.Config;
 using log4net;
 using OpenMetaverse;
 using OpenMetaverse.Assets;
-using OpenMetaverse.StructuredData;
+using OpenMetaverse.StructuredData; // LitJson is hidden on this
 using OpenMetaverse.Packets;
 using OpenMetaverse.Rendering;
 using OpenSim;
@@ -11298,6 +11299,32 @@ namespace OpenSim.Region.ScriptEngine.Shared.Api
                         }
                         break;
 
+                    case (int)ScriptBaseClass.PRIM_NORMAL:
+                    case (int)ScriptBaseClass.PRIM_SPECULAR:
+                    case (int)ScriptBaseClass.PRIM_ALPHA_MODE:
+                        if (remain < 1)
+                            return new LSL_List();
+
+                        face = (int)rules.GetLSLIntegerItem(idx++);
+                        tex = part.Shape.Textures;
+                        if (face == ScriptBaseClass.ALL_SIDES)
+                        {
+                            for (face = 0; face < GetNumberOfSides(part); face++)
+                            {
+                                Primitive.TextureEntryFace texface = tex.GetFace((uint)face);
+                                getLSLFaceMaterial(ref res, code, part, texface);
+                            }
+                        }
+                        else
+                        {
+                            if (face >= 0 && face < GetNumberOfSides(part))
+                            {
+                                Primitive.TextureEntryFace texface = tex.GetFace((uint)face);
+                                getLSLFaceMaterial(ref res, code, part, texface);
+                            }
+                        }
+                        break;
+
                     case (int)ScriptBaseClass.PRIM_LINK_TARGET:
 
                         // TODO: Should be issuing a runtime script warning in this case.
@@ -11311,6 +11338,108 @@ namespace OpenSim.Region.ScriptEngine.Shared.Api
             return new LSL_List();
         }
 
+/*
+        private string filterTextureUUIDbyRights(UUID origID, SceneObjectPart part, bool checkTaskInventory, bool returnInvName)
+        {
+            if(checkTaskInventory)
+            {
+                lock (part.TaskInventory)
+                {
+                    foreach (KeyValuePair<UUID, TaskInventoryItem> inv in part.TaskInventory)
+                    {
+                        if (inv.Value.AssetID == origID)
+                        {
+                            if(inv.Value.InvType == (int)InventoryType.Texture)
+                            {
+                                if(returnInvName)
+                                    return inv.Value.Name;
+                                else
+                                    return origID.ToString();
+                            }
+                            else
+                                return UUID.Zero.ToString();
+                        }
+                    }
+                }
+            }
+
+            if(World.Permissions.CanEditObject(m_host.ParentGroup.UUID, m_host.ParentGroup.RootPart.OwnerID))
+                return origID.ToString();
+
+            return UUID.Zero.ToString();
+        }
+*/
+        private void getLSLFaceMaterial(ref LSL_List res, int code, SceneObjectPart part, Primitive.TextureEntryFace texface)
+        {
+            UUID matID = texface.MaterialID;
+            if(matID != UUID.Zero)
+            {
+                AssetBase MatAsset = World.AssetService.Get(matID.ToString());
+                if(MatAsset != null)
+                {
+                    Byte[] data = MatAsset.Data;
+                    OSDMap osdmat = (OSDMap)OSDParser.DeserializeLLSDXml(data);
+                    if(osdmat != null && osdmat.ContainsKey("NormMap"))
+                    {
+                        string mapIDstr;
+                        FaceMaterial mat = new FaceMaterial(matID, osdmat);
+                        if(code == ScriptBaseClass.PRIM_NORMAL)
+                        {
+//                            mapIDstr = filterTextureUUIDbyRights(mat.NormalMapID, part, true, false);
+                            mapIDstr = mat.NormalMapID.ToString();
+                            res.Add(new LSL_String(mapIDstr));
+                            res.Add(new LSL_Vector(mat.NormalRepeatX, mat.NormalRepeatY, 0));
+                            res.Add(new LSL_Vector(mat.NormalOffsetX, mat.NormalOffsetY, 0));
+                            res.Add(new LSL_Float(mat.NormalRotation));
+                        }
+                        else if(code == ScriptBaseClass.PRIM_SPECULAR )
+                        {
+//                            mapIDstr = filterTextureUUIDbyRights(mat.SpecularMapID, part, true, false);
+                            const float colorScale = 1.0f/255f;
+                            mapIDstr = mat.SpecularMapID.ToString();
+                            res.Add(new LSL_String(mapIDstr));
+                            res.Add(new LSL_Vector(mat.SpecularRepeatX, mat.SpecularRepeatY, 0));
+                            res.Add(new LSL_Vector(mat.SpecularOffsetX, mat.SpecularOffsetY, 0));
+                            res.Add(new LSL_Float(mat.SpecularRotation));
+                            res.Add(new LSL_Vector(mat.SpecularLightColor.R * colorScale,
+                                    mat.SpecularLightColor.G * colorScale,
+                                    mat.SpecularLightColor.B  * colorScale));
+                            res.Add(new LSL_Integer(mat.SpecularLightExponent));
+                            res.Add(new LSL_Integer(mat.EnvironmentIntensity));
+                        }
+                        else if(code == ScriptBaseClass.PRIM_ALPHA_MODE)
+                        {
+                            res.Add(new LSL_Integer(mat.DiffuseAlphaMode));
+                            res.Add(new LSL_Integer(mat.AlphaMaskCutoff));
+                        }
+                        return;
+                    }
+                }
+                matID = UUID.Zero;
+            }
+            if(matID == UUID.Zero)
+            {
+                if(code == (int)ScriptBaseClass.PRIM_NORMAL || code == (int)ScriptBaseClass.PRIM_SPECULAR )
+                {
+                    res.Add(new LSL_String(UUID.Zero.ToString()));
+                    res.Add(new LSL_Vector(1.0, 1.0, 0));
+                    res.Add(new LSL_Vector(0, 0, 0));
+                    res.Add(new LSL_Float(0));
+                
+                    if(code == (int)ScriptBaseClass.PRIM_SPECULAR)
+                    {
+                        res.Add(new LSL_Vector(1.0, 1.0, 1.0));
+                        res.Add(new LSL_Integer(51));
+                        res.Add(new LSL_Integer(0));
+                    }
+                }
+                else if(code == (int)ScriptBaseClass.PRIM_ALPHA_MODE)
+                {
+                    res.Add(new LSL_Integer(1));
+                    res.Add(new LSL_Integer(0));
+                }
+            }
+        }
 
         public LSL_List llGetPrimMediaParams(int face, LSL_List rules)
         {
@@ -13277,6 +13406,7 @@ namespace OpenSim.Region.ScriptEngine.Shared.Api
             List<string> param = new List<string>();
             bool  ok;
             Int32 flag;
+            int nCustomHeaders = 0;
 
             for (int i = 0; i < parameters.Data.Length; i += 2)
             {
@@ -13303,6 +13433,12 @@ namespace OpenSim.Region.ScriptEngine.Shared.Api
                     //Second Life documentation for llHTTPRequest.
                     for (int count = 1; count <= 8; ++count)
                     {
+                        if(nCustomHeaders >= 8)
+                        {
+                            Error("llHTTPRequest", "Max number of custom headers is 8, excess ignored");
+                            break;
+                        }
+
                         //Enough parameters remaining for (another) header?
                         if (parameters.Data.Length - i < 2)
                         {
@@ -13317,15 +13453,15 @@ namespace OpenSim.Region.ScriptEngine.Shared.Api
 
                         param.Add(parameters.Data[i].ToString());
                         param.Add(parameters.Data[i+1].ToString());
+                        nCustomHeaders++;
 
                         //Have we reached the end of the list of headers?
                         //End is marked by a string with a single digit.
-                        if (i+2 >= parameters.Data.Length ||
-                            Char.IsDigit(parameters.Data[i].ToString()[0]))
+                        if (i + 2 >= parameters.Data.Length ||
+                            Char.IsDigit(parameters.Data[i + 2].ToString()[0]))
                         {
                             break;
                         }
-
                         i += 2;
                     }
                 }
@@ -16565,92 +16701,158 @@ namespace OpenSim.Region.ScriptEngine.Shared.Api
             return String.Empty;
         }
 
-        public LSL_String llJsonGetValue(LSL_String json, LSL_List specifiers)
-        {
-            OSD o = OSDParser.DeserializeJson(json);
-            OSD specVal = JsonGetSpecific(o, specifiers, 0);
-
-            return specVal.AsString();
-        }
-
         public LSL_List llJson2List(LSL_String json)
         {
+            if(String.IsNullOrEmpty(json))
+                return new LSL_List();
+            if(json == "[]")
+                return new LSL_List();
+            if(json == "{}")
+                return new LSL_List();
+            char first = ((string)json)[0];
+
+            if(first != '[' && first !='{') 
+            {
+                // we already have a single element
+                LSL_List l = new LSL_List();
+                l.Add(json);
+                return l;
+            }
+
+            LitJson.JsonData jsdata;
             try
             {
-                OSD o = OSDParser.DeserializeJson(json);
-                return (LSL_List)ParseJsonNode(o);
+                jsdata = LitJson.JsonMapper.ToObject(json);
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                return new LSL_List(ScriptBaseClass.JSON_INVALID);
+                string m = e.Message; // debug point
+                return json;
+            }
+            try
+            {
+                return JsonParseTop(jsdata);
+            }
+            catch   (Exception e)
+            {
+                string m = e.Message; // debug point
+                return (LSL_String)ScriptBaseClass.JSON_INVALID;
             }
         }
 
-        private object ParseJsonNode(OSD node)
+        private LSL_List JsonParseTop(LitJson.JsonData  elem)
         {
-            if (node.Type == OSDType.Integer)
-                return new LSL_Integer(node.AsInteger());
-            if (node.Type == OSDType.Boolean)
-                return new LSL_Integer(node.AsBoolean() ? 1 : 0);
-            if (node.Type == OSDType.Real)
-                return new LSL_Float(node.AsReal());
-            if (node.Type == OSDType.UUID || node.Type == OSDType.String)
-                return new LSL_String(node.AsString());
-            if (node.Type == OSDType.Array)
+            LSL_List retl = new LSL_List();
+            if(elem == null)
+                retl.Add((LSL_String)ScriptBaseClass.JSON_NULL);
+                
+            LitJson.JsonType elemType = elem.GetJsonType();
+            switch (elemType)
             {
-                LSL_List resp = new LSL_List();
-                OSDArray ar = node as OSDArray;
-                foreach (OSD o in ar)
-                    resp.Add(ParseJsonNode(o));
-                return resp;
+                case  LitJson.JsonType.Int:
+                    retl.Add(new LSL_Integer((int)elem));
+                    return retl;
+                case  LitJson.JsonType.Boolean:
+                    retl.Add((LSL_String)((bool)elem ? ScriptBaseClass.JSON_TRUE : ScriptBaseClass.JSON_FALSE));
+                    return retl;
+                case LitJson.JsonType.Double:
+                    retl.Add(new LSL_Float((double)elem));
+                    return retl;
+                case LitJson.JsonType.None:
+                    retl.Add((LSL_String)ScriptBaseClass.JSON_NULL);
+                    return retl;
+                case LitJson.JsonType.String:
+                    retl.Add(new LSL_String((string)elem));
+                    return retl;
+                case LitJson.JsonType.Array:
+                    foreach (LitJson.JsonData subelem in elem)
+                        retl.Add(JsonParseTopNodes(subelem));
+                    return retl;
+                case LitJson.JsonType.Object:
+                    IDictionaryEnumerator e = ((IOrderedDictionary)elem).GetEnumerator();
+                    while (e.MoveNext())
+                    {
+                        retl.Add(new LSL_String((string)e.Key));
+                        retl.Add(JsonParseTopNodes((LitJson.JsonData)e.Value));
+                    }
+                    return retl;
+                default:
+                    throw new Exception(ScriptBaseClass.JSON_INVALID);
             }
-            if (node.Type == OSDType.Map)
+        }
+
+        private object JsonParseTopNodes(LitJson.JsonData  elem)
+        {
+            if(elem == null)
+                return ((LSL_String)ScriptBaseClass.JSON_NULL);
+
+            LitJson.JsonType elemType = elem.GetJsonType();
+            switch (elemType)
             {
-                LSL_List resp = new LSL_List();
-                OSDMap ar = node as OSDMap;
-                foreach (KeyValuePair<string, OSD> o in ar)
-                {
-                    resp.Add(new LSL_String(o.Key));
-                    resp.Add(ParseJsonNode(o.Value));
-                }
-                return resp;
+                case LitJson.JsonType.Int:
+                    return (new LSL_Integer((int)elem));
+                case LitJson.JsonType.Boolean:
+                    return ((bool)elem ? (LSL_String)ScriptBaseClass.JSON_TRUE : (LSL_String)ScriptBaseClass.JSON_FALSE);
+                case LitJson.JsonType.Double:
+                    return (new LSL_Float((double)elem));
+                case LitJson.JsonType.None:
+                    return ((LSL_String)ScriptBaseClass.JSON_NULL);
+                case LitJson.JsonType.String:
+                    return (new LSL_String((string)elem));
+                case LitJson.JsonType.Array:
+                case LitJson.JsonType.Object:
+                    string s = LitJson.JsonMapper.ToJson(elem);
+                    return (LSL_String)s;
+                default:
+                    throw new Exception(ScriptBaseClass.JSON_INVALID);
             }
-            throw new Exception(ScriptBaseClass.JSON_INVALID);
         }
 
         public LSL_String llList2Json(LSL_String type, LSL_List values)
         {
             try
             {
+                StringBuilder sb = new StringBuilder();
                 if (type == ScriptBaseClass.JSON_ARRAY)
                 {
-                    OSDArray array = new OSDArray();
+                    sb.Append("[");
+                    int i= 0;
                     foreach (object o in values.Data)
                     {
-                        array.Add(ListToJson(o));
+                        sb.Append(ListToJson(o));
+                        if((i++) < values.Data.Length - 1)
+                            sb.Append(",");
                     }
-                    return OSDParser.SerializeJsonString(array);
+                    sb.Append("]");
+                    return (LSL_String)sb.ToString();;
                 }
                 else if (type == ScriptBaseClass.JSON_OBJECT)
                 {
-                    OSDMap map = new OSDMap();
+                    sb.Append("{");
                     for (int i = 0; i < values.Data.Length; i += 2)
                     {
                         if (!(values.Data[i] is LSL_String))
                             return ScriptBaseClass.JSON_INVALID;
-                        map.Add(((LSL_String)values.Data[i]).m_string, ListToJson(values.Data[i + 1]));
+                        string key = ((LSL_String)values.Data[i]).m_string;
+                        key = EscapeForJSON(key, true);
+                        sb.Append(key);
+                        sb.Append(":");
+                        sb.Append(ListToJson(values.Data[i+1]));
+                        if(i < values.Data.Length - 2)
+                            sb.Append(",");
                     }
-                    return OSDParser.SerializeJsonString(map);
+                    sb.Append("}");
+                    return (LSL_String)sb.ToString();
                 }
                 return ScriptBaseClass.JSON_INVALID;
             }
-            catch (Exception ex)
+            catch
             {
-                return ex.Message;
+                return ScriptBaseClass.JSON_INVALID;
             }
         }
 
-        private OSD ListToJson(object o)
+        private string ListToJson(object o)
         {
             if (o is LSL_Float || o is double)
             {
@@ -16660,7 +16862,12 @@ namespace OpenSim.Region.ScriptEngine.Shared.Api
                 else
                     float_val = ((LSL_Float)o).value;
 
-                return OSD.FromReal(float_val);
+                if(double.IsInfinity(float_val))
+                    return  "\"Inf\"";
+                if(double.IsNaN(float_val))
+                    return  "\"NaN\"";
+               
+                return ((LSL_Float)float_val).ToString();
             }
             if (o is LSL_Integer || o is int)
             {
@@ -16669,17 +16876,26 @@ namespace OpenSim.Region.ScriptEngine.Shared.Api
                     i = ((int)o);
                 else
                     i = ((LSL_Integer)o).value;
-
-                if (i == 0)
-                    return OSD.FromBoolean(false);
-                else if (i == 1)
-                    return OSD.FromBoolean(true);
-                return OSD.FromInteger(i);
+                return i.ToString();
             }
             if (o is LSL_Rotation)
-                return OSD.FromString(((LSL_Rotation)o).ToString());
+            {
+                StringBuilder sb = new StringBuilder(128);
+                sb.Append("\"");
+                LSL_Rotation r = (LSL_Rotation)o;
+                sb.Append(r.ToString());
+                sb.Append("\"");
+                return sb.ToString();
+            }
             if (o is LSL_Vector)
-                return OSD.FromString(((LSL_Vector)o).ToString());
+            {
+                StringBuilder sb = new StringBuilder(128);
+                sb.Append("\"");
+                LSL_Vector v = (LSL_Vector)o;
+                sb.Append(v.ToString());
+                sb.Append("\"");
+                return sb.ToString();
+            }
             if (o is LSL_String || o is string)
             {
                 string str;
@@ -16688,137 +16904,579 @@ namespace OpenSim.Region.ScriptEngine.Shared.Api
                 else
                     str = ((LSL_String)o).m_string;
 
-                if (str == ScriptBaseClass.JSON_NULL)
-                    return new OSD();
-                return OSD.FromString(str);
+                if(str == ScriptBaseClass.JSON_TRUE || str == "true")
+                    return "true";
+                if(str == ScriptBaseClass.JSON_FALSE ||str == "false")
+                    return "false";
+                if(str == ScriptBaseClass.JSON_NULL || str == "null")
+                    return "null";
+                str.Trim();
+                if (str[0] == '{')
+                    return str;
+                if (str[0] == '[')
+                    return str;
+                return EscapeForJSON(str, true);
             }
-            throw new Exception(ScriptBaseClass.JSON_INVALID);
+            throw new IndexOutOfRangeException();
         }
 
-        private OSD JsonGetSpecific(OSD o, LSL_List specifiers, int i)
+        private string EscapeForJSON(string s, bool AddOuter)
         {
-            object spec = specifiers.Data[i];
-            OSD nextVal = null;
-            if (o is OSDArray)
+            int i;
+            char c;
+            String t;
+            int len = s.Length;
+
+            StringBuilder sb = new StringBuilder(len + 64);
+            if(AddOuter)
+                sb.Append("\"");
+
+            for (i = 0; i < len; i++)
             {
-                if (spec is LSL_Integer)
-                    nextVal = ((OSDArray)o)[((LSL_Integer)spec).value];
+                c = s[i];
+                switch (c)
+                {
+                    case '\\':
+                    case '"':
+                    case '/':
+                        sb.Append('\\');
+                        sb.Append(c);
+                        break;
+                    case '\b':
+                        sb.Append("\\b");
+                        break;
+                    case '\t':
+                        sb.Append("\\t");
+                        break;
+                    case '\n':
+                        sb.Append("\\n");
+                        break;
+                    case '\f':
+                        sb.Append("\\f");
+                        break;
+                    case '\r':
+                        sb.Append("\\r");
+                        break;
+                    default:
+                        if (c < ' ')
+                        {
+                            t = "000" + String.Format("X", c);
+                            sb.Append("\\u" + t.Substring(t.Length - 4));
+                        }
+                        else
+                        {
+                            sb.Append(c);
+                        }
+                        break;
+                }
             }
-            if (o is OSDMap)
-            {
-                if (spec is LSL_String)
-                    nextVal = ((OSDMap)o)[((LSL_String)spec).m_string];
-            }
-            if (nextVal != null)
-            {
-                if (specifiers.Data.Length - 1 > i)
-                    return JsonGetSpecific(nextVal, specifiers, i + 1);
-            }
-            return nextVal;
+            if(AddOuter)
+                sb.Append("\"");
+            return sb.ToString();
         }
 
         public LSL_String llJsonSetValue(LSL_String json, LSL_List specifiers, LSL_String value)
         {
+            bool noSpecifiers = specifiers.Length == 0;
+            LitJson.JsonData workData;
             try
             {
-                OSD o = OSDParser.DeserializeJson(json);
-                JsonSetSpecific(o, specifiers, 0, value);
-                return OSDParser.SerializeJsonString(o);
+                if(noSpecifiers)
+                    specifiers.Add(new LSL_Integer(0));
+
+                if(!String.IsNullOrEmpty(json))
+                    workData = LitJson.JsonMapper.ToObject(json);
+                else
+                {
+                    workData = new  LitJson.JsonData();
+                    workData.SetJsonType(LitJson.JsonType.Array);
+                }
             }
-            catch (Exception)
+            catch (Exception e)
             {
+                string m = e.Message; // debug point
+                return ScriptBaseClass.JSON_INVALID;
+            }
+            try
+            {
+                LitJson.JsonData replace = JsonSetSpecific(workData, specifiers, 0, value);
+                if(replace != null)
+                    workData = replace;
+            }
+            catch (Exception e)
+            {
+                string m = e.Message; // debug point
+                return ScriptBaseClass.JSON_INVALID;
+            }
+
+            try
+            {
+                string r = LitJson.JsonMapper.ToJson(workData);
+                if(noSpecifiers)
+                    r = r.Substring(1,r.Length -2); // strip leading and trailing brakets
+                return r;
+            }
+            catch (Exception e)
+            {
+                string m = e.Message; // debug point
             }
             return ScriptBaseClass.JSON_INVALID;
         }
 
-        private void JsonSetSpecific(OSD o, LSL_List specifiers, int i, LSL_String val)
+        private LitJson.JsonData JsonSetSpecific(LitJson.JsonData elem, LSL_List specifiers, int level, LSL_String val)
         {
-            object spec = specifiers.Data[i];
-            // 20131224 not used            object specNext = i+1 == specifiers.Data.Length ? null : specifiers.Data[i+1];
-            OSD nextVal = null;
-            if (o is OSDArray)
+            object spec = specifiers.Data[level];
+            if(spec is LSL_String)
+                spec = ((LSL_String)spec).m_string;
+            else if (spec is LSL_Integer)
+                spec = ((LSL_Integer)spec).value;
+
+            if(!(spec is string || spec is int))
+                throw new IndexOutOfRangeException();
+
+            int speclen = specifiers.Data.Length - 1;
+
+            bool hasvalue = false;
+            LitJson.JsonData value = null;
+
+            LitJson.JsonType elemType = elem.GetJsonType();
+            if (elemType == LitJson.JsonType.Array)
             {
-                OSDArray array = ((OSDArray)o);
+                if (spec is int)
+                {
+                    int v = (int)spec;
+                    int c = elem.Count;
+                    if(v < 0 || (v != 0 && v > c))
+                        throw new IndexOutOfRangeException();
+                    if(v == c)
+                        elem.Add(JsonBuildRestOfSpec(specifiers, level + 1, val));
+                    else
+                    {
+                        hasvalue = true;
+                        value = elem[v];
+                    }
+                }
+                else if (spec is string)
+                {
+                    if((string)spec == ScriptBaseClass.JSON_APPEND)
+                        elem.Add(JsonBuildRestOfSpec(specifiers, level + 1, val));
+                    else if(elem.Count < 2)
+                    {
+                        // our initial guess of array was wrong
+                        LitJson.JsonData newdata = new LitJson.JsonData();
+                        newdata.SetJsonType(LitJson.JsonType.Object);
+                        IOrderedDictionary no = newdata as IOrderedDictionary;
+                        no.Add((string)spec,JsonBuildRestOfSpec(specifiers, level + 1, val));
+                        return newdata;
+                    }
+                }
+            }
+            else if (elemType == LitJson.JsonType.Object)
+            {
+                if (spec is string)
+                {
+                    IOrderedDictionary e = elem as IOrderedDictionary;
+                    string key = (string)spec;
+                    if(e.Contains(key))
+                    {
+                        hasvalue = true;
+                        value = (LitJson.JsonData)e[key];
+                    }
+                    else
+                        e.Add(key, JsonBuildRestOfSpec(specifiers, level + 1, val));
+                }
+                else if(spec is int && (int)spec == 0)
+                {
+                    //we are replacing a object by a array
+                    LitJson.JsonData newData = new LitJson.JsonData();
+                    newData.SetJsonType(LitJson.JsonType.Array);
+                    newData.Add(JsonBuildRestOfSpec(specifiers, level + 1, val));
+                    return newData;
+                }              
+            }
+            else
+            {
+                LitJson.JsonData newData = JsonBuildRestOfSpec(specifiers, level, val);
+                return newData;
+            }
+
+            if (hasvalue)
+            {
+                if (level < speclen)
+                {
+                    LitJson.JsonData replace = JsonSetSpecific(value, specifiers, level + 1, val);
+                    if(replace != null)
+                    {
+                        if(elemType == LitJson.JsonType.Array)
+                        {
+                            if(spec is int)
+                                elem[(int)spec] = replace;
+                            else if( spec is string)
+                            {
+                                LitJson.JsonData newdata = new LitJson.JsonData();
+                                newdata.SetJsonType(LitJson.JsonType.Object);
+                                IOrderedDictionary no = newdata as IOrderedDictionary;
+                                no.Add((string)spec, replace);
+                                return newdata;
+                            }
+                        }
+                        else if(elemType == LitJson.JsonType.Object)
+                        {
+                            if(spec is string)
+                                elem[(string)spec] = replace;
+                            else if(spec is int && (int)spec == 0)
+                            {
+                                LitJson.JsonData newdata = new LitJson.JsonData();
+                                newdata.SetJsonType(LitJson.JsonType.Array);
+                                newdata.Add(replace);
+                                return newdata;
+                            }
+                        }
+                    }
+                    return null;
+                }
+                else if(speclen == level)
+                {
+                    if(val == ScriptBaseClass.JSON_DELETE)
+                    {
+                        if(elemType == LitJson.JsonType.Array)
+                        {
+                            if(spec is int)
+                            {
+                                IList el = elem as IList;
+                                el.RemoveAt((int)spec);
+                            }
+                        }
+                        else if(elemType == LitJson.JsonType.Object)
+                        {
+                            if(spec is string)
+                            {
+                                IOrderedDictionary eo = elem as IOrderedDictionary;
+                                eo.Remove((string) spec);
+                            }
+                        }
+                        return null;
+                    }
+
+                    LitJson.JsonData newval = null;
+                    float num;
+                    if(val == null || val == ScriptBaseClass.JSON_NULL || val == "null")
+                        newval = null;
+                    else if(val == ScriptBaseClass.JSON_TRUE || val == "true")
+                        newval = new LitJson.JsonData(true);
+                    else if(val == ScriptBaseClass.JSON_FALSE || val == "false")
+                        newval = new LitJson.JsonData(false);
+                    else if(float.TryParse(val, out num))
+                    {
+                        // assuming we are at en.us already
+                        if(num - (int)num == 0.0f && !val.Contains("."))
+                            newval = new LitJson.JsonData((int)num);
+                        else
+                        {
+                            num = (float)Math.Round(num,6);
+                            newval = new LitJson.JsonData((double)num);
+                        }
+                    }
+                    else
+                    {
+                        string str = val.m_string;
+                        newval = new LitJson.JsonData(str);
+                    }
+
+                    if(elemType == LitJson.JsonType.Array)
+                    {
+                        if(spec is int)
+                            elem[(int)spec] = newval;
+                        else if( spec is string)
+                        {
+                            LitJson.JsonData newdata = new LitJson.JsonData();
+                            newdata.SetJsonType(LitJson.JsonType.Object);
+                            IOrderedDictionary no = newdata as IOrderedDictionary;
+                            no.Add((string)spec,newval);
+                            return newdata;
+                        }
+                    }
+                    else if(elemType == LitJson.JsonType.Object)
+                    {
+                        if(spec is string)
+                            elem[(string)spec] = newval;
+                        else if(spec is int && (int)spec == 0)
+                        {
+                            LitJson.JsonData newdata = new LitJson.JsonData();
+                            newdata.SetJsonType(LitJson.JsonType.Array);
+                            newdata.Add(newval);
+                            return newdata;
+                        }
+                    }
+                }
+            }
+            if(val == ScriptBaseClass.JSON_DELETE)
+                throw new IndexOutOfRangeException();
+            return null;
+        }
+
+        private LitJson.JsonData JsonBuildRestOfSpec(LSL_List specifiers, int level, LSL_String val)
+        {
+            object spec = level >= specifiers.Data.Length ? null : specifiers.Data[level];
+            // 20131224 not used            object specNext = i+1 >= specifiers.Data.Length ? null : specifiers.Data[i+1];
+
+            float num;
+            if (spec == null)
+            {
+                if(val == null || val == ScriptBaseClass.JSON_NULL || val == "null")
+                    return null;
+                if(val == ScriptBaseClass.JSON_DELETE)
+                    throw new IndexOutOfRangeException();
+                if(val == ScriptBaseClass.JSON_TRUE || val == "true")
+                    return new LitJson.JsonData(true);
+                if(val == ScriptBaseClass.JSON_FALSE || val == "false")
+                    return new LitJson.JsonData(false);
+                if(val == null || val == ScriptBaseClass.JSON_NULL || val == "null")
+                    return null;
+                if(float.TryParse(val, out num))
+                {
+                    // assuming we are at en.us already
+                    if(num - (int)num == 0.0f && !val.Contains("."))
+                        return new LitJson.JsonData((int)num);
+                    else
+                    {
+                        num = (float)Math.Round(num,6);
+                        return new LitJson.JsonData(num);
+                    }
+                }
+                else
+                {
+                    string str = val.m_string;
+                    return new LitJson.JsonData(str);
+                }
+                throw new IndexOutOfRangeException();
+            }
+
+            if(spec is LSL_String)
+                spec = ((LSL_String)spec).m_string;
+            else if (spec is LSL_Integer)
+                spec = ((LSL_Integer)spec).value;
+
+            if (spec is int ||
+                (spec is string && ((string)spec) == ScriptBaseClass.JSON_APPEND) )
+            {
+                if(spec is int && (int)spec != 0)
+                    throw new IndexOutOfRangeException();
+                LitJson.JsonData newdata = new LitJson.JsonData();
+                newdata.SetJsonType(LitJson.JsonType.Array);
+                newdata.Add(JsonBuildRestOfSpec(specifiers, level + 1, val));
+                return newdata;
+            }
+            else if (spec is string)
+            {
+                LitJson.JsonData newdata = new LitJson.JsonData();
+                newdata.SetJsonType(LitJson.JsonType.Object);
+                IOrderedDictionary no = newdata as IOrderedDictionary;
+                no.Add((string)spec,JsonBuildRestOfSpec(specifiers, level + 1, val));
+                return newdata;
+            }
+            throw new IndexOutOfRangeException();
+        }
+
+        private bool JsonFind(LitJson.JsonData elem, LSL_List specifiers, int level, out LitJson.JsonData value)
+        {
+            value = null;
+            if(elem == null)
+                return false;
+
+            object spec;
+            spec = specifiers.Data[level];
+
+            bool haveVal = false;
+            LitJson.JsonData next = null;
+
+            if (elem.GetJsonType() == LitJson.JsonType.Array)
+            {
                 if (spec is LSL_Integer)
                 {
-                    int v = ((LSL_Integer)spec).value;
-                    if (v >= array.Count)
-                        array.Add(JsonBuildRestOfSpec(specifiers, i + 1, val));
-                    else
-                        nextVal = ((OSDArray)o)[v];
+                    int indx = (LSL_Integer)spec;
+                    if(indx >= 0 && indx < elem.Count)
+                    {
+                        haveVal = true;
+                        next = (LitJson.JsonData)elem[indx];
+                    }
                 }
-                else if (spec is LSL_String && ((LSL_String)spec) == ScriptBaseClass.JSON_APPEND)
-                    array.Add(JsonBuildRestOfSpec(specifiers, i + 1, val));
             }
-            if (o is OSDMap)
+            else if (elem.GetJsonType() == LitJson.JsonType.Object)
             {
                 if (spec is LSL_String)
                 {
-                    OSDMap map = ((OSDMap)o);
-                    if (map.ContainsKey(((LSL_String)spec).m_string))
-                        nextVal = map[((LSL_String)spec).m_string];
-                    else
-                        map.Add(((LSL_String)spec).m_string, JsonBuildRestOfSpec(specifiers, i + 1, val));
+                    IOrderedDictionary e = elem as IOrderedDictionary;
+                    string key = (LSL_String)spec;
+                    if(e.Contains(key))
+                    {
+                        haveVal = true;
+                        next = (LitJson.JsonData)e[key];
+                    }
                 }
             }
-            if (nextVal != null)
+
+            if (haveVal)
             {
-                if (specifiers.Data.Length - 1 > i)
+                if(level == specifiers.Data.Length - 1)
                 {
-                    JsonSetSpecific(nextVal, specifiers, i + 1, val);
-                    return;
+                    value = next;
+                    return true;
                 }
+
+                level++;
+                if(next == null)
+                    return false;
+
+                LitJson.JsonType nextType = next.GetJsonType();
+                if(nextType != LitJson.JsonType.Object && nextType != LitJson.JsonType.Array)
+                    return false;
+
+                return JsonFind(next, specifiers, level, out value);
             }
+            return false;
         }
 
-        private OSD JsonBuildRestOfSpec(LSL_List specifiers, int i, LSL_String val)
+        public LSL_String llJsonGetValue(LSL_String json, LSL_List specifiers)
         {
-            object spec = i >= specifiers.Data.Length ? null : specifiers.Data[i];
-            // 20131224 not used            object specNext = i+1 >= specifiers.Data.Length ? null : specifiers.Data[i+1];
+            if(String.IsNullOrWhiteSpace(json))
+                return ScriptBaseClass.JSON_INVALID;
 
-            if (spec == null)
-                return OSD.FromString(val);
+            if(specifiers.Length > 0 && (json == "{}" || json == "[]"))
+                return ScriptBaseClass.JSON_INVALID;
 
-            if (spec is LSL_Integer ||
-                (spec is LSL_String && ((LSL_String)spec) == ScriptBaseClass.JSON_APPEND))
+            char first = ((string)json)[0];
+            if((first != '[' && first !='{'))
             {
-                OSDArray array = new OSDArray();
-                array.Add(JsonBuildRestOfSpec(specifiers, i + 1, val));
-                return array;
+                if(specifiers.Length > 0)
+                    return ScriptBaseClass.JSON_INVALID;
+                json = "[" + json + "]"; // could handle single element case.. but easier like this
+                specifiers.Add((LSL_Integer)0);
             }
-            else if (spec is LSL_String)
+
+            LitJson.JsonData jsonData;
+            try
             {
-                OSDMap map = new OSDMap();
-                map.Add((LSL_String)spec, JsonBuildRestOfSpec(specifiers, i + 1, val));
-                return map;
+                jsonData = LitJson.JsonMapper.ToObject(json);
             }
-            return new OSD();
+            catch (Exception e)
+            {
+                string m = e.Message; // debug point
+                return ScriptBaseClass.JSON_INVALID;
+            }
+
+            LitJson.JsonData elem = null;
+            if(specifiers.Length == 0)
+                elem = jsonData;
+            else
+            {
+                if(!JsonFind(jsonData, specifiers, 0, out elem))
+                    return ScriptBaseClass.JSON_INVALID;
+            }
+            return JsonElementToString(elem);
+        }
+
+        private LSL_String JsonElementToString(LitJson.JsonData elem)
+        {
+            if(elem == null)
+                return ScriptBaseClass.JSON_NULL;
+
+            LitJson.JsonType elemType = elem.GetJsonType();
+            switch(elemType)
+            {
+                case LitJson.JsonType.Array:
+                    return new LSL_String(LitJson.JsonMapper.ToJson(elem));
+                case LitJson.JsonType.Boolean:
+                    return new LSL_String((bool)elem ? ScriptBaseClass.JSON_TRUE : ScriptBaseClass.JSON_FALSE);
+                case LitJson.JsonType.Double:
+                    double d= (double)elem;
+                    string sd = String.Format(Culture.FormatProvider, "{0:0.0#####}",d);
+                    return new LSL_String(sd);
+                case LitJson.JsonType.Int:
+                    int i = (int)elem;
+                    return new LSL_String(i.ToString());
+                case LitJson.JsonType.Long:
+                    long l = (long)elem;
+                    return new LSL_String(l.ToString());
+                case LitJson.JsonType.Object:
+                    return new LSL_String(LitJson.JsonMapper.ToJson(elem));
+                case LitJson.JsonType.String:
+                    string s = (string)elem;
+                    return new LSL_String(s);
+                case LitJson.JsonType.None:
+                    return ScriptBaseClass.JSON_NULL;
+                default:
+                    return ScriptBaseClass.JSON_INVALID;
+            }
         }
 
         public LSL_String llJsonValueType(LSL_String json, LSL_List specifiers)
         {
-            OSD o = OSDParser.DeserializeJson(json);
-            OSD specVal = JsonGetSpecific(o, specifiers, 0);
-            if (specVal == null)
+            if(String.IsNullOrWhiteSpace(json))
                 return ScriptBaseClass.JSON_INVALID;
-            switch (specVal.Type)
+
+            if(specifiers.Length > 0 && (json == "{}" || json == "[]"))
+                return ScriptBaseClass.JSON_INVALID;
+
+            char first = ((string)json)[0];
+            if((first != '[' && first !='{'))
             {
-                case OSDType.Array:
-                    return ScriptBaseClass.JSON_ARRAY;
-                case OSDType.Boolean:
-                    return specVal.AsBoolean() ? ScriptBaseClass.JSON_TRUE : ScriptBaseClass.JSON_FALSE;
-                case OSDType.Integer:
-                case OSDType.Real:
-                    return ScriptBaseClass.JSON_NUMBER;
-                case OSDType.Map:
-                    return ScriptBaseClass.JSON_OBJECT;
-                case OSDType.String:
-                case OSDType.UUID:
-                    return ScriptBaseClass.JSON_STRING;
-                case OSDType.Unknown:
-                    return ScriptBaseClass.JSON_NULL;
+                if(specifiers.Length > 0)
+                    return ScriptBaseClass.JSON_INVALID;
+                json = "[" + json + "]"; // could handle single element case.. but easier like this
+                specifiers.Add((LSL_Integer)0);
             }
-            return ScriptBaseClass.JSON_INVALID;
+
+            LitJson.JsonData jsonData;
+            try
+            {
+                jsonData = LitJson.JsonMapper.ToObject(json);
+            }
+            catch (Exception e)
+            {
+                string m = e.Message; // debug point
+                return ScriptBaseClass.JSON_INVALID;
+            }
+
+            LitJson.JsonData elem = null;
+            if(specifiers.Length == 0)
+                elem = jsonData;
+            else
+            {
+                if(!JsonFind(jsonData, specifiers, 0, out elem))
+                    return ScriptBaseClass.JSON_INVALID;
+            }
+
+            if(elem == null)
+                return ScriptBaseClass.JSON_NULL;
+
+            LitJson.JsonType elemType = elem.GetJsonType();
+            switch(elemType)
+            {
+                case LitJson.JsonType.Array:
+                    return ScriptBaseClass.JSON_ARRAY;
+                case LitJson.JsonType.Boolean:
+                    return (bool)elem ? ScriptBaseClass.JSON_TRUE : ScriptBaseClass.JSON_FALSE;
+                case LitJson.JsonType.Double:
+                case LitJson.JsonType.Int:
+                case LitJson.JsonType.Long:
+                    return ScriptBaseClass.JSON_NUMBER;
+                case LitJson.JsonType.Object:
+                    return ScriptBaseClass.JSON_OBJECT;
+                case LitJson.JsonType.String:
+                    string s = (string)elem;
+                    if(s == ScriptBaseClass.JSON_NULL)
+                        return ScriptBaseClass.JSON_NULL;
+                    if(s == ScriptBaseClass.JSON_TRUE)
+                        return ScriptBaseClass.JSON_TRUE;
+                    if(s == ScriptBaseClass.JSON_FALSE)
+                        return ScriptBaseClass.JSON_FALSE;
+                    return ScriptBaseClass.JSON_STRING;
+                case LitJson.JsonType.None:
+                    return ScriptBaseClass.JSON_NULL;
+                default:
+                    return ScriptBaseClass.JSON_INVALID;
+            }
         }
     }
 
