@@ -36,7 +36,7 @@ using System.Reflection;
 using OpenSim.Data;
 using OpenSim.Framework;
 using OpenSim.Framework.Serialization.External;
-using OpenSim.Framework.Console;
+using OpenSim.Framework.ConsoleFramework;
 using OpenSim.Server.Base;
 using OpenSim.Services.Base;
 using OpenSim.Services.Interfaces;

@@ -28,7 +28,7 @@
 using System;
 using System.Collections.Generic;
 using OpenSim.Framework;
-using OpenSim.Framework.Console;
+using OpenSim.Framework.ConsoleFramework;
 using OpenSim.Region.ScriptEngine.Interfaces;
 using OpenSim.Region.ScriptEngine.Shared.Api;
 using OpenSim.Region.ScriptEngine.Shared.Api.Plugins;

@@ -25,34 +25,34 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-using System;
 using System.Reflection;
-using Nini.Config;
-using log4net;
-using OpenSim.Framework;
-using OpenSim.Framework.ConsoleFramework;
-using OpenSim.Data;
-using OpenSim.Services.Interfaces;
-using OpenMetaverse;
+using System.Runtime.InteropServices;
 
-namespace OpenSim.Services.AuthorizationService
-{
-    public class AuthorizationService : AuthorizationServiceBase, IAuthorizationService
-    {
-        private static readonly ILog m_log =
-                LogManager.GetLogger(
-                MethodBase.GetCurrentMethod().DeclaringType);
+// Information about this assembly is defined by the following
+// attributes.
+//
+// change them to the information which is associated with the assembly
+// you compile.
 
-        public AuthorizationService(IConfigSource config) : base(config)
-        {
-                m_log.Info("[AUTHORIZATION CONNECTOR]: Local Authorization service enabled");
-        }
+[assembly: AssemblyTitle("ServerConsole")]
+[assembly: AssemblyDescription("")]
+[assembly: AssemblyConfiguration("")]
+[assembly: AssemblyCompany("http://opensimulator.org")]
+[assembly: AssemblyProduct("ServerConsole")]
+[assembly: AssemblyCopyright("Copyright (c) OpenSimulator.org Developers")]
+[assembly: AssemblyTrademark("")]
+[assembly: AssemblyCulture("")]
 
-        public bool IsAuthorizedForRegion(
-            string userID, string firstName, string lastName, string regionID, out string message)
-        {
-            message = "Authorized";
-            return true;
-        }
-    }
-}
+// This sets the default COM visibility of types in the assembly to invisible.
+// If you need to expose a type to COM, use [ComVisible(true)] on that type.
+
+[assembly: ComVisible(false)]
+
+// The assembly version has following format :
+//
+// Major.Minor.Build.Revision
+//
+// You can specify all values by your own or you can build default build and revision
+// numbers with the '*' character (the default):
+
+[assembly: AssemblyVersion(OpenSim.VersionInfo.AssemblyVersionNumber)]

@@ -25,34 +25,24 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-using System.Reflection;
-using System.Runtime.InteropServices;
+using System;
 
-// Information about this assembly is defined by the following
-// attributes.
-//
-// change them to the information which is associated with the assembly
-// you compile.
+namespace OpenSim.Framework.ConsoleFramework
+{
+    /// <summary>
+    /// This will be a set of typical column sizes to allow greater consistency between console commands.
+    /// </summary>
+    public static class ConsoleDisplayUtil
+    {
+        public const int CoordTupleSize = 11;
+        public const int PortSize = 5;
 
-[assembly : AssemblyTitle("ServerConsole")]
-[assembly : AssemblyDescription("")]
-[assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("http://opensimulator.org")]
-[assembly : AssemblyProduct("ServerConsole")]
-[assembly: AssemblyCopyright("Copyright (c) OpenSimulator.org Developers")]
-[assembly: AssemblyTrademark("")]
-[assembly: AssemblyCulture("")]
+        public const int EstateNameSize = 20;
+        public const int ParcelNameSize = 40;
+        public const int RegionNameSize = 20;
+        public const int UserNameSize = 35;
 
-// This sets the default COM visibility of types in the assembly to invisible.
-// If you need to expose a type to COM, use [ComVisible(true)] on that type.
-
-[assembly : ComVisible(false)]
-
-// The assembly version has following format :
-//
-// Major.Minor.Build.Revision
-//
-// You can specify all values by your own or you can build default build and revision
-// numbers with the '*' character (the default):
-
-[assembly : AssemblyVersion(OpenSim.VersionInfo.AssemblyVersionNumber)]
+        public const int UuidSize = 36;
+        public const int VectorSize = 15;
+    }
+}

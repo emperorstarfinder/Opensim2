@@ -25,62 +25,18 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-using System;
-using log4net.Appender;
-using log4net.Core;
+using OpenSim.Framework.Modules;
 
-namespace OpenSim.Framework.Console
+namespace OpenSim.Framework.ConsoleFramework
 {
-    /// <summary>
-    /// Writes log information out onto the console
-    /// </summary>
-    public class OpenSimAppender : AnsiColorTerminalAppender
+    public class MainConsole
     {
-        private ConsoleBase m_console = null;
+        private static ICommandConsole instance;
 
-        public ConsoleBase Console
+        public static ICommandConsole Instance
         {
-            get { return m_console; }
-            set { m_console = value; }
-        }
-
-        override protected void Append(LoggingEvent le)
-        {
-            if (m_console != null)
-                m_console.LockOutput();
-
-            string loggingMessage = RenderLoggingEvent(le);
-
-            try
-            {
-                if (m_console != null)
-                {
-                    string level = "normal";
-
-                    if (le.Level == Level.Error)
-                        level = "error";
-                    else if (le.Level == Level.Warn)
-                        level = "warn";
-
-                    m_console.Output(loggingMessage, level);
-                }
-                else
-                {
-                    if (!loggingMessage.EndsWith("\n"))
-                        System.Console.WriteLine(loggingMessage);
-                    else
-                        System.Console.Write(loggingMessage);
-                }
-            }
-            catch (Exception e)
-            {
-                System.Console.WriteLine("Couldn't write out log message: {0}", e.ToString());
-            }
-            finally
-            {
-                if (m_console != null)
-                    m_console.UnlockOutput();
-            }
+            get { return instance; }
+            set { instance = value; }
         }
     }
 }

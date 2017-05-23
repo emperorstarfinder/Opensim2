@@ -37,7 +37,7 @@ using log4net.Core;
 using log4net.Repository;
 using Nini.Config;
 using OpenSim.Framework;
-using OpenSim.Framework.Console;
+using OpenSim.Framework.ConsoleFramework;
 using OpenSim.Framework.Monitoring;
 using pCampBot.Interfaces;
 

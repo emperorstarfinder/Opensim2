@@ -32,7 +32,7 @@ using Nini.Config;
 using OpenSim.Data;
 using OpenSim.Services.Interfaces;
 using OpenSim.Framework;
-using OpenSim.Framework.Console;
+using OpenSim.Framework.ConsoleFramework;
 using GridRegion = OpenSim.Services.Interfaces.GridRegion;
 
 using OpenMetaverse;

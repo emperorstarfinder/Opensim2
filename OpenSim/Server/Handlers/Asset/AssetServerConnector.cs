@@ -31,7 +31,7 @@ using Nini.Config;
 using OpenMetaverse;
 using OpenSim.Framework;
 using OpenSim.Framework.ServiceAuth;
-using OpenSim.Framework.Console;
+using OpenSim.Framework.ConsoleFramework;
 using OpenSim.Server.Base;
 using OpenSim.Services.Interfaces;
 using OpenSim.Framework.Servers.HttpServer;

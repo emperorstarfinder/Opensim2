@@ -43,7 +43,6 @@ using log4net;
 namespace OpenSim.Framework.Console
 {
     // A console that uses REST interfaces
-    //
     public class RemoteConsole : CommandConsole
     {
         // Connection specific data, indexed by a session ID
@@ -124,8 +123,7 @@ namespace OpenSim.Framework.Console
 
         // The list of sessions we maintain. Unlike other console types,
         // multiple users on the same console are explicitly allowed.
-        protected Dictionary<UUID, ConsoleConnection> m_Connections =
-                new Dictionary<UUID, ConsoleConnection>();
+        protected Dictionary<UUID, ConsoleConnection> m_Connections = new Dictionary<UUID, ConsoleConnection>();
 
         // Timer to control expiration of sessions that have been
         // disconnected.
@@ -139,7 +137,6 @@ namespace OpenSim.Framework.Console
         protected string m_UserName = String.Empty;
         protected string m_Password = String.Empty;
         protected string m_AllowedOrigin = String.Empty;
-
 
         public RemoteConsole(string defaultPrompt) : base(defaultPrompt)
         {
@@ -253,7 +250,6 @@ namespace OpenSim.Framework.Console
                 Output(p, String.Empty, true, false, false);
             }
 
-
             // Here is where we wait for the user to input something.
             m_DataEvent.WaitOne();
 
@@ -275,7 +271,6 @@ namespace OpenSim.Framework.Console
                 m_InputData.RemoveAt(0);
                 if (m_InputData.Count == 0)
                     m_DataEvent.Reset();
-
             }
 
             m_expectingInput = false;
@@ -283,7 +278,7 @@ namespace OpenSim.Framework.Console
 
             // Echo to all the other users what we have done. This
             // will also go to ourselves.
-            Output (cmdinput, String.Empty, false, false, true);
+            Output(cmdinput, String.Empty, false, false, true);
 
             // If this is a command, we need to resolve and execute it.
             if (isCommand)
@@ -297,7 +292,7 @@ namespace OpenSim.Framework.Console
                 {
                     int i;
 
-                    for (i=0 ; i < cmd.Length ; i++)
+                    for (i = 0; i < cmd.Length; i++)
                     {
                         if (cmd[i].Contains(" "))
                             cmd[i] = "\"" + cmd[i] + "\"";
@@ -402,18 +397,15 @@ namespace OpenSim.Framework.Console
             // This call is a CAP. The URL is the authentication.
             string uri = "/ReadResponses/" + sessionID.ToString() + "/";
 
-            m_Server.AddPollServiceHTTPHandler(
-                uri, new PollServiceEventArgs(null, uri, HasEvents, GetEvents, NoEvents, sessionID,25000)); // 25 secs timeout
+            m_Server.AddPollServiceHTTPHandler(uri, new PollServiceEventArgs(null, uri, HasEvents, GetEvents, NoEvents, sessionID, 25000)); // 25 secs timeout
 
             // Our reply is an XML document.
             // TODO: Change this to Linq.Xml
             XmlDocument xmldoc = new XmlDocument();
-            XmlNode xmlnode = xmldoc.CreateNode(XmlNodeType.XmlDeclaration,
-                    "", "");
+            XmlNode xmlnode = xmldoc.CreateNode(XmlNodeType.XmlDeclaration, "", "");
 
             xmldoc.AppendChild(xmlnode);
-            XmlElement rootElement = xmldoc.CreateElement("", "ConsoleSession",
-                    "");
+            XmlElement rootElement = xmldoc.CreateElement("", "ConsoleSession", "");
 
             xmldoc.AppendChild(rootElement);
 
@@ -465,12 +457,10 @@ namespace OpenSim.Framework.Console
             }
 
             XmlDocument xmldoc = new XmlDocument();
-            XmlNode xmlnode = xmldoc.CreateNode(XmlNodeType.XmlDeclaration,
-                    "", "");
+            XmlNode xmlnode = xmldoc.CreateNode(XmlNodeType.XmlDeclaration, "", "");
 
             xmldoc.AppendChild(xmlnode);
-            XmlElement rootElement = xmldoc.CreateElement("", "ConsoleSession",
-                    "");
+            XmlElement rootElement = xmldoc.CreateElement("", "ConsoleSession", "");
 
             xmldoc.AppendChild(rootElement);
 
@@ -525,12 +515,10 @@ namespace OpenSim.Framework.Console
 
             // Create the XML reply document.
             XmlDocument xmldoc = new XmlDocument();
-            XmlNode xmlnode = xmldoc.CreateNode(XmlNodeType.XmlDeclaration,
-                    "", "");
+            XmlNode xmlnode = xmldoc.CreateNode(XmlNodeType.XmlDeclaration, "", "");
 
             xmldoc.AppendChild(xmlnode);
-            XmlElement rootElement = xmldoc.CreateElement("", "ConsoleSession",
-                    "");
+            XmlElement rootElement = xmldoc.CreateElement("", "ConsoleSession", "");
 
             xmldoc.AppendChild(rootElement);
 
@@ -552,11 +540,11 @@ namespace OpenSim.Framework.Console
         {
             Hashtable result = new Hashtable();
 
-            string[] terms = data.Split(new char[] {'&'});
+            string[] terms = data.Split(new char[] { '&' });
 
             foreach (string term in terms)
             {
-                string[] elems = term.Split(new char[] {'='});
+                string[] elems = term.Split(new char[] { '=' });
                 if (elems.Length == 0)
                     continue;
 
@@ -596,11 +584,15 @@ namespace OpenSim.Framework.Console
             {
                 if (!m_Connections.ContainsKey(sessionID))
                     return false;
+
                 c = m_Connections[sessionID];
             }
+
             c.last = System.Environment.TickCount;
+
             if (c.lastLineSeen < m_lineNumber)
                 return true;
+
             return false;
         }
 
@@ -614,6 +606,7 @@ namespace OpenSim.Framework.Console
             {
                 if (!m_Connections.ContainsKey(sessionID))
                     return NoEvents(RequestID, UUID.Zero);
+
                 c = m_Connections[sessionID];
             }
 
@@ -626,27 +619,20 @@ namespace OpenSim.Framework.Console
 
             // Create the response document.
             XmlDocument xmldoc = new XmlDocument();
-            XmlNode xmlnode = xmldoc.CreateNode(XmlNodeType.XmlDeclaration,
-                    "", "");
+            XmlNode xmlnode = xmldoc.CreateNode(XmlNodeType.XmlDeclaration, "", "");
 
             xmldoc.AppendChild(xmlnode);
-            XmlElement rootElement = xmldoc.CreateElement("", "ConsoleSession",
-                    "");
-
-            //if (c.newConnection)
-            //{
-            //    c.newConnection = false;
-            //    Output("+++" + DefaultPrompt);
-            //}
+            XmlElement rootElement = xmldoc.CreateElement("", "ConsoleSession", "");
 
             lock (m_Scrollback)
             {
                 long startLine = m_lineNumber - m_Scrollback.Count;
                 long sendStart = startLine;
+
                 if (sendStart < c.lastLineSeen)
                     sendStart = c.lastLineSeen;
 
-                for (long i = sendStart ; i < m_lineNumber ; i++)
+                for (long i = sendStart; i < m_lineNumber; i++)
                 {
                     ScrollbackEntry e = m_Scrollback[(int)(i - startLine)];
 
@@ -700,12 +686,10 @@ namespace OpenSim.Framework.Console
             Hashtable result = new Hashtable();
 
             XmlDocument xmldoc = new XmlDocument();
-            XmlNode xmlnode = xmldoc.CreateNode(XmlNodeType.XmlDeclaration,
-                    "", "");
+            XmlNode xmlnode = xmldoc.CreateNode(XmlNodeType.XmlDeclaration, "", "");
 
             xmldoc.AppendChild(xmlnode);
-            XmlElement rootElement = xmldoc.CreateElement("", "ConsoleSession",
-                    "");
+            XmlElement rootElement = xmldoc.CreateElement("", "ConsoleSession", "");
 
             xmldoc.AppendChild(rootElement);
 

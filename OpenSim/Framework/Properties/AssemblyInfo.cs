@@ -25,34 +25,38 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-using System;
 using System.Reflection;
-using Nini.Config;
-using log4net;
-using OpenSim.Framework;
-using OpenSim.Framework.ConsoleFramework;
-using OpenSim.Data;
-using OpenSim.Services.Interfaces;
-using OpenMetaverse;
+using System.Runtime.InteropServices;
 
-namespace OpenSim.Services.AuthorizationService
-{
-    public class AuthorizationService : AuthorizationServiceBase, IAuthorizationService
-    {
-        private static readonly ILog m_log =
-                LogManager.GetLogger(
-                MethodBase.GetCurrentMethod().DeclaringType);
+// General information about an assembly is controlled through the following
+// set of attributes. Change these attribute values to modify the information
+// associated with an assembly.
 
-        public AuthorizationService(IConfigSource config) : base(config)
-        {
-                m_log.Info("[AUTHORIZATION CONNECTOR]: Local Authorization service enabled");
-        }
+[assembly : AssemblyTitle("OpenSim.Framework")]
+[assembly : AssemblyDescription("")]
+[assembly : AssemblyConfiguration("")]
+[assembly : AssemblyCompany("http://opensimulator.org")]
+[assembly : AssemblyProduct("OpenSim.Framework")]
+[assembly : AssemblyCopyright("Copyright (c) OpenSimulator.org Developers 2007-2009")]
+[assembly : AssemblyTrademark("")]
+[assembly : AssemblyCulture("")]
 
-        public bool IsAuthorizedForRegion(
-            string userID, string firstName, string lastName, string regionID, out string message)
-        {
-            message = "Authorized";
-            return true;
-        }
-    }
-}
+// Setting ComVisible to false makes the types in this assembly not visible
+// to COM components.  If you need to access a type in this assembly from
+// COM, set the ComVisible attribute to true on that type.
+
+[assembly : ComVisible(false)]
+
+// The following GUID is for the ID of the typelib if this project is exposed to COM
+
+[assembly : Guid("a08e20c7-f191-4137-b1f0-9291408fa521")]
+
+// Version information for an assembly consists of the following four values:
+//
+//      Major Version
+//      Minor Version
+//      Build Number
+//      Revision
+//
+
+[assembly : AssemblyVersion(OpenSim.VersionInfo.AssemblyVersionNumber)]

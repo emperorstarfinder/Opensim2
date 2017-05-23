@@ -34,7 +34,7 @@ using System.Reflection;
 
 using Nini.Config;
 using OpenSim.Framework;
-using OpenSim.Framework.Console;
+using OpenSim.Framework.ConsoleFramework;
 
 using OpenSim.Framework.ServiceAuth;
 using OpenSim.Server.Base;

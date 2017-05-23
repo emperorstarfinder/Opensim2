@@ -26,7 +26,7 @@
  */
 
 using OpenMetaverse;
-//using OpenSim.Framework.Console;
+//using OpenSim.Framework.ConsoleFramework;
 using Nini.Config;
 
 namespace OpenSim.Framework

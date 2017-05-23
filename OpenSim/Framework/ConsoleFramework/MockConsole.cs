@@ -30,8 +30,9 @@ using System.Threading;
 using System.Collections.Generic;
 using System.Text;
 using System.Xml;
+using OpenSim.Framework.Modules;
 
-namespace OpenSim.Framework.Console
+namespace OpenSim.Framework.ConsoleFramework
 {
     /// <summary>
     /// This is a Fake console that's used when setting up the Scene in Unit Tests
@@ -50,20 +51,21 @@ namespace OpenSim.Framework.Console
 
         public string DefaultPrompt { get; set; }
 
-        public void Prompt() {}
+        public void Prompt() { }
 
-        public void RunCommand(string cmd) {}
+        public void RunCommand(string cmd) { }
 
         public string ReadLine(string p, bool isCommand, bool e) { return ""; }
 
-        public object ConsoleScene {
+        public object ConsoleScene
+        {
             get { return null; }
-            set {}
+            set { }
         }
 
-        public void Output(string text, string level) {}
-        public void Output(string text) {}
-        public void OutputFormat(string format, params object[] components) {}
+        public void Output(string text, string level) { }
+        public void Output(string text) { }
+        public void OutputFormat(string format, params object[] components) { }
 
         public string CmdPrompt(string p) { return ""; }
         public string CmdPrompt(string p, string def) { return ""; }
@@ -77,10 +79,10 @@ namespace OpenSim.Framework.Console
 
     public class MockCommands : ICommands
     {
-        public void FromXml(XmlElement root, CommandDelegate fn) {}
+        public void FromXml(XmlElement root, CommandDelegate fn) { }
         public List<string> GetHelp(string[] cmd) { return null; }
-        public void AddCommand(string module, bool shared, string command, string help, string longhelp, CommandDelegate fn) {}
-        public void AddCommand(string module, bool shared, string command, string help, string longhelp, string descriptivehelp, CommandDelegate fn) {}
+        public void AddCommand(string module, bool shared, string command, string help, string longhelp, CommandDelegate fn) { }
+        public void AddCommand(string module, bool shared, string command, string help, string longhelp, string descriptivehelp, CommandDelegate fn) { }
         public string[] FindNextOption(string[] cmd, bool term) { return null; }
         public bool HasCommand(string cmd) { return false; }
         public string[] Resolve(string[] cmd) { return null; }

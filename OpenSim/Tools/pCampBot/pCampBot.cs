@@ -33,7 +33,7 @@ using log4net;
 using log4net.Config;
 using Nini.Config;
 using OpenSim.Framework;
-using OpenSim.Framework.Console;
+using OpenSim.Framework.ConsoleFramework;
 
 namespace pCampBot
 {

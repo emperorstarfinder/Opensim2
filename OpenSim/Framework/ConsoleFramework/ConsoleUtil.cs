@@ -33,12 +33,10 @@ using System.Reflection;
 using log4net;
 using OpenMetaverse;
 
-namespace OpenSim.Framework.Console
+namespace OpenSim.Framework.ConsoleFramework
 {
     public class ConsoleUtil
     {
-    //    private static readonly ILog m_log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
-
         public const int LocalIdNotFound = 0;
 
         /// <summary>
@@ -297,8 +295,7 @@ namespace OpenSim.Framework.Console
         /// </param>
         /// <param name='vector'></param>
         /// <returns></returns>
-        public static bool TryParseConsoleVector(
-            string rawConsoleVector, Func<string, string> blankComponentFunc, out Vector3 vector)
+        public static bool TryParseConsoleVector(string rawConsoleVector, Func<string, string> blankComponentFunc, out Vector3 vector)
         {
             return Vector3.TryParse(CookVector(rawConsoleVector, 3, blankComponentFunc), out vector);
         }
@@ -318,8 +315,7 @@ namespace OpenSim.Framework.Console
         /// </param>
         /// <param name='vector'></param>
         /// <returns></returns>
-        public static bool TryParseConsole2DVector(
-            string rawConsoleVector, Func<string, string> blankComponentFunc, out Vector2 vector)
+        public static bool TryParseConsole2DVector(string rawConsoleVector, Func<string, string> blankComponentFunc, out Vector2 vector)
         {
             // We don't use Vector2.TryParse() for now because for some reason it expects an input with 3 components
             // rather than 2.
@@ -339,8 +335,6 @@ namespace OpenSim.Framework.Console
 
                 return true;
             }
-
-            //return Vector2.TryParse(CookVector(rawConsoleVector, 2, blankComponentFunc), out vector);
         }
 
         /// <summary>
@@ -350,8 +344,7 @@ namespace OpenSim.Framework.Console
         /// <param name='dimensions'></param>
         /// <param name='blankComponentFunc'></param>
         /// <returns>null if conversion was not possible</returns>
-        private static string CookVector(
-            string rawConsoleVector, int dimensions, Func<string, string> blankComponentFunc)
+        private static string CookVector(string rawConsoleVector, int dimensions, Func<string, string> blankComponentFunc)
         {
             List<string> components = rawConsoleVector.Split(VectorSeparatorChars).ToList();
 

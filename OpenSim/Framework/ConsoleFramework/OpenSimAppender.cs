@@ -26,23 +26,61 @@
  */
 
 using System;
+using log4net.Appender;
+using log4net.Core;
 
-namespace OpenSim.Framework.Console
+namespace OpenSim.Framework.ConsoleFramework
 {
     /// <summary>
-    /// This will be a set of typical column sizes to allow greater consistency between console commands.
+    /// Writes log information out onto the console
     /// </summary>
-    public static class ConsoleDisplayUtil
+    public class OpenSimAppender : AnsiColorTerminalAppender
     {
-        public const int CoordTupleSize = 11;
-        public const int PortSize = 5;
+        private ConsoleBase m_console = null;
 
-        public const int EstateNameSize = 20;
-        public const int ParcelNameSize = 40;
-        public const int RegionNameSize = 20;
-        public const int UserNameSize = 35;
+        public ConsoleBase Console
+        {
+            get { return m_console; }
+            set { m_console = value; }
+        }
 
-        public const int UuidSize = 36;
-        public const int VectorSize = 15;
+        override protected void Append(LoggingEvent le)
+        {
+            if (m_console != null)
+                m_console.LockOutput();
+
+            string loggingMessage = RenderLoggingEvent(le);
+
+            try
+            {
+                if (m_console != null)
+                {
+                    string level = "normal";
+
+                    if (le.Level == Level.Error)
+                        level = "error";
+                    else if (le.Level == Level.Warn)
+                        level = "warn";
+
+                    m_console.Output(loggingMessage, level);
+                }
+                else
+                {
+                    if (!loggingMessage.EndsWith("\n"))
+                        System.Console.WriteLine(loggingMessage);
+                    else
+                        System.Console.Write(loggingMessage);
+                }
+            }
+            catch (Exception e)
+            {
+                System.Console.WriteLine("Couldn't write out log message: {0}", e.ToString());
+            }
+            finally
+            {
+                if (m_console != null)
+                    m_console.UnlockOutput();
+            }
+        }
     }
 }

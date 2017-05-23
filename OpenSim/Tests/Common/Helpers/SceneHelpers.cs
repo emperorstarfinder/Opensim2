@@ -33,7 +33,7 @@ using OpenMetaverse;
 using OpenSim.Data.Null;
 using OpenSim.Framework;
 
-using OpenSim.Framework.Console;
+using OpenSim.Framework.ConsoleFramework;
 using OpenSim.Framework.Servers;
 using OpenSim.Framework.Servers.HttpServer;
 using OpenSim.Region.PhysicsModules.SharedBase;

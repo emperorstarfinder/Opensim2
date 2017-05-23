@@ -42,7 +42,7 @@ using Nini.Config;
 using OpenSim;
 using OpenSim.Framework;
 
-using OpenSim.Framework.Console;
+using OpenSim.Framework.ConsoleFramework;
 using OpenSim.Region.Framework.Interfaces;
 using OpenSim.Region.Framework.Scenes;
 using OpenSim.Region.Framework.Scenes.Scripting;

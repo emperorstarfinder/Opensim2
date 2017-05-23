@@ -42,7 +42,7 @@ using NDesk.Options;
 using Nini.Config;
 using OpenMetaverse;
 using OpenSim.Framework;
-using OpenSim.Framework.Console;
+using OpenSim.Framework.ConsoleFramework;
 using OpenSim.Framework.Servers;
 using OpenSim.Framework.Monitoring;
 using OpenSim.Region.Framework.Interfaces;

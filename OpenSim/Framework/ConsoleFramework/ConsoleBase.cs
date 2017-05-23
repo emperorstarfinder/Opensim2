@@ -33,12 +33,10 @@ using System.Text;
 using System.Threading;
 using log4net;
 
-namespace OpenSim.Framework.Console
+namespace OpenSim.Framework.ConsoleFramework
 {
     public class ConsoleBase
     {
-//        private static readonly ILog m_log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
-
         protected string prompt = "# ";
 
         public object ConsoleScene { get; set; }
@@ -159,6 +157,7 @@ namespace OpenSim.Framework.Console
                     temp = CmdPrompt(prompt, defaultresponse);
                 }
             }
+
             return temp;
         }
 

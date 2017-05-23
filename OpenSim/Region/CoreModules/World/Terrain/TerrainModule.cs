@@ -38,7 +38,7 @@ using OpenMetaverse;
 using Mono.Addins;
 
 using OpenSim.Framework;
-using OpenSim.Framework.Console;
+using OpenSim.Framework.ConsoleFramework;
 using OpenSim.Region.CoreModules.Framework.InterfaceCommander;
 using OpenSim.Region.CoreModules.World.Terrain.FileLoaders;
 using OpenSim.Region.CoreModules.World.Terrain.Modifiers;

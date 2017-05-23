@@ -30,7 +30,7 @@ using System.Collections.Generic;
 using System.Text;
 using NDesk.Options;
 using OpenSim.Framework;
-using OpenSim.Framework.Console;
+using OpenSim.Framework.ConsoleFramework;
 using OpenSim.Region.Framework.Scenes;
 
 namespace OpenSim.Region.ClientStack.LindenUDP

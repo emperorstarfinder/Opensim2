@@ -33,7 +33,7 @@ using System.Threading;
 using System.Text;
 using System.Xml;
 using OpenSim.Framework;
-using OpenSim.Framework.Console;
+using OpenSim.Framework.ConsoleFramework;
 using OpenSim.Framework.Monitoring;
 using OpenSim.Framework.Servers;
 using log4net;

@@ -39,7 +39,7 @@ using log4net.Appender;
 using log4net.Core;
 using log4net.Repository;
 using Nini.Config;
-using OpenSim.Framework.Console;
+using OpenSim.Framework.ConsoleFramework;
 using OpenSim.Framework.Monitoring;
 
 namespace OpenSim.Framework.Servers

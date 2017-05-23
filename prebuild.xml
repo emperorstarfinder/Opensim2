@@ -101,7 +101,7 @@
       <Reference name="OpenMetaverse" path="../../bin/"/>
       <Reference name="OpenMetaverse.StructuredData" path="../../bin/"/>
       <Reference name="XMLRPC" path="../../bin/"/>
-      <!-- <Reference name="OpenSim.Framework.Console"/> -->
+      <!-- <Reference name="OpenSim.Framework.ConsoleFramework"/> -->
       <!-- <Reference name="OpenSim.Framework.Servers.HttpServer"/> -->
       <Reference name="Nini" path="../../bin/"/>
       <Reference name="log4net" path="../../bin/"/>
@@ -134,7 +134,7 @@
       <Reference name="OpenMetaverse" path="../../../bin/"/>
       <Reference name="OpenMetaverse.StructuredData" path="../../../bin/"/>
       <Reference name="OpenSim.Framework"/>
-      <Reference name="OpenSim.Framework.Console"/>
+      <Reference name="OpenSim.Framework.ConsoleFramework"/>
       <Reference name="OpenSim.Framework.Servers.HttpServer"/>
       <Reference name="System.Xml"/>
       <Reference name="Nini" path="../../../bin/"/>
@@ -213,7 +213,7 @@
       </Files>
     </Project>
 
-    <Project frameworkVersion="v4_0" name="OpenSim.Framework.Console" path="OpenSim/Framework/Console" type="Library">
+    <Project frameworkVersion="v4_0" name="OpenSim.Framework.ConsoleFramework" path="OpenSim/Framework/ConsoleFramework" type="Library">
       <Configuration name="Debug">
         <Options>
           <OutputPath>../../../bin/</OutputPath>
@@ -315,7 +315,7 @@
       <ReferencePath>../../../../bin/</ReferencePath>
       <Reference name="System"/>
       <Reference name="System.Xml"/>
-      <Reference name="OpenSim.Framework.Console"/>
+      <Reference name="OpenSim.Framework.ConsoleFramework"/>
       <Reference name="OpenSim.Framework"/>
       <Reference name="OpenMetaverseTypes" path="../../../../bin/"/>
       <Reference name="Nini" path="../../../../bin/"/>
@@ -344,7 +344,7 @@
       <Reference name="OpenSim.Data"/>
       <Reference name="OpenSim.Framework"/>
       <Reference name="OpenSim.Framework.Servers.HttpServer"/>
-      <Reference name="OpenSim.Framework.Console"/>
+      <Reference name="OpenSim.Framework.ConsoleFramework"/>
       <Reference name="OpenSim.Framework.Monitoring"/>
       <Reference name="OpenMetaverse.StructuredData" path="../../../bin/"/>
       <Reference name="OpenMetaverseTypes" path="../../../bin/"/>
@@ -411,7 +411,7 @@
       <Reference name="System.Xml"/>
       <Reference name="OpenMetaverseTypes" path="../../../../bin/"/>
       <Reference name="OpenSim.Framework"/>
-      <Reference name="OpenSim.Framework.Console"/>
+      <Reference name="OpenSim.Framework.ConsoleFramework"/>
       <Reference name="nunit.framework" path="../../../../bin/"/>
       <Reference name="Nini" path="../../../../bin/"/>
       <Reference name="log4net" path="../../../../bin/"/>
@@ -446,7 +446,7 @@
       <Reference name="OpenSim.Framework"/>
       <Reference name="OpenSim.Capabilities"/>
       <Reference name="OpenSim.Data"/>
-      <Reference name="OpenSim.Framework.Console"/>
+      <Reference name="OpenSim.Framework.ConsoleFramework"/>
       <Reference name="OpenSim.Framework.Monitoring"/>
       <Reference name="OpenSim.Framework.Serialization"/>
       <Reference name="OpenSim.Framework.Servers"/>
@@ -493,7 +493,7 @@
       <Reference name="Mono.Addins" path="../../../bin/"/>
       <Reference name="Mono.Addins.Setup" path="../../../bin/"/>
       <Reference name="OpenSim.Framework"/>
-      <Reference name="OpenSim.Framework.Console"/>
+      <Reference name="OpenSim.Framework.ConsoleFramework"/>
       <Reference name="OpenSim.Framework.Monitoring"/>
       <Reference name="OpenSim.Framework.Servers"/>
       <Reference name="OpenSim.Framework.Servers.HttpServer"/>
@@ -522,7 +522,7 @@
       <Reference name="OpenMetaverseTypes" path="../../../bin/"/>
       <Reference name="OpenMetaverse" path="../../../bin/"/>
       <Reference name="OpenSim.Framework"/>
-      <Reference name="OpenSim.Framework.Console"/>
+      <Reference name="OpenSim.Framework.ConsoleFramework"/>
       <Reference name="OpenSim.Services.Interfaces"/>
       <Reference name="Nini" path="../../../bin/"/>
       <Reference name="log4net" path="../../../bin/"/>
@@ -550,7 +550,7 @@
       <Reference name="OpenMetaverseTypes" path="../../../bin/"/>
       <Reference name="OpenMetaverse" path="../../../bin/"/>
       <Reference name="OpenSim.Framework"/>
-      <Reference name="OpenSim.Framework.Console"/>
+      <Reference name="OpenSim.Framework.ConsoleFramework"/>
       <Reference name="OpenSim.Framework.Servers.HttpServer"/>
       <Reference name="OpenSim.Services.Interfaces"/>
       <Reference name="OpenSim.Services.Base"/>
@@ -581,7 +581,7 @@
       <Reference name="OpenMetaverseTypes" path="../../../bin/"/>
       <Reference name="OpenMetaverse" path="../../../bin/"/>
       <Reference name="OpenSim.Framework"/>
-      <Reference name="OpenSim.Framework.Console"/>
+      <Reference name="OpenSim.Framework.ConsoleFramework"/>
       <Reference name="OpenSim.Framework.Servers.HttpServer"/>
       <Reference name="OpenSim.Services.Interfaces"/>
       <Reference name="OpenSim.Services.Base"/>
@@ -619,7 +619,7 @@
       <Reference name="OpenSim.Data"/>
       <Reference name="OpenSim.Framework"/>
       <Reference name="OpenSim.Capabilities"/>
-      <Reference name="OpenSim.Framework.Console"/>
+      <Reference name="OpenSim.Framework.ConsoleFramework"/>
       <Reference name="OpenSim.Framework.Monitoring"/>
       <Reference name="OpenSim.Framework.Servers.HttpServer"/>
       <Reference name="OpenSim.Region.Framework"/>
@@ -686,7 +686,7 @@
       <Reference name="OpenMetaverseTypes" path="../../../bin/"/>
       <Reference name="OpenMetaverse" path="../../../bin/"/>
       <Reference name="OpenSim.Framework"/>
-      <Reference name="OpenSim.Framework.Console"/>
+      <Reference name="OpenSim.Framework.ConsoleFramework"/>
       <Reference name="OpenSim.Framework.Servers.HttpServer"/>
       <Reference name="OpenSim.Server.Base"/>
       <Reference name="OpenSim.Services.Interfaces"/>
@@ -719,7 +719,7 @@
       <Reference name="OpenMetaverseTypes" path="../../../bin/"/>
       <Reference name="OpenMetaverse" path="../../../bin/"/>
       <Reference name="OpenSim.Framework"/>
-      <Reference name="OpenSim.Framework.Console"/>
+      <Reference name="OpenSim.Framework.ConsoleFramework"/>
       <Reference name="OpenSim.Framework.Serialization"/>
       <Reference name="OpenSim.Framework.Servers.HttpServer"/>
       <Reference name="OpenSim.Server.Base"/>
@@ -752,7 +752,7 @@
       <Reference name="OpenMetaverseTypes" path="../../../bin/"/>
       <Reference name="OpenMetaverse" path="../../../bin/"/>
       <Reference name="OpenSim.Framework"/>
-      <Reference name="OpenSim.Framework.Console"/>
+      <Reference name="OpenSim.Framework.ConsoleFramework"/>
       <Reference name="OpenSim.Framework.Servers.HttpServer"/>
       <Reference name="OpenSim.Services.Interfaces"/>
       <Reference name="OpenSim.Services.Base"/>
@@ -784,7 +784,7 @@
       <Reference name="OpenMetaverse.StructuredData" path="../../../bin/"/>
       <Reference name="OpenMetaverse" path="../../../bin/"/>
       <Reference name="OpenSim.Framework"/>
-      <Reference name="OpenSim.Framework.Console"/>
+      <Reference name="OpenSim.Framework.ConsoleFramework"/>
       <Reference name="OpenSim.Framework.Servers.HttpServer"/>
       <Reference name="OpenSim.Services.Interfaces"/>
       <Reference name="OpenSim.Services.Base"/>
@@ -815,7 +815,7 @@
       <Reference name="OpenMetaverseTypes" path="../../../bin/"/>
       <Reference name="OpenMetaverse" path="../../../bin/"/>
       <Reference name="OpenSim.Framework"/>
-      <Reference name="OpenSim.Framework.Console"/>
+      <Reference name="OpenSim.Framework.ConsoleFramework"/>
       <Reference name="OpenSim.Framework.Servers.HttpServer"/>
       <Reference name="OpenSim.Server.Base"/>
       <Reference name="OpenSim.Services.Interfaces"/>
@@ -850,7 +850,7 @@
       <Reference name="OpenMetaverseTypes" path="../../../bin/"/>
       <Reference name="OpenMetaverse" path="../../../bin/"/>
       <Reference name="OpenSim.Framework"/>
-      <Reference name="OpenSim.Framework.Console"/>
+      <Reference name="OpenSim.Framework.ConsoleFramework"/>
       <Reference name="OpenSim.Framework.Servers.HttpServer"/>
       <Reference name="OpenSim.Services.Interfaces"/>
       <Reference name="OpenSim.Services.Base"/>
@@ -911,7 +911,7 @@
       <Reference name="OpenMetaverseTypes" path="../../../bin/"/>
       <Reference name="OpenMetaverse" path="../../../bin/"/>
       <Reference name="OpenSim.Framework"/>
-      <Reference name="OpenSim.Framework.Console"/>
+      <Reference name="OpenSim.Framework.ConsoleFramework"/>
       <Reference name="OpenSim.Framework.Servers.HttpServer"/>
       <Reference name="OpenSim.Services.Interfaces"/>
       <Reference name="OpenSim.Services.Base"/>
@@ -942,7 +942,7 @@
       <Reference name="OpenMetaverseTypes" path="../../../bin/"/>
       <Reference name="OpenMetaverse" path="../../../bin/"/>
       <Reference name="OpenSim.Framework"/>
-      <Reference name="OpenSim.Framework.Console"/>
+      <Reference name="OpenSim.Framework.ConsoleFramework"/>
       <Reference name="OpenSim.Framework.Servers.HttpServer"/>
       <Reference name="OpenSim.Services.Interfaces"/>
       <Reference name="OpenSim.Services.Base"/>
@@ -974,7 +974,7 @@
       <Reference name="OpenMetaverseTypes" path="../../../bin/"/>
       <Reference name="OpenMetaverse" path="../../../bin/"/>
       <Reference name="OpenSim.Framework"/>
-      <Reference name="OpenSim.Framework.Console"/>
+      <Reference name="OpenSim.Framework.ConsoleFramework"/>
       <Reference name="OpenSim.Framework.Servers.HttpServer"/>
       <Reference name="OpenSim.Services.Interfaces"/>
       <Reference name="OpenSim.Services.Base"/>
@@ -1007,7 +1007,7 @@
       <Reference name="System"/>
       <Reference name="System.Core"/>
       <Reference name="OpenSim.Framework"/>
-      <Reference name="OpenSim.Framework.Console"/>
+      <Reference name="OpenSim.Framework.ConsoleFramework"/>
       <Reference name="OpenSim.Framework.Servers.HttpServer"/>
       <Reference name="OpenSim.Services.Interfaces"/>
       <Reference name="OpenSim.Services.Connectors"/>
@@ -1044,7 +1044,7 @@
       <Reference name="OpenMetaverse" path="../../../bin/"/>
       <Reference name="OpenSim.Framework"/>
       <Reference name="OpenSim.Framework.Serialization"/>
-      <Reference name="OpenSim.Framework.Console"/>
+      <Reference name="OpenSim.Framework.ConsoleFramework"/>
       <Reference name="OpenSim.Framework.Servers.HttpServer"/>
       <Reference name="OpenSim.Services.Interfaces"/>
       <Reference name="OpenSim.Services.Base"/>
@@ -1081,7 +1081,7 @@
       <Reference name="OpenMetaverseTypes" path="../../../bin/"/>
       <Reference name="OpenMetaverse" path="../../../bin/"/>
       <Reference name="OpenSim.Framework"/>
-      <Reference name="OpenSim.Framework.Console"/>
+      <Reference name="OpenSim.Framework.ConsoleFramework"/>
       <Reference name="OpenSim.Framework.Servers.HttpServer"/>
       <Reference name="OpenSim.Services.Interfaces"/>
       <Reference name="OpenSim.Services.Base"/>
@@ -1109,7 +1109,7 @@
       <Reference name="System"/>
       <Reference name="System.Core"/>
       <Reference name="OpenSim.Framework"/>
-      <Reference name="OpenSim.Framework.Console"/>
+      <Reference name="OpenSim.Framework.ConsoleFramework"/>
       <Reference name="OpenSim.Framework.Servers.HttpServer"/>
       <Reference name="OpenSim.Services.UserAccountService"/>
       <Reference name="OpenSim.Services.Interfaces"/>
@@ -1148,7 +1148,7 @@
       <Reference name="OpenMetaverse" path="../../../bin/"/>
       <Reference name="OpenMetaverse.StructuredData" path="../../../bin/"/>
       <Reference name="OpenSim.Framework"/>
-      <Reference name="OpenSim.Framework.Console"/>
+      <Reference name="OpenSim.Framework.ConsoleFramework"/>
       <Reference name="OpenSim.Framework.Servers.HttpServer"/>
       <Reference name="OpenSim.Server.Base"/>
       <Reference name="OpenSim.Services.Base"/>
@@ -1191,7 +1191,7 @@
       <Reference name="OpenMetaverse.StructuredData" path="../../../bin/"/>
       <Reference name="OpenSim.Capabilities"/>
       <Reference name="OpenSim.Framework"/>
-      <Reference name="OpenSim.Framework.Console"/>
+      <Reference name="OpenSim.Framework.ConsoleFramework"/>
       <Reference name="OpenSim.Framework.Servers.HttpServer"/>
       <Reference name="OpenSim.Server.Base"/>
       <Reference name="OpenSim.Server.Handlers"/>
@@ -1228,7 +1228,7 @@
       <Reference name="OpenMetaverse" path="../../bin/"/>
       <Reference name="OpenMetaverse.StructuredData" path="../../bin/"/>
       <Reference name="OpenSim.Framework"/>
-      <Reference name="OpenSim.Framework.Console"/>
+      <Reference name="OpenSim.Framework.ConsoleFramework"/>
       <Reference name="OpenSim.Framework.Servers"/>
       <Reference name="OpenSim.Framework.Servers.HttpServer"/>
       <Reference name="OpenSim.Server.Base"/>
@@ -1264,7 +1264,7 @@
       <Reference name="OpenMetaverse" path="../../bin/"/>
       <Reference name="OpenMetaverse.StructuredData" path="../../bin/"/>
       <Reference name="OpenSim.Framework"/>
-      <Reference name="OpenSim.Framework.Console"/>
+      <Reference name="OpenSim.Framework.ConsoleFramework"/>
       <Reference name="OpenSim.Framework.Servers"/>
       <Reference name="OpenSim.Framework.Servers.HttpServer"/>
       <Reference name="OpenSim.Server.Base"/>
@@ -1306,7 +1306,7 @@
       <Reference name="OpenSim.Framework.Monitoring"/>
       <Reference name="OpenSim.Framework.Servers"/>
       <Reference name="OpenSim.Framework.Servers.HttpServer"/>
-      <Reference name="OpenSim.Framework.Console"/>
+      <Reference name="OpenSim.Framework.ConsoleFramework"/>
       <Reference name="OpenSim.Region.Framework"/>
       <Reference name="OpenSim.Services.Interfaces"/>
       <Reference name="Nini" path="../../../../../bin/"/>
@@ -1355,7 +1355,7 @@
       <Reference name="OpenSim.Framework.Monitoring"/>
       <Reference name="OpenSim.Framework.Servers"/>
       <Reference name="OpenSim.Framework.Servers.HttpServer"/>
-      <Reference name="OpenSim.Framework.Console"/>
+      <Reference name="OpenSim.Framework.ConsoleFramework"/>
       <Reference name="OpenSim.Region.PhysicsModules.SharedBase"/>
       <Reference name="OpenSim.Services.Interfaces"/>
       <Reference name="Mono.Addins" path="../../../../../bin/"/>
@@ -1403,7 +1403,7 @@
       <Reference name="OpenSim.Capabilities"/>
       <Reference name="OpenSim.Data"/>
       <Reference name="OpenSim.Framework"/>
-      <Reference name="OpenSim.Framework.Console"/>
+      <Reference name="OpenSim.Framework.ConsoleFramework"/>
       <Reference name="OpenSim.Framework.Monitoring"/>
       <Reference name="OpenSim.Framework.Serialization"/>
       <Reference name="OpenSim.Framework.Servers"/>
@@ -1468,7 +1468,7 @@
       <Reference name="OpenSim.Capabilities"/>
       <Reference name="OpenSim.Framework"/>
       <Reference name="OpenSim.Data"/>
-      <Reference name="OpenSim.Framework.Console"/>
+      <Reference name="OpenSim.Framework.ConsoleFramework"/>
       <Reference name="OpenSim.Framework.Monitoring"/>
       <Reference name="OpenSim.Framework.Servers"/>
       <Reference name="OpenSim.Framework.Servers.HttpServer"/>
@@ -1520,7 +1520,7 @@
       <Reference name="OpenMetaverseTypes" path="../../../bin/"/>
       <Reference name="OpenSim.Framework"/>
       <Reference name="OpenSim.Region.Framework"/>
-      <Reference name="OpenSim.Framework.Console"/>
+      <Reference name="OpenSim.Framework.ConsoleFramework"/>
       <Reference name="log4net" path="../../../bin/"/>
 
       <Files>
@@ -1576,7 +1576,7 @@
       <Reference name="OpenMetaverse.StructuredData" path="../../../../bin/"/>
       <Reference name="Nini" path="../../../../bin/"/>
       <Reference name="OpenSim.Framework"/>
-      <Reference name="OpenSim.Framework.Console"/>
+      <Reference name="OpenSim.Framework.ConsoleFramework"/>
       <Reference name="OpenSim.Region.PhysicsModules.SharedBase"/>
       <Reference name="OpenSim.Region.Framework"/>
       <Reference name="Mono.Addins" path="../../../../bin/"/>
@@ -1656,7 +1656,7 @@
       <Reference name="OpenMetaverseTypes" path="../../../../bin/"/>
       <Reference name="Nini" path="../../../../bin/"/>
       <Reference name="OpenSim.Framework"/>
-      <Reference name="OpenSim.Framework.Console"/>
+      <Reference name="OpenSim.Framework.ConsoleFramework"/>
       <Reference name="OpenSim.Region.PhysicsModules.SharedBase"/>
       <Reference name="OpenSim.Region.Framework"/>
       <Reference name="Mono.Addins" path="../../../../bin/"/>
@@ -1688,7 +1688,7 @@
       <Reference name="Nini" path="../../../../bin/"/>
 
       <Reference name="OpenSim.Framework"/>
-      <Reference name="OpenSim.Framework.Console"/>
+      <Reference name="OpenSim.Framework.ConsoleFramework"/>
       <Reference name="OpenSim.Region.Framework"/>
       <Reference name="OpenSim.Region.PhysicsModules.SharedBase"/>
       <Reference name="OpenSim.Region.PhysicsModules.ConvexDecompositionDotNet"/>
@@ -1723,7 +1723,7 @@
       <Reference name="OpenMetaverse.StructuredData" path="../../../../bin/"/>
       <Reference name="Nini" path="../../../../bin/"/>
       <Reference name="OpenSim.Framework"/>
-      <Reference name="OpenSim.Framework.Console"/>
+      <Reference name="OpenSim.Framework.ConsoleFramework"/>
       <Reference name="OpenSim.Region.PhysicsModules.SharedBase"/>
 	  <Reference name="OpenSim.Region.Framework"/>
       <Reference name="OpenSim.Region.PhysicsModules.ConvexDecompositionDotNet"/>
@@ -1758,7 +1758,7 @@
       <Reference name="OpenSim.Framework"/>
       <Reference name="OpenSim.Framework.Monitoring"/>
       <Reference name="OpenSim.Region.Framework"/>
-      <Reference name="OpenSim.Framework.Console"/>
+      <Reference name="OpenSim.Framework.ConsoleFramework"/>
       <Reference name="OpenSim.Region.PhysicsModules.SharedBase"/>
       <Reference name="OpenSim.Region.PhysicsModule.Meshing" path="../../../../bin/"/>
       <Reference name="OpenSim.Region.PhysicsModules.ConvexDecompositionDotNet"/>
@@ -1797,7 +1797,7 @@
       <Reference name="OpenMetaverse" path="../../../bin/"/>
       <Reference name="OpenSim.Framework"/>
       <Reference name="OpenSim.Data"/>
-      <Reference name="OpenSim.Framework.Console"/>
+      <Reference name="OpenSim.Framework.ConsoleFramework"/>
       <Reference name="OpenSim.Framework.Monitoring"/>
       <Reference name="OpenSim.Framework.Servers"/>
       <Reference name="OpenSim.Framework.Servers.HttpServer"/>
@@ -1839,7 +1839,7 @@
       <Reference name="OpenSim.Region.CoreModules"/>
       <Reference name="OpenSim.Region.Framework"/>
       <Reference name="OpenSim.Framework"/>
-      <Reference name="OpenSim.Framework.Console"/>
+      <Reference name="OpenSim.Framework.ConsoleFramework"/>
       <Reference name="OpenSim.Framework.Servers"/>
       <Reference name="OpenSim.Services.Interfaces"/>
       <Reference name="log4net" path="../../../bin/"/>
@@ -1907,7 +1907,7 @@
       <Reference name="OpenSim.Framework"/>
       <Reference name="OpenSim.Framework.Servers"/>
       <Reference name="OpenSim.Framework.Servers.HttpServer"/>
-      <Reference name="OpenSim.Framework.Console"/>
+      <Reference name="OpenSim.Framework.ConsoleFramework"/>
       <Reference name="OpenSim.Services.Interfaces"/>
       <Reference name="log4net" path="../../../bin/"/>
 
@@ -1944,7 +1944,7 @@
       <Reference name="OpenMetaverse" path="../../../bin/"/>
       <Reference name="OpenMetaverse.StructuredData" path="../../../bin/"/>
       <Reference name="MySql.Data" path="../../../bin/"/>
-      <Reference name="OpenSim.Framework.Console"/>
+      <Reference name="OpenSim.Framework.ConsoleFramework"/>
       <Reference name="OpenSim.Region.Framework"/>
       <Reference name="log4net" path="../../../bin/"/>
       <Reference name="Mono.Addins" path="../../../bin/"/>
@@ -1980,7 +1980,7 @@
       <Reference name="OpenSim.Framework"/>
       <Reference name="OpenSim.Data"/>
       <Reference name="OpenSim.Region.Framework"/>
-      <Reference name="OpenSim.Framework.Console"/>
+      <Reference name="OpenSim.Framework.ConsoleFramework"/>
       <Reference name="OpenMetaverseTypes" path="../../../bin/"/>
       <Reference name="OpenMetaverse" path="../../../bin/"/>
 	  <Reference name="OpenMetaverse.StructuredData" path="../../../bin/"/>
@@ -2015,7 +2015,7 @@
       <Reference name="System.Xml"/>
       <Reference name="OpenSim.Data"/>
       <Reference name="OpenSim.Framework"/>
-      <Reference name="OpenSim.Framework.Console"/>
+      <Reference name="OpenSim.Framework.ConsoleFramework"/>
       <Reference name="OpenSim.Region.Framework"/>
       <Reference name="OpenMetaverseTypes" path="../../../bin/"/>
       <Reference name="OpenMetaverse" path="../../../bin/"/>
@@ -2057,7 +2057,7 @@
       <Reference name="OpenSim.Framework"/>
       <Reference name="OpenSim.Region.Framework"/>
       <Reference name="OpenSim.Region.CoreModules"/>
-      <Reference name="OpenSim.Framework.Console"/>
+      <Reference name="OpenSim.Framework.ConsoleFramework"/>
       <Reference name="OpenSim.Services.Interfaces"/>
       <Reference name="Nini" path="../../../../bin/"/>
       <Reference name="Nini" path="../../../../bin/"/>
@@ -2093,7 +2093,7 @@
       <Reference name="OpenSim.Framework"/>
       <Reference name="OpenSim.Region.Framework"/>
       <Reference name="OpenSim.Region.CoreModules"/>
-      <Reference name="OpenSim.Framework.Console"/>
+      <Reference name="OpenSim.Framework.ConsoleFramework"/>
       <Reference name="OpenSim.Region.ScriptEngine.Shared"/>
       <Reference name="Nini" path="../../../../../../bin/"/>
       <Reference name="log4net" path="../../../../../../bin/"/>
@@ -2127,7 +2127,7 @@
       <Reference name="OpenMetaverse.StructuredData" path="../../../../../../bin/"/>
       <Reference name="OpenSim"/>
       <Reference name="OpenSim.Framework"/>
-      <Reference name="OpenSim.Framework.Console"/>
+      <Reference name="OpenSim.Framework.ConsoleFramework"/>
       <Reference name="OpenSim.Framework.Monitoring"/>
       <Reference name="OpenSim.Region.Framework"/>
       <Reference name="OpenSim.Region.CoreModules"/>
@@ -2196,7 +2196,7 @@
       <Reference name="OpenSim.Framework"/>
       <Reference name="OpenSim.Region.Framework"/>
       <Reference name="OpenSim.Region.CoreModules"/>
-      <Reference name="OpenSim.Framework.Console"/>
+      <Reference name="OpenSim.Framework.ConsoleFramework"/>
       <Reference name="OpenSim.Region.ScriptEngine.Shared"/>
       <Reference name="OpenSim.Region.ScriptEngine.Shared.CodeTools"/>
       <Reference name="OpenSim.Region.ScriptEngine.Shared.Api"/>
@@ -2235,7 +2235,7 @@
       <Reference name="OpenSim.Framework"/>
       <Reference name="OpenSim.Region.Framework"/>
       <Reference name="OpenSim.Region.CoreModules"/>
-      <Reference name="OpenSim.Framework.Console"/>
+      <Reference name="OpenSim.Framework.ConsoleFramework"/>
       <Reference name="OpenSim.Region.ScriptEngine.Shared"/>
       <Reference name="OpenSim.Region.ScriptEngine.Shared.Api.Runtime"/>
       <Reference name="Nini" path="../../../../../../bin/"/>
@@ -2270,7 +2270,7 @@
       <Reference name="OpenSim.Framework"/>
       <Reference name="OpenSim.Region.Framework"/>
       <Reference name="OpenSim.Region.CoreModules"/>
-      <Reference name="OpenSim.Framework.Console"/>
+      <Reference name="OpenSim.Framework.ConsoleFramework"/>
       <Reference name="OpenSim.Region.ScriptEngine.Shared"/>
       <Reference name="OpenSim.Region.ScriptEngine.Shared.CodeTools"/>
       <Reference name="OpenSim.Region.ScriptEngine.Shared.Instance"/>
@@ -2410,7 +2410,7 @@
       <Reference name="OpenMetaverseTypes" path="../../../bin/"/>
       <Reference name="OpenMetaverse" path="../../../bin/"/>
       <Reference name="OpenSim.Framework"/>
-      <Reference name="OpenSim.Framework.Console"/>
+      <Reference name="OpenSim.Framework.ConsoleFramework"/>
       <Reference name="OpenSim.Framework.Monitoring"/>
       <Reference name="Nini" path="../../../bin/"/>
       <Reference name="log4net" path="../../../bin/"/>
@@ -2437,7 +2437,7 @@
       <Reference name="OpenMetaverseTypes" path="../../../bin/"/>
       <Reference name="OpenMetaverse" path="../../../bin/"/>
       <Reference name="OpenSim.Framework"/>
-      <Reference name="OpenSim.Framework.Console"/>
+      <Reference name="OpenSim.Framework.ConsoleFramework"/>
       <Reference name="OpenSim.Region.ScriptEngine.Shared.CodeTools"/>
       <Reference name="Nini" path="../../../bin/"/>
       <Reference name="log4net" path="../../../bin/"/>
@@ -2530,7 +2530,7 @@
       <Reference name="OpenSim.Data"/>
       <Reference name="OpenSim.Data.Null"/>
       <Reference name="OpenSim.Framework"/>
-      <Reference name="OpenSim.Framework.Console"/>
+      <Reference name="OpenSim.Framework.ConsoleFramework"/>
       <Reference name="OpenSim.Framework.Servers"/>
       <Reference name="OpenSim.Framework.Servers.HttpServer"/>
       <Reference name="OpenSim.Region.CoreModules"/>
@@ -2597,7 +2597,7 @@
       <Reference name="OpenSim.Capabilities"/>
       <Reference name="OpenSim.Capabilities.Handlers"/>
       <Reference name="OpenSim.Framework"/>
-      <Reference name="OpenSim.Framework.Console"/>
+      <Reference name="OpenSim.Framework.ConsoleFramework"/>
       <Reference name="OpenSim.Framework.Servers.HttpServer"/>
       <Reference name="OpenSim.Region.Framework"/>
       <Reference name="OpenSim.Server.Base"/>
@@ -2675,7 +2675,7 @@
       <Reference name="OpenSim.Capabilities"/>
       <Reference name="OpenSim.Capabilities.Handlers"/>
       <Reference name="OpenSim.Framework"/>
-      <Reference name="OpenSim.Framework.Console"/>
+      <Reference name="OpenSim.Framework.ConsoleFramework"/>
       <Reference name="OpenSim.Framework.Servers.HttpServer"/>
       <Reference name="OpenSim.Region.Framework"/>
       <Reference name="OpenSim.Server.Base"/>
@@ -2762,7 +2762,7 @@
       <Reference name="OpenMetaverseTypes" path="../../../bin/"/>
       <Reference name="OpenMetaverse.StructuredData" path="../../../bin/"/>
       <Reference name="XMLRPC" path="../../../bin/"/>
-      <Reference name="OpenSim.Framework.Console"/>
+      <Reference name="OpenSim.Framework.ConsoleFramework"/>
       <Reference name="OpenSim.Framework"/>
       <Reference name="OpenSim.Framework.Servers.HttpServer"/>
       <Reference name="OpenSim.Tests.Common"/>
@@ -2858,7 +2858,7 @@
       <Reference name="OpenSim.Data.Null"/>
       <Reference name="OpenSim.Framework"/>
       <Reference name="OpenSim.Framework.Serialization"/>
-      <Reference name="OpenSim.Framework.Console"/>
+      <Reference name="OpenSim.Framework.ConsoleFramework"/>
       <Reference name="OpenSim.Framework.Monitoring"/>
       <Reference name="OpenSim.Framework.Servers"/>
       <Reference name="OpenSim.Framework.Servers.HttpServer"/>
@@ -2939,7 +2939,7 @@
       <Reference name="OpenSim.Capabilities"/>
       <Reference name="OpenSim.Data"/>
       <Reference name="OpenSim.Framework"/>
-      <Reference name="OpenSim.Framework.Console"/>
+      <Reference name="OpenSim.Framework.ConsoleFramework"/>
       <Reference name="OpenSim.Framework.Monitoring"/>
       <Reference name="OpenSim.Framework.Servers"/>
       <Reference name="OpenSim.Framework.Servers.HttpServer"/>
@@ -3126,7 +3126,7 @@
       <Reference name="OpenMetaverseTypes" path="../../../../../bin/"/>
       <Reference name="Nini" path="../../../../../bin/"/>
       <Reference name="OpenSim.Framework"/>
-      <Reference name="OpenSim.Framework.Console"/>
+      <Reference name="OpenSim.Framework.ConsoleFramework"/>
       <Reference name="OpenSim.Region.PhysicsModules.SharedBase"/>
       <Reference name="OpenSim.Region.PhysicsModule.Ode"/>
       <Reference name="OpenSim.Region.Framework"/>
@@ -3197,7 +3197,7 @@
       <Reference name="OpenMetaverse.StructuredData" path="../../../bin/"/>
       <Reference name="XMLRPC" path="../../../bin/"/>
       <Reference name="OpenSim.Framework"/>
-      <Reference name="OpenSim.Framework.Console"/>
+      <Reference name="OpenSim.Framework.ConsoleFramework"/>
       <Reference name="OpenSim.Framework.Servers.HttpServer"/>
       <Reference name="OpenSim.Server.Base"/>
       <Reference name="OpenSim.Server.Handlers"/>
@@ -3244,7 +3244,7 @@
       <Reference name="OpenMetaverse.StructuredData" path="../../../bin/"/>
       <Reference name="XMLRPC" path="../../../bin/"/>
       <Reference name="OpenSim.Framework"/>
-      <Reference name="OpenSim.Framework.Console"/>
+      <Reference name="OpenSim.Framework.ConsoleFramework"/>
       <Reference name="OpenSim.Framework.Servers.HttpServer"/>
       <Reference name="OpenSim.Region.CoreModules"/>
       <Reference name="OpenSim.Region.Framework"/>
@@ -3283,7 +3283,7 @@
       <Reference name="OpenMetaverse.StructuredData" path="../../../bin/"/>
       <Reference name="XMLRPC" path="../../../bin/"/>
       <Reference name="OpenSim.Framework"/>
-      <Reference name="OpenSim.Framework.Console"/>
+      <Reference name="OpenSim.Framework.ConsoleFramework"/>
       <Reference name="OpenSim.Framework.Servers.HttpServer"/>
       <Reference name="OpenSim.Region.CoreModules"/>
       <Reference name="OpenSim.Region.Framework"/>

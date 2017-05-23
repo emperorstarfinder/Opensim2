@@ -27,7 +27,7 @@
 
 using System;
 
-namespace OpenSim.Framework.Console
+namespace OpenSim.Framework.ConsoleFramework
 {
     public delegate void ConsoleCommand(string[] comParams);
 
@@ -42,10 +42,12 @@ namespace OpenSim.Framework.Console
         /// command delegate used in running
         /// </summary>
         private ConsoleCommand m_commandDelegate;
+        
         /// <summary>
         /// help text displayed
         /// </summary>
         private string m_helpText;
+        
         /// <summary>
         /// command in the form of "showme new commands"
         /// </summary>
@@ -53,9 +55,7 @@ namespace OpenSim.Framework.Console
 
         /// <summary>
         /// Construct a new ConsolePluginCommand
-        ///
         /// for use with OpenSim.RegisterConsolePluginCommand(myCmd);
-        ///
         /// </summary>
         /// <param name="command">in the form of "showme new commands"</param>
         /// <param name="dlg">ommand delegate used in running</param>
@@ -71,21 +71,21 @@ namespace OpenSim.Framework.Console
         /// Returns the match length this command has upon the 'cmdWithParams'
         /// At least a higher number for "show plugin status" then "show" would return
         /// This is used to have multi length command verbs
-        ///
         /// @see OopenSim.RunPluginCommands
         /// It will only run the one with the highest number
-        ///
         /// </summary>
         public int matchLength(string cmdWithParams)
         {
             // QUESTION: have a case insensitive flag?
             cmdWithParams = cmdWithParams.ToLower().Trim();
             string matchText = String.Join(" ",m_cmdText).ToLower().Trim();
+
             if (cmdWithParams.StartsWith(matchText))
             {
                 // QUESTION Instead return cmdText.Length; ?
                 return matchText.Length;
             }
+
             return 0;
         }
 
@@ -95,6 +95,7 @@ namespace OpenSim.Framework.Console
         public void Run(string cmd, string[] cmdParams)
         {
             int skipParams = 0;
+
             if (m_cmdText.Length > 1)
             {
                 int currentParam = 1;
@@ -104,11 +105,14 @@ namespace OpenSim.Framework.Console
                     {
                         skipParams++;
                     }
+
                     currentParam++;
                 }
 
             }
+
             string[] sendCmdParams = cmdParams;
+
             if (skipParams > 0)
             {
                 sendCmdParams = new string[cmdParams.Length-skipParams];
@@ -116,6 +120,7 @@ namespace OpenSim.Framework.Console
                     sendCmdParams[i] = cmdParams[skipParams++];
                 }
             }
+
             m_commandDelegate(sendCmdParams);//.Trim().Split(new char[] { ' ' }));
         }
 

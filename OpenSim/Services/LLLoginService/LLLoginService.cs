@@ -38,7 +38,7 @@ using Nini.Config;
 using OpenMetaverse;
 
 using OpenSim.Framework;
-using OpenSim.Framework.Console;
+using OpenSim.Framework.ConsoleFramework;
 using OpenSim.Server.Base;
 using OpenSim.Services.Connectors.InstantMessage;
 using OpenSim.Services.Interfaces;
