@@ -45,11 +45,13 @@ namespace OpenSim.Framework.Servers.HttpServer
             _options = options;
             _dosProtector = new BasicDOSProtector(_options);
         }
+
         public Hashtable Process(Hashtable request)
         {
             Hashtable process = null;
             string clientstring= GetClientString(request);
             string endpoint = GetRemoteAddr(request);
+
             if (_dosProtector.Process(clientstring, endpoint))
                 process =  _normalMethod(request);
             else
@@ -64,33 +66,41 @@ namespace OpenSim.Framework.Servers.HttpServer
         private string GetRemoteAddr(Hashtable request)
         {
             string remoteaddr = "";
+
             if (!request.ContainsKey("headers"))
                 return remoteaddr;
+
             Hashtable requestinfo = (Hashtable)request["headers"];
+
             if (!requestinfo.ContainsKey("remote_addr"))
                 return remoteaddr;
+
             object remote_addrobj = requestinfo["remote_addr"];
+
             if (remote_addrobj != null)
             {
                 if (!string.IsNullOrEmpty(remote_addrobj.ToString()))
                 {
                     remoteaddr = remote_addrobj.ToString();
                 }
-
             }
+
             return remoteaddr;
         }
 
         private string GetClientString(Hashtable request)
         {
             string clientstring = "";
+
             if (!request.ContainsKey("headers"))
                 return clientstring;
 
             Hashtable requestinfo = (Hashtable)request["headers"];
+
             if (_options.AllowXForwardedFor && requestinfo.ContainsKey("x-forwarded-for"))
             {
                 object str = requestinfo["x-forwarded-for"];
+
                 if (str != null)
                 {
                     if (!string.IsNullOrEmpty(str.ToString()))
@@ -99,10 +109,12 @@ namespace OpenSim.Framework.Servers.HttpServer
                     }
                 }
             }
+
             if (!requestinfo.ContainsKey("remote_addr"))
                 return clientstring;
 
             object remote_addrobj = requestinfo["remote_addr"];
+
             if (remote_addrobj != null)
             {
                 if (!string.IsNullOrEmpty(remote_addrobj.ToString()))
@@ -112,8 +124,6 @@ namespace OpenSim.Framework.Servers.HttpServer
             }
 
             return clientstring;
-
         }
-
     }
 }

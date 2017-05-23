@@ -58,11 +58,8 @@ namespace OpenSim.Framework.Servers.HttpServer
         /// <param name="headers">null or dictionary with header
         /// regexs</param>
         /// <param name="whitelist">null or IP address whitelist</param>
-        public OSHttpHttpHandler(GenericHTTPMethod handler, Regex method, Regex path,
-                                 Dictionary<string, Regex> query,
-                                 Dictionary<string, Regex> headers, Regex whitelist)
-            : base(method, path, query, headers, new Regex(@"^text/html", RegexOptions.IgnoreCase | RegexOptions.Compiled),
-                   whitelist)
+        public OSHttpHttpHandler(GenericHTTPMethod handler, Regex method, Regex path, Dictionary<string, Regex> query, Dictionary<string, Regex> headers, Regex whitelist)
+            : base(method, path, query, headers, new Regex(@"^text/html", RegexOptions.IgnoreCase | RegexOptions.Compiled), whitelist)
         {
             _handler = handler;
         }

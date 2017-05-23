@@ -27,6 +27,5 @@
 
 namespace OpenSim.Framework.Servers.HttpServer
 {
-    public delegate string RestMethod(string request, string path, string param,
-                                      IOSHttpRequest httpRequest, IOSHttpResponse httpResponse);
+    public delegate string RestMethod(string request, string path, string param, IOSHttpRequest httpRequest, IOSHttpResponse httpResponse);
 }

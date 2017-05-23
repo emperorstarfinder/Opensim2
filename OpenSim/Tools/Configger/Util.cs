@@ -64,6 +64,7 @@ namespace OpenSim.Tools.Configger
             // Glob
 
             path = vol;
+
             if (vol != String.Empty)
                 path += new String(new char[] {Path.VolumeSeparatorChar, Path.DirectorySeparatorChar});
             else
@@ -97,6 +98,7 @@ namespace OpenSim.Tools.Configger
                             found.Add(f);
                     }
                 }
+
                 paths = addpaths;
             }
 
@@ -107,6 +109,5 @@ namespace OpenSim.Tools.Configger
         {
             return ".";
         }
-
     }
 }

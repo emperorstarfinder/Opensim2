@@ -39,8 +39,6 @@ namespace OpenSim.Framework.Servers
 {
     public class MainServer
     {
-//        private static readonly ILog m_log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
-
         private static BaseHttpServer instance = null;
         private static Dictionary<uint, BaseHttpServer> m_Servers = new Dictionary<uint, BaseHttpServer>();
 
@@ -221,8 +219,7 @@ namespace OpenSim.Framework.Servers
             {
                 foreach (BaseHttpServer httpServer in m_Servers.Values)
                 {
-                    handlers.AppendFormat(
-                        "Registered HTTP Handlers for server at {0}:{1}\n", httpServer.ListenIPAddress, httpServer.Port);
+                    handlers.AppendFormat("Registered HTTP Handlers for server at {0}:{1}\n", httpServer.ListenIPAddress, httpServer.Port);
 
                     handlers.AppendFormat("* XMLRPC:\n");
                     foreach (String s in httpServer.GetXmlRpcHandlerKeys())
@@ -239,10 +236,6 @@ namespace OpenSim.Framework.Servers
                     handlers.AppendFormat("* JSONRPC:\n");
                     foreach (String s in httpServer.GetJsonRpcHandlerKeys())
                         handlers.AppendFormat("\t{0}\n", s);
-
-//                    handlers.AppendFormat("* Agent:\n");
-//                    foreach (String s in httpServer.GetAgentHandlerKeys())
-//                        handlers.AppendFormat("\t{0}\n", s);
 
                     handlers.AppendFormat("* LLSD:\n");
                     foreach (String s in httpServer.GetLLSDHandlerKeys())
@@ -364,6 +357,5 @@ namespace OpenSim.Framework.Servers
                 }
             }
         }
-
     }
 }

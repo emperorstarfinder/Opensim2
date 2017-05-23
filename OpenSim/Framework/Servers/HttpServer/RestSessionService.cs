@@ -164,11 +164,8 @@ namespace OpenSim.Framework.Servers.HttpServer
                 XmlSerializer deserializer = new XmlSerializer(typeof(TResponse));
                 Stream stream = resp.GetResponseStream();
 
-                // This is currently a bad debug stanza since it gobbles us the response...
-                //                StreamReader reader = new StreamReader(stream);
-                //                m_log.DebugFormat("[REST OBJECT POSTER RESPONSE]: Received {0}", reader.ReadToEnd());
-
                 deserial = (TResponse)deserializer.Deserialize(stream);
+
                 if (stream != null)
                     stream.Close();
 
@@ -182,11 +179,9 @@ namespace OpenSim.Framework.Servers.HttpServer
 
     public delegate bool CheckIdentityMethod(string sid, string aid);
 
-    public class RestDeserialiseSecureHandler<TRequest, TResponse> : BaseOutputStreamHandler, IStreamHandler
-        where TRequest : new()
+    public class RestDeserialiseSecureHandler<TRequest, TResponse> : BaseOutputStreamHandler, IStreamHandler where TRequest : new()
     {
-        private static readonly ILog m_log
-            = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly ILog m_log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         private RestDeserialiseMethod<TRequest, TResponse> m_method;
         private CheckIdentityMethod m_smethod;
@@ -200,8 +195,7 @@ namespace OpenSim.Framework.Servers.HttpServer
             m_method = method;
         }
 
-        protected override void ProcessRequest(string path, Stream request, Stream responseStream,
-                           IOSHttpRequest httpRequest, IOSHttpResponse httpResponse)
+        protected override void ProcessRequest(string path, Stream request, Stream responseStream, IOSHttpRequest httpRequest, IOSHttpResponse httpResponse)
         {
             RestSessionObject<TRequest> deserial = default(RestSessionObject<TRequest>);
             bool fail = false;
@@ -221,6 +215,7 @@ namespace OpenSim.Framework.Servers.HttpServer
             }
 
             TResponse response = default(TResponse);
+
             if (!fail && m_smethod(deserial.SessionID, deserial.AvatarID))
             {
                 response = m_method(deserial.Body);
@@ -236,11 +231,9 @@ namespace OpenSim.Framework.Servers.HttpServer
 
     public delegate bool CheckTrustedSourceMethod(IPEndPoint peer);
 
-    public class RestDeserialiseTrustedHandler<TRequest, TResponse> : BaseOutputStreamHandler, IStreamHandler
-        where TRequest : new()
+    public class RestDeserialiseTrustedHandler<TRequest, TResponse> : BaseOutputStreamHandler, IStreamHandler where TRequest : new()
     {
-        private static readonly ILog m_log
-            = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly ILog m_log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         /// <summary>
         /// The operation to perform once trust has been established.
@@ -259,8 +252,7 @@ namespace OpenSim.Framework.Servers.HttpServer
             m_method = method;
         }
 
-        protected override void ProcessRequest(string path, Stream request, Stream responseStream,
-                           IOSHttpRequest httpRequest, IOSHttpResponse httpResponse)
+        protected override void ProcessRequest(string path, Stream request, Stream responseStream, IOSHttpRequest httpRequest, IOSHttpResponse httpResponse)
         {
             TRequest deserial = default(TRequest);
             bool fail = false;
@@ -280,6 +272,7 @@ namespace OpenSim.Framework.Servers.HttpServer
             }
 
             TResponse response = default(TResponse);
+
             if (!fail && m_tmethod(httpRequest.RemoteIPEndPoint))
             {
                 response = m_method(deserial);

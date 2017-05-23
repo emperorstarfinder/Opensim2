@@ -44,8 +44,7 @@ namespace OpenSim.Framework.Servers.HttpServer
             m_dhttpMethod = dhttpMethod;
         }
 
-        public RestHTTPHandler(
-            string httpMethod, string path, GenericHTTPMethod dhttpMethod, string name, string description)
+        public RestHTTPHandler(string httpMethod, string path, GenericHTTPMethod dhttpMethod, string name, string description)
             : base(httpMethod, path, name, description)
         {
             m_dhttpMethod = dhttpMethod;

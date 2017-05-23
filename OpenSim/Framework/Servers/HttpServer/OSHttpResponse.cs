@@ -207,7 +207,6 @@ namespace OpenSim.Framework.Servers.HttpServer
             }
         }
 
-
         /// <summary>
         /// Chunk transfers.
         /// </summary>
@@ -240,7 +239,6 @@ namespace OpenSim.Framework.Servers.HttpServer
             }
         }
 
-
         /// <summary>
         /// HTTP status description.
         /// </summary>
@@ -265,6 +263,7 @@ namespace OpenSim.Framework.Servers.HttpServer
                 {
                     return !_httpClientContext.EndWhenDone;
                 }
+
                 return true;
             }
             set
@@ -297,6 +296,7 @@ namespace OpenSim.Framework.Servers.HttpServer
             _httpResponse = new HttpResponse(req.IHttpClientContext, req.IHttpRequest);
             _httpClientContext = req.IHttpClientContext;
         }
+
         public OSHttpResponse(HttpResponse resp, IHttpClientContext clientContext)
         {
             _httpResponse = resp;

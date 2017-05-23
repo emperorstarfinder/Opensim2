@@ -27,16 +27,16 @@
 
 using System;
 using System.Collections;
+using System.Collections.Generic;
+using System.IO;
 using System.Threading;
 using System.Reflection;
-using log4net;
+using System.Text;
+using Amib.Threading;
 using HttpServer;
+using log4net;
 using OpenSim.Framework;
 using OpenSim.Framework.Monitoring;
-using Amib.Threading;
-using System.IO;
-using System.Text;
-using System.Collections.Generic;
 
 namespace OpenSim.Framework.Servers.HttpServer
 {
@@ -58,8 +58,7 @@ namespace OpenSim.Framework.Servers.HttpServer
 
         private SmartThreadPool m_threadPool;
 
-        public PollServiceRequestManager(
-            BaseHttpServer pSrv, bool performResponsesAsync, uint pWorkerThreadCount, int pTimeout)
+        public PollServiceRequestManager(BaseHttpServer pSrv, bool performResponsesAsync, uint pWorkerThreadCount, int pTimeout)
         {
             m_server = pSrv;
             m_WorkerThreadCount = pWorkerThreadCount;
@@ -105,8 +104,6 @@ namespace OpenSim.Framework.Servers.HttpServer
                 true,
                 null,
                 1000 * 60 * 10);
-
-
         }
 
         private void ReQueueEvent(PollServiceHttpRequest req)
@@ -123,6 +120,7 @@ namespace OpenSim.Framework.Servers.HttpServer
             lock (m_bycontext)
             {
                 Queue<PollServiceHttpRequest> ctxQeueue;
+
                 if (m_bycontext.TryGetValue(req, out ctxQeueue))
                 {
                     ctxQeueue.Enqueue(req);
@@ -165,7 +163,6 @@ namespace OpenSim.Framework.Servers.HttpServer
         private void CheckRetries()
         {
             while (m_running)
-
             {
                 Thread.Sleep(100); // let the world move  .. back to faster rate
                 Watchdog.UpdateThread();
@@ -192,37 +189,11 @@ namespace OpenSim.Framework.Servers.HttpServer
             // so just delete contents to easy GC
             foreach (Queue<PollServiceHttpRequest> qu in m_bycontext.Values)
                 qu.Clear();
+
             m_bycontext.Clear();
 
-/*
-            try
-            {
-                foreach (PollServiceHttpRequest req in m_retryRequests)
-                {
-                    req.DoHTTPstop(m_server);
-                }
-            }
-            catch
-            {
-            }
-
-            PollServiceHttpRequest wreq;
-*/
             m_retryRequests.Clear();
-/*
-            while (m_requests.Count() > 0)
-            {
-                try
-                {
-                    wreq = m_requests.Dequeue(0);
-                    wreq.DoHTTPstop(m_server);
 
-                }
-                catch
-                {
-                }
-            }
-*/
             m_requests.Clear();
         }
 
@@ -234,6 +205,7 @@ namespace OpenSim.Framework.Servers.HttpServer
             {
                 PollServiceHttpRequest req = m_requests.Dequeue(5000);
                 Watchdog.UpdateThread();
+
                 if (req != null)
                 {
                     try
@@ -255,6 +227,7 @@ namespace OpenSim.Framework.Servers.HttpServer
                                 {
                                     byContextDequeue(req);
                                 }
+
                                 return null;
                             }, null);
                         }
@@ -271,12 +244,13 @@ namespace OpenSim.Framework.Servers.HttpServer
                                     }
                                     catch (ObjectDisposedException)
                                     {
-                                    // Ignore it, no need to reply
+                                        // Ignore it, no need to reply
                                     }
                                     finally
                                     {
                                         byContextDequeue(req);
                                     }
+
                                     return null;
                                 }, null);
                             }
@@ -286,6 +260,7 @@ namespace OpenSim.Framework.Servers.HttpServer
                             }
                         }
                     }
+
                     catch (Exception e)
                     {
                         m_log.ErrorFormat("Exception in poll service thread: " + e.ToString());
@@ -293,6 +268,5 @@ namespace OpenSim.Framework.Servers.HttpServer
                 }
             }
         }
-
     }
 }

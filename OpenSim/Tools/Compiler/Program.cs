@@ -26,61 +26,61 @@
  */
 
 using System;
+using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using Microsoft.CSharp;
 using OpenSim.Region.ScriptEngine.Shared.CodeTools;
-using System.CodeDom.Compiler;
 
 namespace OpenSim.Tools.LSL.Compiler
 {
     class Program
     {
-//        Commented out because generated warning since m_positionMap could never be anything other than null
-//        private static Dictionary<KeyValuePair<int, int>, KeyValuePair<int, int>> m_positionMap;
+        // Commented out because generated warning since m_positionMap could never be anything other than null
+        //private static Dictionary<KeyValuePair<int, int>, KeyValuePair<int, int>> m_positionMap;
         private static CSharpCodeProvider CScodeProvider = new CSharpCodeProvider();
 
         static void Main(string[] args)
         {
-             string source = null;
+            string source = null;
 
-             if (args.Length == 0)
-             {
-                 Console.WriteLine("No input file specified");
-                 Environment.Exit(1);
-             }
+            if (args.Length == 0)
+            {
+                Console.WriteLine("No input file specified");
+                Environment.Exit(1);
+            }
 
-             if (!File.Exists(args[0]))
-             {
-                 Console.WriteLine("Input file does not exist");
-                 Environment.Exit(1);
-             }
+            if (!File.Exists(args[0]))
+            {
+                Console.WriteLine("Input file does not exist");
+                Environment.Exit(1);
+            }
 
-             try
-             {
-                 ICodeConverter cvt = (ICodeConverter) new CSCodeGenerator();
-                 source = cvt.Convert(File.ReadAllText(args[0]));
-             }
-             catch(Exception e)
-             {
-                 Console.WriteLine("Conversion failed:\n"+e.Message);
-                 Environment.Exit(1);
-             }
+            try
+            {
+                ICodeConverter cvt = (ICodeConverter)new CSCodeGenerator();
+                source = cvt.Convert(File.ReadAllText(args[0]));
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Conversion failed:\n" + e.Message);
+                Environment.Exit(1);
+            }
 
-             source = CreateCSCompilerScript(source);
+            source = CreateCSCompilerScript(source);
 
-             try
-             {
-                 Console.WriteLine(CompileFromDotNetText(source,"a.out"));
-             }
-             catch(Exception e)
-             {
-                 Console.WriteLine("Conversion failed: "+e.Message);
-                 Environment.Exit(1);
-             }
+            try
+            {
+                Console.WriteLine(CompileFromDotNetText(source, "a.out"));
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Conversion failed: " + e.Message);
+                Environment.Exit(1);
+            }
 
-             Environment.Exit(0);
+            Environment.Exit(0);
         }
 
         private static string CreateCSCompilerScript(string compileScript)
@@ -97,9 +97,8 @@ namespace OpenSim.Tools.LSL.Compiler
 
         private static string CompileFromDotNetText(string Script, string asset)
         {
-
             string OutFile = asset;
-            string disp    ="OK";
+            string disp = "OK";
 
             try
             {
@@ -107,9 +106,7 @@ namespace OpenSim.Tools.LSL.Compiler
             }
             catch (Exception e) // NOTLEGIT - Should be just FileIOException
             {
-                throw new Exception("Unable to delete old existing "+
-                        "script-file before writing new. Compile aborted: " +
-                        e.ToString());
+                throw new Exception("Unable to delete old existing " + "script-file before writing new. Compile aborted: " + e.ToString());
             }
 
             // Do actual compile
@@ -117,13 +114,10 @@ namespace OpenSim.Tools.LSL.Compiler
 
             parameters.IncludeDebugInformation = true;
 
-            string rootPath =
-                Path.GetDirectoryName(AppDomain.CurrentDomain.BaseDirectory);
+            string rootPath = Path.GetDirectoryName(AppDomain.CurrentDomain.BaseDirectory);
 
-            parameters.ReferencedAssemblies.Add(Path.Combine(rootPath,
-                    "OpenSim.Region.ScriptEngine.Shared.dll"));
-            parameters.ReferencedAssemblies.Add(Path.Combine(rootPath,
-                    "OpenSim.Region.ScriptEngine.Shared.Api.Runtime.dll"));
+            parameters.ReferencedAssemblies.Add(Path.Combine(rootPath, "OpenSim.Region.ScriptEngine.Shared.dll"));
+            parameters.ReferencedAssemblies.Add(Path.Combine(rootPath, "OpenSim.Region.ScriptEngine.Shared.Api.Runtime.dll"));
 
             parameters.GenerateExecutable = false;
             parameters.OutputAssembly = OutFile;
@@ -150,9 +144,7 @@ namespace OpenSim.Tools.LSL.Compiler
 
                     // The Second Life viewer's script editor begins
                     // countingn lines and columns at 0, so we subtract 1.
-                    errtext += String.Format("Line ({0},{1}): {4} {2}: {3}\n",
-                                             lslPos.Key - 1, lslPos.Value - 1,
-                                             CompErr.ErrorNumber, text, severity);
+                    errtext += String.Format("Line ({0},{1}): {4} {2}: {3}\n", lslPos.Key - 1, lslPos.Value - 1, CompErr.ErrorNumber, text, severity);
                 }
 
                 disp = "Completed with errors";
@@ -174,7 +166,6 @@ namespace OpenSim.Tools.LSL.Compiler
             // write out a textual representation of the file here
             //
             // Read the binary file into a buffer
-            //
             FileInfo fi = new FileInfo(OutFile);
 
             if (fi == null)
@@ -200,7 +191,6 @@ namespace OpenSim.Tools.LSL.Compiler
             }
 
             // Convert to base64
-            //
             string filetext = System.Convert.ToBase64String(data);
             Byte[] buf = Encoding.ASCII.GetBytes(filetext);
             FileStream sfs = File.Create(OutFile + ".text");
@@ -208,16 +198,6 @@ namespace OpenSim.Tools.LSL.Compiler
             sfs.Close();
 
             string posmap = String.Empty;
-//            if (m_positionMap != null)
-//            {
-//                foreach (KeyValuePair<KeyValuePair<int, int>, KeyValuePair<int, int>> kvp in m_positionMap)
-//                {
-//                    KeyValuePair<int, int> k = kvp.Key;
-//                    KeyValuePair<int, int> v = kvp.Value;
-//                    posmap += String.Format("{0},{1},{2},{3}\n",
-//                            k.Key, k.Value, v.Key, v.Value);
-//                }
-//            }
 
             buf = Encoding.ASCII.GetBytes(posmap);
 
@@ -230,35 +210,21 @@ namespace OpenSim.Tools.LSL.Compiler
 
         private static string ReplaceTypes(string message)
         {
-            message = message.Replace(
-                "OpenSim.Region.ScriptEngine.Shared.LSL_Types.LSLString",
-                "string");
-
-            message = message.Replace(
-                "OpenSim.Region.ScriptEngine.Shared.LSL_Types.LSLInteger",
-                "integer");
-
-            message = message.Replace(
-                "OpenSim.Region.ScriptEngine.Shared.LSL_Types.LSLFloat",
-                "float");
-
-            message = message.Replace(
-                "OpenSim.Region.ScriptEngine.Shared.LSL_Types.list",
-                "list");
-
+            message = message.Replace("OpenSim.Region.ScriptEngine.Shared.LSL_Types.LSLString", "string");
+            message = message.Replace("OpenSim.Region.ScriptEngine.Shared.LSL_Types.LSLInteger", "integer");
+            message = message.Replace("OpenSim.Region.ScriptEngine.Shared.LSL_Types.LSLFloat", "float");
+            message = message.Replace("OpenSim.Region.ScriptEngine.Shared.LSL_Types.list", "list");
             return message;
         }
 
         private static KeyValuePair<int, int> FindErrorPosition(int line, int col)
         {
-            //return FindErrorPosition(line, col, m_positionMap);
             return FindErrorPosition(line, col, null);
         }
 
         private class kvpSorter : IComparer<KeyValuePair<KeyValuePair<int, int>, KeyValuePair<int, int>>>
         {
-            public int Compare(KeyValuePair<KeyValuePair<int, int>, KeyValuePair<int, int>> a,
-                               KeyValuePair<KeyValuePair<int, int>, KeyValuePair<int, int>> b)
+            public int Compare(KeyValuePair<KeyValuePair<int, int>, KeyValuePair<int, int>> a, KeyValuePair<KeyValuePair<int, int>, KeyValuePair<int, int>> b)
             {
                 int kc = a.Key.Key.CompareTo(b.Key.Key);
                 return (kc != 0) ? kc : a.Key.Value.CompareTo(b.Key.Value);
@@ -294,31 +260,35 @@ namespace OpenSim.Tools.LSL.Compiler
                 // Keep going until we find the first point passed line,col.
                 if (posmap.Key.Key > line)
                 {
-                  //m_log.DebugFormat("[Compiler]: Line is larger than requested {0},{1}, returning {2},{3}", line, col, l, c);
-                  if (pl < line)
-                  {
-                    //m_log.DebugFormat("[Compiler]: Previous line ({0}) is less than requested line ({1}), setting column to 1.", pl, line);
-                    c = 1;
-                  }
-                  break;
+                    //m_log.DebugFormat("[Compiler]: Line is larger than requested {0},{1}, returning {2},{3}", line, col, l, c);
+                    if (pl < line)
+                    {
+                        //m_log.DebugFormat("[Compiler]: Previous line ({0}) is less than requested line ({1}), setting column to 1.", pl, line);
+                        c = 1;
+                    }
+                    break;
                 }
                 if (posmap.Key.Key == line && posmap.Key.Value > col)
                 {
-                  // Never move l,c backwards.
-                  if (nl > l || (nl == l && nc > c))
-                  {
-                    //m_log.DebugFormat("[Compiler]: Using offset relative to this: {0} + {1} - {2}, {3} + {4} - {5} = {6}, {7}",
-                    //    posmap.Value.Key, line, posmap.Key.Key, posmap.Value.Value, col, posmap.Key.Value, nl, nc);
-                    l = nl;
-                    c = nc;
-                  }
-                  //m_log.DebugFormat("[Compiler]: Column is larger than requested {0},{1}, returning {2},{3}", line, col, l, c);
-                  break;
+                    // Never move l,c backwards.
+                    if (nl > l || (nl == l && nc > c))
+                    {
+                        //m_log.DebugFormat("[Compiler]: Using offset relative to this: {0} + {1} - {2}, {3} + {4} - {5} = {6}, {7}",
+                        //    posmap.Value.Key, line, posmap.Key.Key, posmap.Value.Value, col, posmap.Key.Value, nl, nc);
+
+                        l = nl;
+                        c = nc;
+                    }
+
+                    //m_log.DebugFormat("[Compiler]: Column is larger than requested {0},{1}, returning {2},{3}", line, col, l, c);
+                    break;
                 }
+
                 pl = posmap.Key.Key;
                 l = posmap.Value.Key;
                 c = posmap.Value.Value;
             }
+
             return new KeyValuePair<int, int>(l, c);
         }
     }
