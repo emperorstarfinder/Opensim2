@@ -32,7 +32,7 @@ using System.IO;
 using System.Reflection;
 using Nini.Config;
 using OpenSim.Framework;
-using OpenSim.Framework.ConsoleFramework;
+using OpenSim.Framework.Console;
 
 using OpenSim.Framework.Monitoring;
 using OpenSim.Services.Interfaces;

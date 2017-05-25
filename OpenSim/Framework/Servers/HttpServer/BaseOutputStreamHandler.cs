@@ -42,7 +42,8 @@ namespace OpenSim.Framework.Servers.HttpServer
         protected BaseOutputStreamHandler(string httpMethod, string path, string name, string description)
             : base(httpMethod, path, name, description) {}
 
-        public virtual void Handle(string path, Stream request, Stream response, IOSHttpRequest httpRequest, IOSHttpResponse httpResponse)
+        public virtual void Handle(
+            string path, Stream request, Stream response, IOSHttpRequest httpRequest, IOSHttpResponse httpResponse)
         {
             RequestsReceived++;
 
@@ -51,7 +52,8 @@ namespace OpenSim.Framework.Servers.HttpServer
             RequestsHandled++;
         }
 
-        protected virtual void ProcessRequest(string path, Stream request, Stream response, IOSHttpRequest httpRequest, IOSHttpResponse httpResponse)
+        protected virtual void ProcessRequest(
+            string path, Stream request, Stream response, IOSHttpRequest httpRequest, IOSHttpResponse httpResponse)
         {
         }
     }

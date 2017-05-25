@@ -25,8 +25,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-using System;
 using Nini.Config;
+using System;
 
 namespace OpenSim.Tools.Configger
 {
@@ -92,7 +92,6 @@ namespace OpenSim.Tools.Configger
                         Console.WriteLine("</Section>");
                     }
                 }
-
                 Console.WriteLine("</Nini>");
             }
             else if (format == "ini")
@@ -119,7 +118,6 @@ namespace OpenSim.Tools.Configger
 
                             if (k.StartsWith("Include-"))
                                 continue;
-
                             Console.WriteLine("{0} = \"{1}\"", k, v);
                         }
 

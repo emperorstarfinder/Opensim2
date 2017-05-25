@@ -52,7 +52,8 @@ namespace OpenSim.Framework.Servers.HttpServer
             m_Auth = auth;
         }
 
-        public virtual byte[] Handle(string path, Stream request, IOSHttpRequest httpRequest, IOSHttpResponse httpResponse)
+        public virtual byte[] Handle(
+            string path, Stream request, IOSHttpRequest httpRequest, IOSHttpResponse httpResponse)
         {
             RequestsReceived++;
 
@@ -75,7 +76,8 @@ namespace OpenSim.Framework.Servers.HttpServer
             return result;
         }
 
-        protected virtual byte[] ProcessRequest(string path, Stream request, IOSHttpRequest httpRequest, IOSHttpResponse httpResponse)
+        protected virtual byte[] ProcessRequest(
+            string path, Stream request, IOSHttpRequest httpRequest, IOSHttpResponse httpResponse)
         {
             return null;
         }

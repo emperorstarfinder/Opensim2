@@ -29,6 +29,7 @@ using System.Net;
 using Nwc.XmlRpc;
 using OpenSim.Framework;
 
+
 namespace OpenSim.Framework.Servers.HttpServer
 {
     public class XmlRpcBasicDOSProtector
@@ -48,32 +49,27 @@ namespace OpenSim.Framework.Servers.HttpServer
             _dosProtector = new BasicDOSProtector(_options);
 
         }
-
         public XmlRpcResponse Process(XmlRpcRequest request, IPEndPoint client)
         {
+
             XmlRpcResponse resp = null;
             string clientstring = GetClientString(request, client);
             string endpoint = GetEndPoint(request, client);
-
             if (_dosProtector.Process(clientstring, endpoint))
                 resp = _normalMethod(request, client);
             else
                 resp = _throttledMethod(request, client);
-
             if (_options.MaxConcurrentSessions > 0)
                 _dosProtector.ProcessEnd(clientstring, endpoint);
-
             return resp;
         }
 
         private string GetClientString(XmlRpcRequest request, IPEndPoint client)
         {
             string clientstring;
-
             if (_options.AllowXForwardedFor && request.Params.Count > 3)
             {
                 object headerstr = request.Params[3];
-
                 if (headerstr != null && !string.IsNullOrEmpty(headerstr.ToString()))
                     clientstring = request.Params[3].ToString();
                 else
@@ -81,7 +77,6 @@ namespace OpenSim.Framework.Servers.HttpServer
             }
             else
                 clientstring = client.Address.ToString();
-
             return clientstring;
         }
 
@@ -89,5 +84,8 @@ namespace OpenSim.Framework.Servers.HttpServer
         {
              return client.Address.ToString();
         }
+
     }
+
+
 }

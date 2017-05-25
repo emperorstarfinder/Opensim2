@@ -33,7 +33,7 @@ using System.Threading;
 using System.Text;
 using System.Xml;
 using OpenSim.Framework;
-using OpenSim.Framework.ConsoleFramework;
+using OpenSim.Framework.Console;
 using OpenSim.Framework.Monitoring;
 using OpenSim.Framework.Servers;
 using log4net;
@@ -211,6 +211,7 @@ namespace OpenSim.Server.Base
                     {
                         new Mono.Unix.UnixSignal(Mono.Unix.Native.Signum.SIGTERM)
                     };
+                    ignal_thread.IsBackground = true;
                     signal_thread.Start();
                 }
                 catch (Exception e)
@@ -249,6 +250,9 @@ namespace OpenSim.Server.Base
                 }
             }
 
+            MemoryWatchdog.Enabled = false;
+            Watchdog.Enabled = false;
+            WorkManager.Stop();
             RemovePIDFile();
 
             return 0;

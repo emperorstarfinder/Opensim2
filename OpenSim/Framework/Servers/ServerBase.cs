@@ -39,7 +39,7 @@ using log4net.Appender;
 using log4net.Core;
 using log4net.Repository;
 using Nini.Config;
-using OpenSim.Framework.ConsoleFramework;
+using OpenSim.Framework.Console;
 using OpenSim.Framework.Monitoring;
 
 namespace OpenSim.Framework.Servers
@@ -82,7 +82,8 @@ namespace OpenSim.Framework.Servers
         {
             if (File.Exists(path))
                 m_log.ErrorFormat(
-                    "[SERVER BASE]: Previous pid file {0} still exists on startup.  Possibly previously unclean shutdown.", path);
+                    "[SERVER BASE]: Previous pid file {0} still exists on startup.  Possibly previously unclean shutdown.",
+                    path);
 
             try
             {
@@ -212,40 +213,26 @@ namespace OpenSim.Framework.Servers
                 return;
 
             m_console.Commands.AddCommand(
-                "General", false,
-                "show info", "show info",
-                "Show general information about the server",
-                HandleShow);
+                "General", false, "show info", "show info", "Show general information about the server", HandleShow);
 
             m_console.Commands.AddCommand(
-                "General", false,
-                "show version", "show version",
-                "Show server version",
-                HandleShow);
+                "General", false, "show version", "show version", "Show server version", HandleShow);
 
             m_console.Commands.AddCommand(
-                "General", false,
-                "show uptime", "show uptime",
-                "Show server uptime",
-                HandleShow);
+                "General", false, "show uptime", "show uptime", "Show server uptime", HandleShow);
 
             m_console.Commands.AddCommand(
-                "General", false,
-                "get log level", "get log level",
-                "Get the current console logging level",
+                "General", false, "get log level", "get log level", "Get the current console logging level",
                 (mod, cmd) => ShowLogLevel());
 
             m_console.Commands.AddCommand(
-                "General", false,
-                "set log level", "set log level <level>",
-                "Set the console logging level for this session.",
-                HandleSetLogLevel);
+                "General", false, "set log level", "set log level <level>",
+                "Set the console logging level for this session.", HandleSetLogLevel);
 
             m_console.Commands.AddCommand(
                 "General", false, "config set",
                 "config set <section> <key> <value>",
-                "Set a config option.  In most cases this is not useful since changed parameters are not dynamically reloaded.  Neither do changed parameters persist - you will have to change a config file manually and restart.",
-                HandleConfig);
+                "Set a config option.  In most cases this is not useful since changed parameters are not dynamically reloaded.  Neither do changed parameters persist - you will have to change a config file manually and restart.", HandleConfig);
 
             m_console.Commands.AddCommand(
                 "General", false, "config get",
@@ -287,25 +274,25 @@ namespace OpenSim.Framework.Servers
                 "Show thread status.  Synonym for \"show threads\"",
                 (string module, string[] args) => Notice(GetThreadsReport()));
 
-            m_console.Commands.AddCommand(
+            m_console.Commands.AddCommand (
                 "Debug", false, "debug comms set",
                 "debug comms set serialosdreq true|false",
                 "Set comms parameters.  For debug purposes.",
                 HandleDebugCommsSet);
 
-            m_console.Commands.AddCommand(
+            m_console.Commands.AddCommand (
                 "Debug", false, "debug comms status",
                 "debug comms status",
                 "Show current debug comms parameters.",
                 HandleDebugCommsStatus);
 
-            m_console.Commands.AddCommand(
+            m_console.Commands.AddCommand (
                 "Debug", false, "debug threadpool set",
                 "debug threadpool set worker|iocp min|max <n>",
                 "Set threadpool parameters.  For debug purposes.",
                 HandleDebugThreadpoolSet);
 
-            m_console.Commands.AddCommand(
+            m_console.Commands.AddCommand (
                 "Debug", false, "debug threadpool status",
                 "debug threadpool status",
                 "Show current debug threadpool parameters.",
@@ -321,6 +308,12 @@ namespace OpenSim.Framework.Servers
                     + "  2 = full stack trace; don't log common threads\n"
                     + "  3 = full stack trace, including common threads\n",
                 HandleDebugThreadpoolLevel);
+
+//            m_console.Commands.AddCommand(
+//                "Debug", false, "show threadpool calls active",
+//                "show threadpool calls active",
+//                "Show details about threadpool calls that are still active (currently waiting or in progress)",
+//                HandleShowThreadpoolCallsActive);
 
             m_console.Commands.AddCommand(
                 "Debug", false, "show threadpool calls complete",
@@ -613,7 +606,7 @@ namespace OpenSim.Framework.Servers
                         if (cmdparams.Length < 4)
                         {
                             Notice("Syntax: config set <section> <key> <value>");
-                            Notice("Example: config set ScriptEngine.XEngine NumberOfScriptThreads 5");
+                            Notice("Example: config set ScriptEngine.DotNetEngine NumberOfScriptThreads 5");
                         }
                         else
                         {
@@ -648,7 +641,7 @@ namespace OpenSim.Framework.Servers
                             IConfig config = Config.Configs[cmdparams[1]];
                             if (config == null)
                             {
-                                Notice("Section \"{0}\" does not exist.", cmdparams[1]);
+                                Notice("Section \"{0}\" does not exist.",cmdparams[1]);
                                 break;
                             }
                             else
@@ -670,7 +663,7 @@ namespace OpenSim.Framework.Servers
                         else
                         {
                             Notice("Syntax: config {0} [<section>] [<key>]", firstParam);
-                            Notice("Example: config {0} ScriptEngine.XEngine NumberOfScriptThreads", firstParam);
+                            Notice("Example: config {0} ScriptEngine.DotNetEngine NumberOfScriptThreads", firstParam);
                         }
 
                         break;
@@ -723,7 +716,9 @@ namespace OpenSim.Framework.Servers
             if (consoleLevel != null)
                 m_consoleAppender.Threshold = consoleLevel;
             else
-                Notice("{0} is not a valid logging level.  Valid logging levels are ALL, DEBUG, INFO, WARN, ERROR, FATAL, OFF", rawLevel);
+                Notice(
+                    "{0} is not a valid logging level.  Valid logging levels are ALL, DEBUG, INFO, WARN, ERROR, FATAL, OFF",
+                    rawLevel);
 
             ShowLogLevel();
         }
@@ -828,26 +823,26 @@ namespace OpenSim.Framework.Servers
             }
             else if (File.Exists(gitRefPointerPath))
             {
-                //m_log.DebugFormat("[SERVER BASE]: Found {0}", gitRefPointerPath);
+//                m_log.DebugFormat("[SERVER BASE]: Found {0}", gitRefPointerPath);
 
                 string rawPointer = "";
 
                 using (StreamReader pointerFile = File.OpenText(gitRefPointerPath))
                     rawPointer = pointerFile.ReadLine();
 
-                //m_log.DebugFormat("[SERVER BASE]: rawPointer [{0}]", rawPointer);
+//                m_log.DebugFormat("[SERVER BASE]: rawPointer [{0}]", rawPointer);
 
                 Match m = Regex.Match(rawPointer, "^ref: (.+)$");
 
                 if (m.Success)
                 {
-                    //m_log.DebugFormat("[SERVER BASE]: Matched [{0}]", m.Groups[1].Value);
+//                    m_log.DebugFormat("[SERVER BASE]: Matched [{0}]", m.Groups[1].Value);
 
                     string gitRef = m.Groups[1].Value;
                     string gitRefPath = gitDir + gitRef;
                     if (File.Exists(gitRefPath))
                     {
-                        //m_log.DebugFormat("[SERVER BASE]: Found gitRefPath [{0}]", gitRefPath);
+//                        m_log.DebugFormat("[SERVER BASE]: Found gitRefPath [{0}]", gitRefPath);
 
                         using (StreamReader refFile = File.OpenText(gitRefPath))
                         {
@@ -877,7 +872,7 @@ namespace OpenSim.Framework.Servers
                         // using the dir svn revision at the top of entries file
                         strcmp = String.Compare(inputLine, "dir");
                         if (strcmp == 0)
-                        {
+                       {
                             buildVersion = EntriesFile.ReadLine();
                             break;
                         }
@@ -886,7 +881,6 @@ namespace OpenSim.Framework.Servers
                             inputLine = EntriesFile.ReadLine();
                         }
                     }
-
                     EntriesFile.Close();
                 }
 
@@ -979,7 +973,8 @@ namespace OpenSim.Framework.Servers
                 }
             }
             else if (
-                Util.FireAndForgetMethod == FireAndForgetMethod.QueueUserWorkItem || Util.FireAndForgetMethod == FireAndForgetMethod.UnsafeQueueUserWorkItem)
+                Util.FireAndForgetMethod == FireAndForgetMethod.QueueUserWorkItem
+                    || Util.FireAndForgetMethod == FireAndForgetMethod.UnsafeQueueUserWorkItem)
             {
                 threadPoolUsed = "BuiltInThreadPool";
                 ThreadPool.GetMaxThreads(out maxThreads, out completionPortThreads);
@@ -1065,6 +1060,6 @@ namespace OpenSim.Framework.Servers
         /// <summary>
         /// Should be overriden and referenced by descendents if they need to perform extra shutdown processing
         /// </summary>
-        protected virtual void ShutdownSpecific() { }
+        protected virtual void ShutdownSpecific() {}
     }
 }

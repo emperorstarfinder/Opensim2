@@ -44,7 +44,7 @@ using Nini.Config;
 using Amib.Threading;
 using Mono.Addins;
 using OpenSim.Framework;
-using OpenSim.Framework.ConsoleFramework;
+using OpenSim.Framework.Console;
 using OpenSim.Region.Framework.Scenes;
 using OpenSim.Region.Framework.Interfaces;
 using OpenSim.Region.ScriptEngine.Interfaces;
@@ -1079,6 +1079,7 @@ namespace OpenSim.Region.ScriptEngine.XEngine
                                         "[XEngine]: Started {0} scripts in {1}", scriptsStarted, m_Scene.Name);
                         }
                     }
+                    catch (System.Threading.ThreadAbortException) { }
                     catch (Exception e)
                     {
                         m_log.Error(

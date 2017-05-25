@@ -24,7 +24,6 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
 using System;
 
 namespace OpenSim.Framework
@@ -36,7 +35,6 @@ namespace OpenSim.Framework
         //      be the legacy region size.
         public const uint RegionSize = 256;
         public const uint RegionHeight = 4096;
-
         // This could be a parameters but, really, a region of greater than this is pretty unmanageable
         public const uint MaximumRegionSize = 8192;
 
@@ -62,108 +60,51 @@ namespace OpenSim.Framework
             EstateManagers = 10
         }
 
-        [Flags]
-        public enum TeleportFlags : uint
+        [Flags]public enum TeleportFlags : uint
         {
-            /// <summary>
-            ///     No flags set, or teleport failed
-            /// </summary>
+            /// <summary>No flags set, or teleport failed</summary>
             Default = 0,
-
-            /// <summary>
-            ///     Set when newbie leaves help island for first time
-            /// </summary>
+            /// <summary>Set when newbie leaves help island for first time</summary>
             SetHomeToTarget = 1 << 0,
-
-            /// <summary>
-            /// </summary>
+            /// <summary></summary>
             SetLastToTarget = 1 << 1,
-
-            /// <summary>
-            ///     Via Lure
-            /// </summary>
+            /// <summary>Via Lure</summary>
             ViaLure = 1 << 2,
-
-            /// <summary>
-            ///     Via Landmark
-            /// </summary>
+            /// <summary>Via Landmark</summary>
             ViaLandmark = 1 << 3,
-
-            /// <summary>
-            ///     Via Location
-            /// </summary>
+            /// <summary>Via Location</summary>
             ViaLocation = 1 << 4,
-
-            /// <summary>
-            ///     Via Home
-            /// </summary>
+            /// <summary>Via Home</summary>
             ViaHome = 1 << 5,
-
-            /// <summary>
-            ///     Via Telehub
-            /// </summary>
+            /// <summary>Via Telehub</summary>
             ViaTelehub = 1 << 6,
-
-            /// <summary>
-            ///     Via Login
-            /// </summary>
+            /// <summary>Via Login</summary>
             ViaLogin = 1 << 7,
-
-            /// <summary>
-            ///     Linden Summoned
-            /// </summary>
+            /// <summary>Linden Summoned</summary>
             ViaGodlikeLure = 1 << 8,
-
-            /// <summary>
-            ///     Linden Forced me
-            /// </summary>
+            /// <summary>Linden Forced me</summary>
             Godlike = 1 << 9,
-
-            /// <summary>
-            /// </summary>
+            /// <summary></summary>
             NineOneOne = 1 << 10,
-
-            /// <summary>
-            ///     Agent Teleported Home via Script
-            /// </summary>
+            /// <summary>Agent Teleported Home via Script</summary>
             DisableCancel = 1 << 11,
-
-            /// <summary>
-            /// </summary>
+            /// <summary></summary>
             ViaRegionID = 1 << 12,
-
-            /// <summary>
-            /// </summary>
+            /// <summary></summary>
             IsFlying = 1 << 13,
-
-            /// <summary>
-            /// </summary>
+            /// <summary></summary>
             ResetHome = 1 << 14,
-
-            /// <summary>
-            ///     forced to new location for example when avatar is banned or ejected
-            /// </summary>
+            /// <summary>forced to new location for example when avatar is banned or ejected</summary>
             ForceRedirect = 1 << 15,
-
-            /// <summary>
-            ///     Teleport Finished via a Lure
-            /// </summary>
+            /// <summary>Teleport Finished via a Lure</summary>
             FinishedViaLure = 1 << 26,
-
-            /// <summary>
-            ///     Finished, Sim Changed
-            /// </summary>
+            /// <summary>Finished, Sim Changed</summary>
             FinishedViaNewSim = 1 << 28,
-
-            /// <summary>
-            ///     Finished, Same Sim
-            /// </summary>
+            /// <summary>Finished, Same Sim</summary>
             FinishedViaSameSim = 1 << 29,
-
-            /// <summary>
-            ///     Agent coming into the grid from another grid
-            /// </summary>
+            /// <summary>Agent coming into the grid from another grid</summary>
             ViaHGLogin = 1 << 30
         }
+
     }
 }

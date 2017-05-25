@@ -30,11 +30,12 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 using System.Reflection;
-using System.Security.Cryptography.X509Certificates;
 using System.Text.RegularExpressions;
 using System.Threading;
-using HttpServer;
+using System.Security.Cryptography.X509Certificates;
 using log4net;
+using HttpServer;
+
 using HttpListener = HttpServer.HttpListener;
 
 namespace OpenSim.Framework.Servers.HttpServer
@@ -53,7 +54,6 @@ namespace OpenSim.Framework.Servers.HttpServer
 
         // underlying HttpServer.HttpListener
         protected HttpListener _listener;
-   
         // underlying core/engine thread
         protected Thread _engine;
 
@@ -66,7 +66,6 @@ namespace OpenSim.Framework.Servers.HttpServer
 
         // thread identifier
         protected string _engineId;
-
         public string EngineID
         {
             get { return _engineId; }
@@ -76,7 +75,6 @@ namespace OpenSim.Framework.Servers.HttpServer
         /// True if this is an HTTPS connection; false otherwise.
         /// </summary>
         protected bool _isSecure;
-
         public bool IsSecure
         {
             get { return _isSecure; }
@@ -91,7 +89,6 @@ namespace OpenSim.Framework.Servers.HttpServer
         /// List of registered OSHttpHandlers for this OSHttpServer instance.
         /// </summary>
         protected List<OSHttpHandler> _httpHandlers = new List<OSHttpHandler>();
-
         public List<OSHttpHandler> OSHttpHandlers
         {
             get
@@ -102,6 +99,7 @@ namespace OpenSim.Framework.Servers.HttpServer
                 }
             }
         }
+
 
         /// <summary>
         /// Instantiate an HTTP server.
@@ -188,6 +186,7 @@ namespace OpenSim.Framework.Servers.HttpServer
             _log.InfoFormat("[{0}] HTTP server terminated", EngineID);
         }
 
+
         /// <summary>
         /// Add an HTTP request handler.
         /// </summary>
@@ -204,7 +203,6 @@ namespace OpenSim.Framework.Servers.HttpServer
                     _log.DebugFormat("[OSHttpServer] attempt to add already existing handler ignored");
                     return;
                 }
-
                 _httpHandlers.Add(handler);
             }
         }

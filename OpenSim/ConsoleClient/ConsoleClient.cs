@@ -34,7 +34,7 @@ using System.Xml;
 using System.Collections.Generic;
 using OpenSim.Server.Base;
 using OpenSim.Framework;
-using OpenSim.Framework.ConsoleFramework;
+using OpenSim.Framework.Console;
 using OpenMetaverse;
 
 namespace OpenSim.ConsoleClient

@@ -24,9 +24,8 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
-using System.IO;
 using OpenSim.Framework;
+using System.IO;
 
 namespace OpenSim.Framework.Servers.HttpServer
 {
@@ -38,6 +37,7 @@ namespace OpenSim.Framework.Servers.HttpServer
     /// </remarks>
     public abstract class BaseStreamHandlerBasicDOSProtector : BaseRequestHandler, IStreamedRequestHandler
     {
+
         private readonly BasicDosProtectorOptions _options;
         private readonly BasicDOSProtector _dosProtector;
 
@@ -50,18 +50,17 @@ namespace OpenSim.Framework.Servers.HttpServer
             _dosProtector = new BasicDOSProtector(_options);
         }
 
-        public virtual byte[] Handle(string path, Stream request, IOSHttpRequest httpRequest, IOSHttpResponse httpResponse)
+        public virtual byte[] Handle(
+            string path, Stream request, IOSHttpRequest httpRequest, IOSHttpResponse httpResponse)
         {
             byte[] result;
             RequestsReceived++;
             string clientstring = GetClientString(httpRequest);
             string endpoint = GetRemoteAddr(httpRequest);
-
             if (_dosProtector.Process(clientstring, endpoint))
                 result = ProcessRequest(path, request, httpRequest, httpResponse);
             else
                 result = ThrottledRequest(path, request, httpRequest, httpResponse);
-
             if (_options.MaxConcurrentSessions > 0)
                 _dosProtector.ProcessEnd(clientstring, endpoint);
 
@@ -70,20 +69,22 @@ namespace OpenSim.Framework.Servers.HttpServer
             return result;
         }
 
-        protected virtual byte[] ProcessRequest(string path, Stream request, IOSHttpRequest httpRequest, IOSHttpResponse httpResponse)
+        protected virtual byte[] ProcessRequest(
+            string path, Stream request, IOSHttpRequest httpRequest, IOSHttpResponse httpResponse)
         {
             return null;
         }
 
-        protected virtual byte[] ThrottledRequest(string path, Stream request, IOSHttpRequest httpRequest, IOSHttpResponse httpResponse)
+        protected virtual byte[] ThrottledRequest(
+            string path, Stream request, IOSHttpRequest httpRequest, IOSHttpResponse httpResponse)
         {
             return new byte[0];
         }
 
+
         private string GetRemoteAddr(IOSHttpRequest httpRequest)
         {
             string remoteaddr = string.Empty;
-
             if (httpRequest.Headers["remote_addr"] != null)
                 remoteaddr = httpRequest.Headers["remote_addr"];
 
@@ -100,6 +101,7 @@ namespace OpenSim.Framework.Servers.HttpServer
                 clientstring = GetRemoteAddr(httpRequest);
 
             return clientstring;
+
         }
     }
 }

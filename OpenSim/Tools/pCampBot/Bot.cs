@@ -38,7 +38,7 @@ using OpenMetaverse.Assets;
 using OpenMetaverse.Packets;
 using Nini.Config;
 using OpenSim.Framework;
-using OpenSim.Framework.ConsoleFramework;
+using OpenSim.Framework.Console;
 using pCampBot.Interfaces;
 using Timer = System.Timers.Timer;
 using PermissionMask = OpenSim.Framework.PermissionMask;

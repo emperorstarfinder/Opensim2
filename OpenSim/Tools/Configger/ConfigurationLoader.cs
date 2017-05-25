@@ -49,7 +49,9 @@ namespace OpenSim.Tools.Configger
         /// <summary>
         /// Console logger
         /// </summary>
-        private static readonly ILog m_log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly ILog m_log =
+                LogManager.GetLogger(
+                MethodBase.GetCurrentMethod().DeclaringType);
 
         public ConfigurationLoader()
         {
@@ -80,7 +82,8 @@ namespace OpenSim.Tools.Configger
             }
             else
             {
-                string masterFilePath = Path.GetFullPath(Path.Combine(Util.configDir(), masterFileName));
+                string masterFilePath = Path.GetFullPath(
+                        Path.Combine(Util.configDir(), masterFileName));
 
                 if (masterFileName != String.Empty)
                 {
@@ -189,7 +192,6 @@ namespace OpenSim.Tools.Configger
                 }
             }
         }
-
         /// <summary>
         /// Check if we can convert the string to a URI
         /// </summary>
@@ -199,7 +201,8 @@ namespace OpenSim.Tools.Configger
         {
             Uri configUri;
 
-            return Uri.TryCreate(file, UriKind.Absolute, out configUri) && configUri.Scheme == Uri.UriSchemeHttp;
+            return Uri.TryCreate(file, UriKind.Absolute,
+                    out configUri) && configUri.Scheme == Uri.UriSchemeHttp;
         }
 
         /// <summary>
@@ -213,17 +216,20 @@ namespace OpenSim.Tools.Configger
 
             if (!IsUri(iniPath))
             {
-                m_log.InfoFormat("[CONFIG] Reading configuration file {0}", Path.GetFullPath(iniPath));
+                m_log.InfoFormat("[CONFIG] Reading configuration file {0}",
+                        Path.GetFullPath(iniPath));
 
                 m_config.Merge(new IniConfigSource(iniPath));
                 success = true;
             }
             else
             {
-                m_log.InfoFormat("[CONFIG] {0} is a http:// URI, fetching ...", iniPath);
+                m_log.InfoFormat("[CONFIG] {0} is a http:// URI, fetching ...",
+                        iniPath);
 
                 // The ini file path is a http URI
                 // Try to read it
+                //
                 try
                 {
                     XmlReader r = XmlReader.Create(iniPath);
@@ -238,7 +244,6 @@ namespace OpenSim.Tools.Configger
                     Environment.Exit(1);
                 }
             }
-
             return success;
         }
 

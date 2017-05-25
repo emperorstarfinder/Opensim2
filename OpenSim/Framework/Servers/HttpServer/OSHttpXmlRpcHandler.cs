@@ -96,6 +96,7 @@ namespace OpenSim.Framework.Servers.HttpServer
         // contains XmlRpc method name
         private string _methodName;
 
+
         /// <summary>
         /// Instantiate an XmlRpc handler.
         /// </summary>
@@ -112,7 +113,8 @@ namespace OpenSim.Framework.Servers.HttpServer
         /// can be null, in which case they are not taken into account
         /// when the handler is being looked up.
         /// </remarks>
-        public OSHttpXmlRpcHandler(XmlRpcMethod handler, string methodName, Regex path, Dictionary<string, Regex> headers, Regex whitelist)
+        public OSHttpXmlRpcHandler(XmlRpcMethod handler, string methodName, Regex path,
+                                   Dictionary<string, Regex> headers, Regex whitelist)
             : base(new Regex(@"^POST$", RegexOptions.IgnoreCase | RegexOptions.Compiled), path, null, headers,
                    new Regex(@"^(text|application)/xml", RegexOptions.IgnoreCase | RegexOptions.Compiled),
                    whitelist)
@@ -120,6 +122,7 @@ namespace OpenSim.Framework.Servers.HttpServer
             _handler = handler;
             _methodName = methodName;
         }
+
 
         /// <summary>
         /// Instantiate an XmlRpc handler.
@@ -132,6 +135,7 @@ namespace OpenSim.Framework.Servers.HttpServer
         {
         }
 
+
         /// <summary>
         /// Invoked by OSHttpRequestPump.
         /// </summary>
@@ -142,6 +146,7 @@ namespace OpenSim.Framework.Servers.HttpServer
 
             // check whether we are interested in this request
             if (!XmlRpcMethodMatch(request)) return OSHttpHandlerResult.Pass;
+
 
             OSHttpResponse resp = new OSHttpResponse(request);
             try
@@ -162,13 +167,13 @@ namespace OpenSim.Framework.Servers.HttpServer
                 resp.Body.Flush();
 
                 resp.Send();
+
             }
             catch (Exception ex)
             {
                 _log.WarnFormat("[OSHttpXmlRpcHandler]: Error: {0}", ex.Message);
                 return OSHttpHandlerResult.Pass;
             }
-
             return OSHttpHandlerResult.Done;
         }
     }

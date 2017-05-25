@@ -43,7 +43,7 @@ using log4net;
 using OpenMetaverse;
 
 using OpenSim.Framework;
-using OpenSim.Framework.ConsoleFramework;
+using OpenSim.Framework.Console;
 using OpenSim.Services.Interfaces;
 
 

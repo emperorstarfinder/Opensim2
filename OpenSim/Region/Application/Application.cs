@@ -33,7 +33,7 @@ using log4net;
 using log4net.Config;
 using Nini.Config;
 using OpenSim.Framework;
-using OpenSim.Framework.ConsoleFramework;
+using OpenSim.Framework.Console;
 
 namespace OpenSim
 {
@@ -79,7 +79,7 @@ namespace OpenSim
             else
             {
                 ServicePointManager.DefaultConnectionLimit = 12;
-                try { ServicePointManager.DnsRefreshTimeout = 120000; } //  just is case crazy some mono decides to have it infinity
+                try { ServicePointManager.DnsRefreshTimeout = 120000; } //  just is case some crazy mono decides to have it infinity
                 catch { }
             }
 

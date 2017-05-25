@@ -33,7 +33,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using OpenSim.Framework;
-using OpenSim.Framework.ConsoleFramework;
+using OpenSim.Framework.Console;
 using OpenSim.Server.Base;
 using OpenSim.Server.Handlers;
 using OpenSim.Region.Framework.Interfaces;

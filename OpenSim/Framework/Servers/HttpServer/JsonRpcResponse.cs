@@ -24,7 +24,6 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
 using System;
 using System.Net;
 using OpenMetaverse.StructuredData;
@@ -40,6 +39,7 @@ namespace OpenSim.Framework.Servers.HttpServer
         public const int MethodNotFound = -32601;
         public const int InvalidParams = -32602;
         public const int InternalError = -32604;
+
     }
 
     public class JsonRpcError

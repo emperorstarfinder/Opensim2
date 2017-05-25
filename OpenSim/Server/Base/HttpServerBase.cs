@@ -30,7 +30,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Reflection;
 using OpenSim.Framework;
-using OpenSim.Framework.ConsoleFramework;
+using OpenSim.Framework.Console;
 using OpenSim.Framework.Servers;
 using OpenSim.Framework.Servers.HttpServer;
 using log4net;

@@ -188,7 +188,6 @@ namespace OpenSim.Framework.Servers.HttpServer
                     if (null != remote)
                     {
                         Match epm = h.IPEndPointWhitelist.Match(remote.ToString());
-
                         if (!epm.Success)
                         {
                             scoredHandlers.Remove(h);
@@ -200,13 +199,11 @@ namespace OpenSim.Framework.Servers.HttpServer
                 if (null != h.Method)
                 {
                     Match m = h.Method.Match(req.HttpMethod);
-
                     if (!m.Success)
                     {
                         scoredHandlers.Remove(h);
                         continue;
                     }
-
                     scoredHandlers[h]++;
                 }
 
@@ -214,13 +211,11 @@ namespace OpenSim.Framework.Servers.HttpServer
                 if (null != h.Path)
                 {
                     Match m = h.Path.Match(req.RawUrl);
-
                     if (!m.Success)
                     {
                         scoredHandlers.Remove(h);
                         continue;
                     }
-
                     scoredHandlers[h] += m.ToString().Length;
                 }
 
@@ -228,7 +223,6 @@ namespace OpenSim.Framework.Servers.HttpServer
                 if (null != h.Query)
                 {
                     int queriesMatch = MatchOnNameValueCollection(req.QueryString, h.Query);
-
                     if (0 == queriesMatch)
                     {
                         _log.DebugFormat("[{0}] request {1}", EngineID, req);
@@ -237,7 +231,6 @@ namespace OpenSim.Framework.Servers.HttpServer
                         scoredHandlers.Remove(h);
                         continue;
                     }
-
                     scoredHandlers[h] +=  queriesMatch;
                 }
 
@@ -245,7 +238,6 @@ namespace OpenSim.Framework.Servers.HttpServer
                 if (null != h.Headers)
                 {
                     int headersMatch = MatchOnNameValueCollection(req.Headers, h.Headers);
-
                     if (0 == headersMatch)
                     {
                         _log.DebugFormat("[{0}] request {1}", EngineID, req);
@@ -254,7 +246,6 @@ namespace OpenSim.Framework.Servers.HttpServer
                         scoredHandlers.Remove(h);
                         continue;
                     }
-
                     scoredHandlers[h] +=  headersMatch;
                 }
             }
@@ -264,7 +255,6 @@ namespace OpenSim.Framework.Servers.HttpServer
                                   {
                                       return scoredHandlers[x] - scoredHandlers[y];
                                   });
-
             LogDumpHandlerList(matchingHandlers);
             return matchingHandlers;
         }

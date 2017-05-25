@@ -51,12 +51,10 @@ namespace OpenSim.Framework.Servers.HttpServer
         {
             Random rnd = new Random();
             contextHash = 0;
-
             if (Request.Headers["remote_addr"] != null)
                 contextHash = (Request.Headers["remote_addr"]).GetHashCode() << 16;
             else
                 contextHash = rnd.Next() << 16;
-
             if (Request.Headers["remote_port"] != null)
             {
                 string[] strPorts = Request.Headers["remote_port"].Split(new char[] { ',' });
@@ -66,7 +64,8 @@ namespace OpenSim.Framework.Servers.HttpServer
                 contextHash += rnd.Next() & 0xffff;
         }
 
-        public PollServiceHttpRequest(PollServiceEventArgs pPollServiceArgs, IHttpClientContext pHttpContext, IHttpRequest pRequest)
+        public PollServiceHttpRequest(
+            PollServiceEventArgs pPollServiceArgs, IHttpClientContext pHttpContext, IHttpRequest pRequest)
         {
             PollServiceArgs = pPollServiceArgs;
             HttpContext = pHttpContext;
@@ -78,7 +77,8 @@ namespace OpenSim.Framework.Servers.HttpServer
 
         internal void DoHTTPGruntWork(BaseHttpServer server, Hashtable responsedata)
         {
-            OSHttpResponse response = new OSHttpResponse(new HttpResponse(HttpContext, Request), HttpContext);
+            OSHttpResponse response
+                = new OSHttpResponse(new HttpResponse(HttpContext, Request), HttpContext);
 
             byte[] buffer = server.DoHTTPGruntWork(responsedata, response);
 
@@ -107,7 +107,8 @@ namespace OpenSim.Framework.Servers.HttpServer
 
         internal void DoHTTPstop(BaseHttpServer server)
         {
-            OSHttpResponse response = new OSHttpResponse(new HttpResponse(HttpContext, Request), HttpContext);
+            OSHttpResponse response
+                = new OSHttpResponse(new HttpResponse(HttpContext, Request), HttpContext);
 
             if(Request.Body.CanRead)
                 Request.Body.Dispose();
@@ -137,7 +138,6 @@ namespace OpenSim.Framework.Servers.HttpServer
         {
             if (b1.contextHash != b2.contextHash)
                 return false;
-
             bool b = Object.ReferenceEquals(b1.HttpContext, b2.HttpContext);
             return b;
         }

@@ -78,7 +78,6 @@ namespace OpenSim.Framework.Servers.HttpServer
         {
             get { return _method; }
         }
-
         protected Regex _method;
 
         /// <summary>
@@ -91,7 +90,6 @@ namespace OpenSim.Framework.Servers.HttpServer
         {
             get { return _path; }
         }
-
         protected Regex _path;
 
         /// <summary>
@@ -102,7 +100,6 @@ namespace OpenSim.Framework.Servers.HttpServer
         {
             get { return _query; }
         }
-
         protected Dictionary<string, Regex> _query;
 
         /// <summary>
@@ -113,7 +110,6 @@ namespace OpenSim.Framework.Servers.HttpServer
         {
             get { return _headers; }
         }
-
         protected Dictionary<string, Regex> _headers;
 
         /// <summary>
@@ -129,8 +125,8 @@ namespace OpenSim.Framework.Servers.HttpServer
         {
             get { return _ipEndPointRegex; }
         }
-
         protected Regex _ipEndPointRegex;
+
 
         /// <summary>
         /// Base class constructor.
@@ -141,7 +137,8 @@ namespace OpenSim.Framework.Servers.HttpServer
         /// <param name="contentType">null or content type
         /// regex</param>
         /// <param name="whitelist">null or IP address regex</param>
-        public OSHttpHandler(Regex method, Regex path, Dictionary<string, Regex> query, Dictionary<string, Regex> headers, Regex contentType, Regex whitelist)
+        public OSHttpHandler(Regex method, Regex path, Dictionary<string, Regex> query,
+                             Dictionary<string, Regex> headers, Regex contentType, Regex whitelist)
         {
             _method = method;
             _path = path;
@@ -154,6 +151,7 @@ namespace OpenSim.Framework.Servers.HttpServer
                 _headers.Add("content-type", contentType);
             }
         }
+
 
         /// <summary>
         /// Process an incoming OSHttpRequest that matched our
@@ -172,12 +170,10 @@ namespace OpenSim.Framework.Servers.HttpServer
             sw.WriteLine("{0}", base.ToString());
             sw.WriteLine("    method regex     {0}", null == Method ? "null" : Method.ToString());
             sw.WriteLine("    path regex       {0}", null == Path ? "null": Path.ToString());
-
             foreach (string tag in Headers.Keys)
             {
                 sw.WriteLine("    header           {0} : {1}", tag, Headers[tag].ToString());
             }
-
             sw.WriteLine("    IP whitelist     {0}", null == IPEndPointWhitelist ? "null" : IPEndPointWhitelist.ToString());
             sw.WriteLine();
             sw.Close();

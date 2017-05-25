@@ -41,6 +41,9 @@ namespace OpenSim.Framework.Servers.HttpServer
     /// </summary>
     public class RestObjectPosterResponse<TResponse>
     {
+//        private static readonly log4net.ILog m_log
+//            = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+
         public ReturnResponse<TResponse> ResponseCallback;
 
         public void BeginPostObject<TRequest>(string requestUrl, TRequest obj)
@@ -88,6 +91,10 @@ namespace OpenSim.Framework.Servers.HttpServer
                 TResponse deserial;
                 XmlSerializer deserializer = new XmlSerializer(typeof (TResponse));
                 Stream stream = resp.GetResponseStream();
+
+                // This is currently a bad debug stanza since it gobbles us the response...
+//                StreamReader reader = new StreamReader(stream);
+//                m_log.DebugFormat("[REST OBJECT POSTER RESPONSE]: Received {0}", reader.ReadToEnd());
 
                 deserial = (TResponse) deserializer.Deserialize(stream);
 
