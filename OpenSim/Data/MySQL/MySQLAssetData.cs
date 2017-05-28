@@ -9,7 +9,7 @@
  *     * Redistributions in binary form must reproduce the above copyright
  *       notice, this list of conditions and the following disclaimer in the
  *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the OpenSimulator Project nor the
+ *     * Neither the name of the OpenSim Project nor the
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
@@ -26,340 +26,245 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Reflection;
-using System.Collections.Generic;
+using libsecondlife;
 using log4net;
 using MySql.Data.MySqlClient;
-using OpenMetaverse;
 using OpenSim.Framework;
-using OpenSim.Data;
 
 namespace OpenSim.Data.MySQL
 {
-    /// <summary>
-    /// A MySQL Interface for the Asset Server
-    /// </summary>
-    public class MySQLAssetData : AssetDataBase
+    internal class MySQLAssetData : AssetDataBase, IPlugin
     {
         private static readonly ILog m_log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-        private string m_connectionString;
-
-        protected virtual Assembly Assembly
-        {
-            get { return GetType().Assembly; }
-        }
+        private MySQLManager _dbConnection;
 
         #region IPlugin Members
 
-        public override string Version { get { return "1.0.0.0"; } }
-
-        /// <summary>
-        /// <para>Initialises Asset interface</para>
-        /// <para>
-        /// <list type="bullet">
-        /// <item>Loads and initialises the MySQL storage plugin.</item>
-        /// <item>Warns and uses the obsolete mysql_connection.ini if connect string is empty.</item>
-        /// <item>Check for migration</item>
-        /// </list>
-        /// </para>
-        /// </summary>
-        /// <param name="connect">connect string</param>
-        public override void Initialise(string connect)
+        override public void Initialise(string connect)
         {
-            m_connectionString = connect;
-
-            using (MySqlConnection dbcon = new MySqlConnection(m_connectionString))
+            // TODO: This will let you pass in the connect string in
+            // the config, though someone will need to write that.
+            if (connect == String.Empty)
             {
-                dbcon.Open();
-                Migration m = new Migration(dbcon, Assembly, "AssetStore");
-                m.Update();
-                dbcon.Close();
+                // This is old seperate config file
+                m_log.Warn("no connect string, using old mysql_connection.ini instead");
+                Initialise();
+            }
+            else
+            {
+                _dbConnection = new MySQLManager(connect);
+            }
+
+            // This actually does the roll forward assembly stuff
+            Assembly assem = GetType().Assembly;
+            Migration m = new Migration(_dbConnection.Connection, assem, "AssetStore");
+
+            // TODO: After rev 6000, remove this.  People should have
+            // been rolled onto the new migration code by then.
+            TestTables(m);
+
+            m.Update();
+        }
+
+        override public void Initialise()
+        {
+            IniFile GridDataMySqlFile = new IniFile("mysql_connection.ini");
+            string hostname = GridDataMySqlFile.ParseFileReadValue("hostname");
+            string database = GridDataMySqlFile.ParseFileReadValue("database");
+            string username = GridDataMySqlFile.ParseFileReadValue("username");
+            string password = GridDataMySqlFile.ParseFileReadValue("password");
+            string pooling = GridDataMySqlFile.ParseFileReadValue("pooling");
+            string port = GridDataMySqlFile.ParseFileReadValue("port");
+
+            _dbConnection = new MySQLManager(hostname, database, username, password, pooling, port);
+
+        }
+
+        #region IAssetProvider Members
+
+        private void UpgradeAssetsTable(string oldVersion)
+        {
+            // null as the version, indicates that the table didn't exist
+            if (oldVersion == null)
+            {
+                m_log.Info("[ASSETS DB]: Creating new database tables");
+                _dbConnection.ExecuteResourceSql("CreateAssetsTable.sql");
+                return;
             }
         }
 
-        public override void Initialise()
+        /// <summary>
+        /// Ensure that the assets related tables exists and are at the latest version
+        /// </summary>
+        private void TestTables(Migration m)
         {
-            throw new NotImplementedException();
+            Dictionary<string, string> tableList = new Dictionary<string, string>();
+
+            tableList["assets"] = null;
+            _dbConnection.GetTableVersion(tableList);
+
+            // if there is no table, return, migrations will handle it.
+            if (tableList["assets"] == null) 
+                return;
+
+            // if there is a table, and we don't have a migration, set it to 1
+            if (m.Version == 0) 
+                m.Version = 1;
         }
 
-        public override void Dispose() { }
+        override public AssetBase FetchAsset(LLUUID assetID)
+        {
+            AssetBase asset = null;
+            lock (_dbConnection)
+            {
+                MySqlCommand cmd =
+                    new MySqlCommand(
+                        "SELECT name, description, assetType, invType, local, temporary, data FROM assets WHERE id=?id",
+                        _dbConnection.Connection);
+                MySqlParameter p = cmd.Parameters.Add("?id", MySqlDbType.Binary, 16);
+                p.Value = assetID.GetBytes();
+
+                try
+                {
+                    using (MySqlDataReader dbReader = cmd.ExecuteReader(CommandBehavior.SingleRow))
+                    {
+                        if (dbReader.Read())
+                        {
+                            asset = new AssetBase();
+                            asset.Data = (byte[]) dbReader["data"];
+                            asset.Description = (string) dbReader["description"];
+                            asset.FullID = assetID;
+                            asset.InvType = (sbyte) dbReader["invType"];
+                            asset.Local = ((sbyte) dbReader["local"]) != 0 ? true : false;
+                            asset.Name = (string) dbReader["name"];
+                            asset.Type = (sbyte) dbReader["assetType"];
+                        }
+                        dbReader.Close();
+                        cmd.Dispose();
+                    }
+                }
+                catch (Exception e)
+                {
+                    m_log.ErrorFormat(
+                        "[ASSETS DB]: MySql failure fetching asset {0}" + Environment.NewLine + e.ToString()
+                        + Environment.NewLine + "Attempting reconnection", assetID);
+                    _dbConnection.Reconnect();
+                }
+            }
+            return asset;
+        }
+
+        override public void CreateAsset(AssetBase asset)
+        {
+            lock (_dbConnection)
+            {
+                //m_log.Info("[ASSET DB]: Creating Asset " + Util.ToRawUuidString(asset.FullID));
+                if (ExistsAsset(asset.FullID))
+                {
+                    //m_log.Info("[ASSET DB]: Asset exists already, ignoring.");
+                    return;
+                }
+
+                MySqlCommand cmd =
+                    new MySqlCommand(
+                        "REPLACE INTO assets(id, name, description, assetType, invType, local, temporary, data)" +
+                        "VALUES(?id, ?name, ?description, ?assetType, ?invType, ?local, ?temporary, ?data)",
+                        _dbConnection.Connection);
+
+                // need to ensure we dispose
+                try
+                {
+                    using (cmd)
+                    {
+                        MySqlParameter p = cmd.Parameters.Add("?id", MySqlDbType.Binary, 16);
+                        p.Value = asset.FullID.GetBytes();
+                        cmd.Parameters.AddWithValue("?name", asset.Name);
+                        cmd.Parameters.AddWithValue("?description", asset.Description);
+                        cmd.Parameters.AddWithValue("?assetType", asset.Type);
+                        cmd.Parameters.AddWithValue("?invType", asset.InvType);
+                        cmd.Parameters.AddWithValue("?local", asset.Local);
+                        cmd.Parameters.AddWithValue("?temporary", asset.Temporary);
+                        cmd.Parameters.AddWithValue("?data", asset.Data);
+                        cmd.ExecuteNonQuery();
+                        cmd.Dispose();
+                    }
+                }
+                catch (Exception e)
+                {
+                    m_log.ErrorFormat(
+                        "[ASSETS DB]: " +
+                        "MySql failure creating asset {0} with name {1}" + Environment.NewLine + e.ToString()
+                        + Environment.NewLine + "Attempting reconnection", asset.FullID, asset.Name);
+                    _dbConnection.Reconnect();
+                }
+            }
+        }
+
+        override public void UpdateAsset(AssetBase asset)
+        {
+            CreateAsset(asset);
+        }
+
+        override public bool ExistsAsset(LLUUID uuid)
+        {
+            bool assetExists = false;
+
+            lock (_dbConnection)
+            {
+                MySqlCommand cmd =
+                    new MySqlCommand(
+                        "SELECT id FROM assets WHERE id=?id",
+                        _dbConnection.Connection);
+                MySqlParameter p = cmd.Parameters.Add("?id", MySqlDbType.Binary, 16);
+                p.Value = uuid.GetBytes();
+
+                try
+                {
+                    using (MySqlDataReader dbReader = cmd.ExecuteReader(CommandBehavior.SingleRow))
+                    {
+                        if (dbReader.Read())
+                        {
+                            assetExists = true;
+                        }
+
+                        dbReader.Close();
+                        cmd.Dispose();
+                    }
+                }
+                catch (Exception e)
+                {
+                    m_log.ErrorFormat(
+                        "[ASSETS DB]: MySql failure fetching asset {0}" + Environment.NewLine + e.ToString()
+                        + Environment.NewLine + "Attempting reconnection", uuid);
+                    _dbConnection.Reconnect();
+                }
+            }
+
+            return assetExists;
+        }
 
         /// <summary>
-        /// The name of this DB provider
+        /// All writes are immediately commited to the database, so this is a no-op
         /// </summary>
-        override public string Name
+        override public void CommitAssets()
         {
-            get { return "MySQL Asset storage engine"; }
         }
 
         #endregion
 
-        #region IAssetDataPlugin Members
 
-        /// <summary>
-        /// Fetch Asset <paramref name="assetID"/> from database
-        /// </summary>
-        /// <param name="assetID">Asset UUID to fetch</param>
-        /// <returns>Return the asset</returns>
-        /// <remarks>On failure : throw an exception and attempt to reconnect to database</remarks>
-        override public AssetBase GetAsset(UUID assetID)
+        override public string Version
         {
-            AssetBase asset = null;
-
-            using (MySqlConnection dbcon = new MySqlConnection(m_connectionString))
-            {
-                dbcon.Open();
-
-                using (MySqlCommand cmd = new MySqlCommand(
-                    "SELECT name, description, assetType, local, temporary, asset_flags, CreatorID, data FROM assets WHERE id=?id",
-                    dbcon))
-                {
-                    cmd.Parameters.AddWithValue("?id", assetID.ToString());
-
-                    try
-                    {
-                        using (MySqlDataReader dbReader = cmd.ExecuteReader(CommandBehavior.SingleRow))
-                        {
-                            if (dbReader.Read())
-                            {
-                                asset = new AssetBase(assetID, (string)dbReader["name"], (sbyte)dbReader["assetType"], dbReader["CreatorID"].ToString());
-                                asset.Data = (byte[])dbReader["data"];
-                                asset.Description = (string)dbReader["description"];
-
-                                string local = dbReader["local"].ToString();
-                                if (local.Equals("1") || local.Equals("true", StringComparison.InvariantCultureIgnoreCase))
-                                    asset.Local = true;
-                                else
-                                    asset.Local = false;
-
-                                asset.Temporary = Convert.ToBoolean(dbReader["temporary"]);
-                                asset.Flags = (AssetFlags)Convert.ToInt32(dbReader["asset_flags"]);
-                            }
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        m_log.Error(
-                            string.Format("[ASSETS DB]: MySql failure fetching asset {0}.  Exception  ", assetID), e);
-                    }
-                }
-                dbcon.Close();
-            }
-
-            return asset;
+            get { return _dbConnection.getVersion(); }
         }
 
-        /// <summary>
-        /// Create an asset in database, or update it if existing.
-        /// </summary>
-        /// <param name="asset">Asset UUID to create</param>
-        /// <remarks>On failure : Throw an exception and attempt to reconnect to database</remarks>
-        override public bool StoreAsset(AssetBase asset)
+        override public string Name
         {
-            string assetName = asset.Name;
-            if (asset.Name.Length > AssetBase.MAX_ASSET_NAME)
-            {
-                assetName = asset.Name.Substring(0, AssetBase.MAX_ASSET_NAME);
-                m_log.WarnFormat(
-                    "[ASSET DB]: Name '{0}' for asset {1} truncated from {2} to {3} characters on add",
-                    asset.Name, asset.ID, asset.Name.Length, assetName.Length);
-            }
-
-            string assetDescription = asset.Description;
-            if (asset.Description.Length > AssetBase.MAX_ASSET_DESC)
-            {
-                assetDescription = asset.Description.Substring(0, AssetBase.MAX_ASSET_DESC);
-                m_log.WarnFormat(
-                    "[ASSET DB]: Description '{0}' for asset {1} truncated from {2} to {3} characters on add",
-                    asset.Description, asset.ID, asset.Description.Length, assetDescription.Length);
-            }
-
-            using (MySqlConnection dbcon = new MySqlConnection(m_connectionString))
-            {
-                dbcon.Open();
-                using (MySqlCommand cmd =
-                    new MySqlCommand(
-                        "replace INTO assets(id, name, description, assetType, local, temporary, create_time, access_time, asset_flags, CreatorID, data)" +
-                        "VALUES(?id, ?name, ?description, ?assetType, ?local, ?temporary, ?create_time, ?access_time, ?asset_flags, ?CreatorID, ?data)",
-                        dbcon))
-                {
-                    try
-                    {
-                        // create unix epoch time
-                        int now = (int)Utils.DateTimeToUnixTime(DateTime.UtcNow);
-                        cmd.Parameters.AddWithValue("?id", asset.ID);
-                        cmd.Parameters.AddWithValue("?name", assetName);
-                        cmd.Parameters.AddWithValue("?description", assetDescription);
-                        cmd.Parameters.AddWithValue("?assetType", asset.Type);
-                        cmd.Parameters.AddWithValue("?local", asset.Local);
-                        cmd.Parameters.AddWithValue("?temporary", asset.Temporary);
-                        cmd.Parameters.AddWithValue("?create_time", now);
-                        cmd.Parameters.AddWithValue("?access_time", now);
-                        cmd.Parameters.AddWithValue("?CreatorID", asset.Metadata.CreatorID);
-                        cmd.Parameters.AddWithValue("?asset_flags", (int)asset.Flags);
-                        cmd.Parameters.AddWithValue("?data", asset.Data);
-                        cmd.ExecuteNonQuery();
-                        dbcon.Close();
-                        return true;
-                    }
-                    catch (Exception e)
-                    {
-                        m_log.ErrorFormat("[ASSET DB]: MySQL failure creating asset {0} with name \"{1}\". Error: {2}",
-                            asset.FullID, asset.Name, e.Message);
-                        dbcon.Close();
-                        return false;
-                    }
-                }               
-            }
-        }
-
-        private void UpdateAccessTime(AssetBase asset)
-        {
-            using (MySqlConnection dbcon = new MySqlConnection(m_connectionString))
-            {
-                dbcon.Open();
-
-                using (MySqlCommand cmd
-                    = new MySqlCommand("update assets set access_time=?access_time where id=?id", dbcon))
-                {
-                    try
-                    {
-                        // create unix epoch time
-                        int now = (int)Utils.DateTimeToUnixTime(DateTime.UtcNow);
-                        cmd.Parameters.AddWithValue("?id", asset.ID);
-                        cmd.Parameters.AddWithValue("?access_time", now);
-                        cmd.ExecuteNonQuery();
-                    }
-                    catch (Exception e)
-                    {
-                        m_log.Error(
-                            string.Format(
-                                "[ASSETS DB]: Failure updating access_time for asset {0} with name {1}.  Exception  ",
-                                asset.FullID, asset.Name),
-                            e);
-                    }
-                }
-                dbcon.Close();
-            }
-        }
-
-        /// <summary>
-        /// Check if the assets exist in the database.
-        /// </summary>
-        /// <param name="uuidss">The assets' IDs</param>
-        /// <returns>For each asset: true if it exists, false otherwise</returns>
-        public override bool[] AssetsExist(UUID[] uuids)
-        {
-            if (uuids.Length == 0)
-                return new bool[0];
-
-            HashSet<UUID> exist = new HashSet<UUID>();
-
-            string ids = "'" + string.Join("','", uuids) + "'";
-            string sql = string.Format("SELECT id FROM assets WHERE id IN ({0})", ids);
-
-            using (MySqlConnection dbcon = new MySqlConnection(m_connectionString))
-            {
-                dbcon.Open();
-                using (MySqlCommand cmd = new MySqlCommand(sql, dbcon))
-                {
-                    using (MySqlDataReader dbReader = cmd.ExecuteReader())
-                    {
-                        while (dbReader.Read())
-                        {
-                            UUID id = DBGuid.FromDB(dbReader["id"]);
-                            exist.Add(id);
-                        }
-                    }
-                }
-                dbcon.Close();
-            }
-
-            bool[] results = new bool[uuids.Length];
-            for (int i = 0; i < uuids.Length; i++)
-                results[i] = exist.Contains(uuids[i]);
-
-            return results;
-        }
-
-        /// <summary>
-        /// Returns a list of AssetMetadata objects. The list is a subset of
-        /// the entire data set offset by <paramref name="start" /> containing
-        /// <paramref name="count" /> elements.
-        /// </summary>
-        /// <param name="start">The number of results to discard from the total data set.</param>
-        /// <param name="count">The number of rows the returned list should contain.</param>
-        /// <returns>A list of AssetMetadata objects.</returns>
-        public override List<AssetMetadata> FetchAssetMetadataSet(int start, int count)
-        {
-            List<AssetMetadata> retList = new List<AssetMetadata>(count);
-
-            using (MySqlConnection dbcon = new MySqlConnection(m_connectionString))
-            {
-                dbcon.Open();
-
-                using (MySqlCommand cmd
-                    = new MySqlCommand(
-                        "SELECT name,description,assetType,temporary,id,asset_flags,CreatorID FROM assets LIMIT ?start, ?count",
-                        dbcon))
-                {
-                    cmd.Parameters.AddWithValue("?start", start);
-                    cmd.Parameters.AddWithValue("?count", count);
-
-                    try
-                    {
-                        using (MySqlDataReader dbReader = cmd.ExecuteReader())
-                        {
-                            while (dbReader.Read())
-                            {
-                                AssetMetadata metadata = new AssetMetadata();
-                                metadata.Name = (string)dbReader["name"];
-                                metadata.Description = (string)dbReader["description"];
-                                metadata.Type = (sbyte)dbReader["assetType"];
-                                metadata.Temporary = Convert.ToBoolean(dbReader["temporary"]); // Not sure if this is correct.
-                                metadata.Flags = (AssetFlags)Convert.ToInt32(dbReader["asset_flags"]);
-                                metadata.FullID = DBGuid.FromDB(dbReader["id"]);
-                                metadata.CreatorID = dbReader["CreatorID"].ToString();
-
-                                // Current SHA1s are not stored/computed.
-                                metadata.SHA1 = new byte[] { };
-
-                                retList.Add(metadata);
-                            }
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        m_log.Error(
-                            string.Format(
-                                "[ASSETS DB]: MySql failure fetching asset set from {0}, count {1}.  Exception  ",
-                                start, count),
-                            e);
-                    }
-                }
-                dbcon.Close();
-            }
-
-            return retList;
-        }
-
-        public override bool Delete(string id)
-        {
-            using (MySqlConnection dbcon = new MySqlConnection(m_connectionString))
-            {
-                dbcon.Open();
-
-                using (MySqlCommand cmd = new MySqlCommand("delete from assets where id=?id", dbcon))
-                {
-                    cmd.Parameters.AddWithValue("?id", id);
-                    cmd.ExecuteNonQuery();
-                }
-                dbcon.Close();
-            }
-
-            return true;
+            get { return "MySQL Asset storage engine"; }
         }
 
         #endregion

@@ -9,7 +9,7 @@
  *     * Redistributions in binary form must reproduce the above copyright
  *       notice, this list of conditions and the following disclaimer in the
  *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the OpenSimulator Project nor the
+ *     * Neither the name of the OpenSim Project nor the
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
@@ -35,7 +35,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("LaunchSLClient")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("http://opensimulator.org")]
+[assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("LaunchSLClient")]
 [assembly: AssemblyCopyright("Copyright (c) 2007")]
 [assembly: AssemblyTrademark("")]
@@ -56,5 +56,5 @@ using System.Runtime.InteropServices;
 //      Build Number
 //      Revision
 //
-[assembly: AssemblyVersion("0.6.3.*")]
+[assembly: AssemblyVersion("1.0.0.0")]
 [assembly: AssemblyFileVersion("1.0.0.0")]

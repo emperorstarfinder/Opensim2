@@ -9,7 +9,7 @@
  *     * Redistributions in binary form must reproduce the above copyright
  *       notice, this list of conditions and the following disclaimer in the
  *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the OpenSimulator Project nor the
+ *     * Neither the name of the OpenSim Project nor the
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
@@ -26,53 +26,45 @@
  */
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading;
 using System.Timers;
 using log4net;
-using log4net.Appender;
-using log4net.Core;
-using log4net.Repository;
-using OpenMetaverse;
-using OpenMetaverse.StructuredData;
-using OpenSim.Framework;
 using OpenSim.Framework.Console;
-using OpenSim.Framework.Monitoring;
-using OpenSim.Framework.Servers;
-using OpenSim.Framework.Servers.HttpServer;
-using Timer=System.Timers.Timer;
-using Nini.Config;
+using OpenSim.Framework.Statistics;
 
 namespace OpenSim.Framework.Servers
 {
     /// <summary>
     /// Common base for the main OpenSimServers (user, grid, inventory, region, etc)
     /// </summary>
-    public abstract class BaseOpenSimServer : ServerBase
+    public abstract class BaseOpenSimServer
     {
         private static readonly ILog m_log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
-
-        /// <summary>
-        /// Used by tests to suppress Environment.Exit(0) so that post-run operations are possible.
-        /// </summary>
-        public bool SuppressExit { get; set; }
 
         /// <summary>
         /// This will control a periodic log printout of the current 'show stats' (if they are active) for this
         /// server.
         /// </summary>
-
-        private int m_periodDiagnosticTimerMS = 60 * 60 * 1000;
         private Timer m_periodicDiagnosticsTimer = new Timer(60 * 60 * 1000);
 
+        protected ConsoleBase m_console;
+
         /// <summary>
-        /// Random uuid for private data
+        /// Time at which this server was started
         /// </summary>
-        protected string m_osSecret = String.Empty;
+        protected DateTime m_startuptime;
+
+        /// <summary>
+        /// Record the initial startup directory for info purposes
+        /// </summary>
+        protected string m_startupDirectory = Environment.CurrentDirectory;
+
+        /// <summary>
+        /// Server version information.  Usually VersionInfo + information about svn revision, operating system, etc.
+        /// </summary>
+        protected string m_version;
 
         protected BaseHttpServer m_httpServer;
         public BaseHttpServer HttpServer
@@ -80,61 +72,19 @@ namespace OpenSim.Framework.Servers
             get { return m_httpServer; }
         }
 
-        public BaseOpenSimServer() : base()
-        {
-            // Random uuid for private data
-            m_osSecret = UUID.Random().ToString();
-        }
-
         /// <summary>
-        /// Must be overriden by child classes for their own server specific startup behaviour.
+        /// Holds the non-viewer statistics collection object for this service/server
         /// </summary>
-        protected virtual void StartupSpecific()
-        {
-            StatsManager.SimExtraStats = new SimExtraStatsCollector();
-            RegisterCommonCommands();
-            RegisterCommonComponents(Config);
+        protected IStatsCollector m_stats;
 
-            IConfig startupConfig = Config.Configs["Startup"];
-            int logShowStatsSeconds = startupConfig.GetInt("LogShowStatsSeconds", m_periodDiagnosticTimerMS / 1000);
-            m_periodDiagnosticTimerMS = logShowStatsSeconds * 1000;
+        public BaseOpenSimServer()
+        {
+            m_startuptime = DateTime.Now;
+            m_version = VersionInfo.Version;
+
             m_periodicDiagnosticsTimer.Elapsed += new ElapsedEventHandler(LogDiagnostics);
-            if (m_periodDiagnosticTimerMS != 0)
-            {
-                m_periodicDiagnosticsTimer.Interval = m_periodDiagnosticTimerMS;
-                m_periodicDiagnosticsTimer.Enabled = true;
-            }
+            m_periodicDiagnosticsTimer.Enabled = true;
         }
-
-        protected override void ShutdownSpecific()
-        {
-            Watchdog.Enabled = false;
-            base.ShutdownSpecific();
-            
-            MainServer.Stop();
-
-            Thread.Sleep(5000);
-            Util.StopThreadPool();
-            WorkManager.Stop();
-
-            Thread.Sleep(1000);
-            RemovePIDFile();
-
-            m_log.Info("[SHUTDOWN]: Shutdown processing on main thread complete.  Exiting...");
-
-           if (!SuppressExit)
-                Environment.Exit(0);
-        }
-
-        /// <summary>
-        /// Provides a list of help topics that are available.  Overriding classes should append their topics to the
-        /// information returned when the base method is called.
-        /// </summary>
-        ///
-        /// <returns>
-        /// A list of strings that represent different help topics on which more information is available
-        /// </returns>
-        protected virtual List<string> GetHelpTopics() { return new List<string>(); }
 
         /// <summary>
         /// Print statistics to the logfile, if they are active
@@ -143,11 +93,26 @@ namespace OpenSim.Framework.Servers
         {
             StringBuilder sb = new StringBuilder("DIAGNOSTICS\n\n");
             sb.Append(GetUptimeReport());
-            sb.Append(StatsManager.SimExtraStats.Report());
-            sb.Append(Environment.NewLine);
-            sb.Append(GetThreadsReport());
-
+            
+            if (m_stats != null)
+            {
+                sb.Append(m_stats.Report());
+            }
+            
             m_log.Debug(sb);
+        }
+        
+        /// <summary>
+        /// Return a report about the uptime of this server
+        /// </summary>
+        /// <returns></returns>
+        protected string GetUptimeReport()
+        {
+            StringBuilder sb = new StringBuilder(String.Format("Time now is {0}\n", DateTime.Now));
+            sb.Append(String.Format("Server has been running since {0}, {1}\n", m_startuptime.DayOfWeek, m_startuptime));
+            sb.Append(String.Format("That is an elapsed time of {0}\n", DateTime.Now - m_startuptime));
+            
+            return sb.ToString();
         }
 
         /// <summary>
@@ -157,48 +122,168 @@ namespace OpenSim.Framework.Servers
         {
             m_log.Info("[STARTUP]: Beginning startup processing");
 
-            m_log.Info("[STARTUP]: version: " + m_version + Environment.NewLine);
-            // clr version potentially is more confusing than helpful, since it doesn't tell us if we're running under Mono/MS .NET and
-            // the clr version number doesn't match the project version number under Mono.
-            //m_log.Info("[STARTUP]: Virtual machine runtime version: " + Environment.Version + Environment.NewLine);
-            m_log.InfoFormat(
-                "[STARTUP]: Operating system version: {0}, .NET platform {1}, {2}-bit\n",
-                Environment.OSVersion, Environment.OSVersion.Platform, Util.Is64BitProcess() ? "64" : "32");
+            EnhanceVersionInformation();
 
-            try
-            {
-                StartupSpecific();
-            }
-            catch(Exception e)
-            {
-                m_log.Fatal("Fatal error: " + e.ToString());
-                Environment.Exit(1);
-            }
-
-            TimeSpan timeTaken = DateTime.Now - m_startuptime;
-
-//            MainConsole.Instance.OutputFormat(
-//                "PLEASE WAIT FOR LOGINS TO BE ENABLED ON REGIONS ONCE SCRIPTS HAVE STARTED.  Non-script portion of startup took {0}m {1}s.",
-//                timeTaken.Minutes, timeTaken.Seconds);
+            m_log.Info("[STARTUP]: Version " + m_version + "\n");
         }
 
-        public string osSecret
+        /// <summary>
+        /// Should be overriden and referenced by descendents if they need to perform extra shutdown processing
+        /// </summary>
+        public virtual void Shutdown()
         {
-            // Secret uuid for the simulator
-            get { return m_osSecret; }
+            m_log.Info("[SHUTDOWN]: Shutdown processing on main thread complete.  Exiting...");
+
+            Environment.Exit(0);
         }
 
-        public string StatReport(IOSHttpRequest httpRequest)
+        /// <summary>
+        /// Runs commands issued by the server console from the operator
+        /// </summary>
+        /// <param name="command">The first argument of the parameter (the command)</param>
+        /// <param name="cmdparams">Additional arguments passed to the command</param>
+        public virtual void RunCmd(string command, string[] cmdparams)
         {
-            // If we catch a request for "callback", wrap the response in the value for jsonp
-            if (httpRequest.Query.ContainsKey("callback"))
+            switch (command)
             {
-                return httpRequest.Query["callback"].ToString() + "(" + StatsManager.SimExtraStats.XReport((DateTime.Now - m_startuptime).ToString() , m_version) + ");";
+                case "help":
+                    Notice("quit - equivalent to shutdown.");
+
+                    Notice("show info - show server information (e.g. startup path).");
+
+                    if (m_stats != null)
+                        Notice("show stats - show statistical information for this server");
+
+                    Notice("show uptime - show server startup time and uptime.");
+                    Notice("show version - show server version.");
+                    Notice("shutdown - shutdown the server.\n");
+
+                    break;
+
+                case "show":
+                    if (cmdparams.Length > 0)
+                    {
+                        Show(cmdparams[0]);
+                    }
+                    break;
+
+                case "quit":
+                case "shutdown":
+                    Shutdown();
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// Outputs to the console information about the region
+        /// </summary>
+        /// <param name="ShowWhat">What information to display (valid arguments are "uptime", "users")</param>
+        public virtual void Show(string ShowWhat)
+        {
+            switch (ShowWhat)
+            {
+                case "info":
+                    Notice("Version: " + m_version );
+                    Notice("Startup directory: " + m_startupDirectory);
+                    break;
+
+                case "stats":
+                    if (m_stats != null)
+                    {
+                        Notice(m_stats.Report());
+                    }
+                    break;
+
+                case "uptime":
+                    Notice(GetUptimeReport());
+                    /*
+                    Notice("Time now is " + DateTime.Now);
+                    Notice("Server has been running since " + m_startuptime.DayOfWeek + ", " + m_startuptime.ToString());
+                    Notice("That is an elapsed time of " + (DateTime.Now - m_startuptime).ToString());
+                    */
+                    break;
+
+                case "version":
+                    Notice("Version: " + m_version);
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// Console output is only possible if a console has been established.
+        /// That is something that cannot be determined within this class. So
+        /// all attempts to use the console MUST be verified.
+        /// </summary>
+        private void Notice(string msg)
+        {
+            if (m_console != null)
+            {
+                m_console.Notice(msg);
+            }
+        }
+
+        /// <summary>
+        /// Enhance the version string with extra information if it's available.
+        /// </summary>
+        protected void EnhanceVersionInformation()
+        {
+            string buildVersion = string.Empty;
+
+            // Add subversion revision information if available
+            // FIXME: Making an assumption about the directory we're currently in - we do this all over the place
+            // elsewhere as well
+            string svnFileName = "../.svn/entries";
+            string inputLine;
+            int strcmp;
+
+            if (File.Exists(svnFileName))
+            {
+                StreamReader EntriesFile = File.OpenText(svnFileName);
+                inputLine = EntriesFile.ReadLine();
+                while (inputLine != null)
+                {
+                    // using the dir svn revision at the top of entries file
+                    strcmp = String.Compare(inputLine, "dir");
+                    if (strcmp == 0)
+                    {
+                        buildVersion = EntriesFile.ReadLine();
+                        break;
+                    }
+                    else
+                    {
+                        inputLine = EntriesFile.ReadLine();
+                    }
+                }
+                EntriesFile.Close();
+            }
+
+            if (!string.IsNullOrEmpty(buildVersion))
+            {
+                m_version += ", SVN build r" + buildVersion;
             }
             else
             {
-                return StatsManager.SimExtraStats.XReport((DateTime.Now - m_startuptime).ToString() , m_version);
+                m_version += ", SVN build revision not available";
             }
+
+            // Add operating system information if available
+            string OSString = "";
+
+            if (System.Environment.OSVersion.Platform != PlatformID.Unix)
+            {
+                OSString = System.Environment.OSVersion.ToString();
+            }
+            else
+            {
+                OSString = Util.ReadEtcIssue();
+            }
+
+            if (OSString.Length > 45)
+            {
+                OSString = OSString.Substring(0, 45);
+            }
+
+            m_version += ", OS " + OSString;
         }
     }
 }

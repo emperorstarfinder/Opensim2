@@ -9,7 +9,7 @@
  *     * Redistributions in binary form must reproduce the above copyright
  *       notice, this list of conditions and the following disclaimer in the
  *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the OpenSimulator Project nor the
+ *     * Neither the name of the OpenSim Project nor the
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
@@ -26,18 +26,17 @@
  */
 
 using System;
-using OpenMetaverse;
+using libsecondlife;
 using NUnit.Framework;
-using NUnit.Framework.Constraints;
 
 namespace OpenSim.Tests.Common
 {
     public class VectorToleranceConstraint : ANumericalToleranceConstraint
     {
-        private Vector3 _baseValue;
-        private Vector3 _valueToBeTested;
+        private LLVector3 _baseValue;
+        private LLVector3 _valueToBeTested;
 
-        public VectorToleranceConstraint(Vector3 baseValue, double tolerance) : base(tolerance)
+        public VectorToleranceConstraint(LLVector3 baseValue, double tolerance) : base(tolerance)
         {
             _baseValue = baseValue;
         }
@@ -55,12 +54,12 @@ namespace OpenSim.Tests.Common
             {
                 throw new ArgumentException("Constraint cannot be used upon null values.");
             }
-            if (valueToBeTested.GetType() != typeof (Vector3))
+            if (valueToBeTested.GetType() != typeof (LLVector3))
             {
                 throw new ArgumentException("Constraint cannot be used upon non vector values.");
             }
 
-            _valueToBeTested = (Vector3) valueToBeTested;
+            _valueToBeTested = (LLVector3) valueToBeTested;
 
             return (IsWithinDoubleConstraint(_valueToBeTested.X, _baseValue.X) &&
                     IsWithinDoubleConstraint(_valueToBeTested.Y, _baseValue.Y) &&

@@ -9,7 +9,7 @@
  *     * Redistributions in binary form must reproduce the above copyright
  *       notice, this list of conditions and the following disclaimer in the
  *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the OpenSimulator Project nor the
+ *     * Neither the name of the OpenSim Project nor the
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
@@ -28,76 +28,152 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using libsecondlife;
 using log4net;
 using MySql.Data.MySqlClient;
-using OpenMetaverse;
 using OpenSim.Framework;
-using OpenSim.Data;
 
 namespace OpenSim.Data.MySQL
 {
     /// <summary>
     /// A MySQL interface for the inventory server
     /// </summary>
-    public class MySQLInventoryData : IInventoryDataPlugin
+    public class MySQLInventoryData : IInventoryData
     {
         private static readonly ILog m_log
             = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-        private string m_connectionString;
-        private object m_dbLock = new object();
-
-        public string Version { get { return "1.0.0.0"; } }
-
-        public void Initialise()
-        {
-            m_log.Info("[MySQLInventoryData]: " + Name + " cannot be default-initialized!");
-            throw new PluginNotInitialisedException (Name);
-        }
-
         /// <summary>
-        /// <para>Initialises Inventory interface</para>
-        /// <para>
-        /// <list type="bullet">
-        /// <item>Loads and initialises the MySQL storage plugin</item>
-        /// <item>warns and uses the obsolete mysql_connection.ini if connect string is empty.</item>
-        /// <item>Check for migration</item>
-        /// </list>
-        /// </para>
+        /// The database manager
         /// </summary>
-        /// <param name="connect">connect string</param>
+        private MySQLManager database;
+
         public void Initialise(string connect)
         {
-            m_connectionString = connect;
+            if (connect != String.Empty)
+            {
+                database = new MySQLManager(connect);
+            }
+            else
+            {
+                m_log.Warn("Reverting to deprecated mysql_connection.ini file for connection info");
+                IniFile GridDataMySqlFile = new IniFile("mysql_connection.ini");
+                string settingHostname = GridDataMySqlFile.ParseFileReadValue("hostname");
+                string settingDatabase = GridDataMySqlFile.ParseFileReadValue("database");
+                string settingUsername = GridDataMySqlFile.ParseFileReadValue("username");
+                string settingPassword = GridDataMySqlFile.ParseFileReadValue("password");
+                string settingPooling = GridDataMySqlFile.ParseFileReadValue("pooling");
+                string settingPort = GridDataMySqlFile.ParseFileReadValue("port");
+                
+                database =
+                    new MySQLManager(settingHostname, settingDatabase, settingUsername, settingPassword, settingPooling,
+                                     settingPort);
+            }
 
             // This actually does the roll forward assembly stuff
             Assembly assem = GetType().Assembly;
+            Migration m = new Migration(database.Connection, assem, "InventoryStore");
 
-            using (MySqlConnection dbcon = new MySqlConnection(m_connectionString))
+            // TODO: After rev 6000, remove this.  People should have
+            // been rolled onto the new migration code by then.
+            TestTables(database.Connection, m);
+
+            m.Update();
+        }
+
+        #region Test and initialization code
+
+        private void UpgradeFoldersTable(string oldVersion)
+        {
+            // null as the version, indicates that the table didn't exist
+            if (oldVersion == null)
             {
-                dbcon.Open();
-                Migration m = new Migration(dbcon, assem, "InventoryStore");
-                m.Update();
-                dbcon.Close();
+                database.ExecuteResourceSql("CreateFoldersTable.sql");
+                return;
+            }
+
+            // if the table is already at the current version, then we can exit immediately
+//             if (oldVersion == "Rev. 2")
+//                 return;
+
+//             database.ExecuteResourceSql("UpgradeFoldersTableToVersion2.sql");
+        }
+
+        private void UpgradeItemsTable(string oldVersion)
+        {
+            // null as the version, indicates that the table didn't exist
+            if (oldVersion == null)
+            {
+                database.ExecuteResourceSql("CreateItemsTable.sql");
+                return;
+            }
+
+            // if the table is already at the current version, then we can exit immediately
+            if (oldVersion.StartsWith("Rev. 2;"))
+            {
+                m_log.Info("[INVENTORY DB]: Upgrading inventory items table from Rev. 2 to Rev. 3");
+                database.ExecuteResourceSql("UpgradeItemsTableToVersion3.sql");
             }
         }
+
+        private void TestTables(MySqlConnection conn, Migration m)
+        {
+            Dictionary<string, string> tableList = new Dictionary<string, string>();
+
+            tableList["inventoryfolders"] = null;
+            tableList["inventoryitems"] = null;
+
+            database.GetTableVersion(tableList);
+
+            // if we've already started using migrations, get out of
+            // here, we've got this under control
+            if (m.Version > 0)
+                return;
+
+            // if there are no tables, get out of here and let
+            // migrations do their job
+            if (
+               tableList["inventoryfolders"] == null &&
+               tableList["inventoryitems"] == null
+               )
+                return;
+
+            // otherwise, let the upgrade on legacy proceed...
+            UpgradeFoldersTable(tableList["inventoryfolders"]);
+            UpgradeItemsTable(tableList["inventoryitems"]);
+
+            // ... and set the version
+            if (m.Version == 0)
+                m.Version = 1;
+            
+        }
+
+        #endregion
 
         /// <summary>
         /// The name of this DB provider
         /// </summary>
         /// <returns>Name of DB provider</returns>
-        public string Name
+        public string getName()
         {
-            get { return "MySQL Inventory Data Interface"; }
+            return "MySQL Inventory Data Interface";
         }
 
         /// <summary>
         /// Closes this DB provider
         /// </summary>
-        /// <remarks>do nothing</remarks>
-        public void Dispose()
+        public void Close()
         {
             // Do nothing.
+        }
+
+        /// <summary>
+        /// Returns the version of this DB provider
+        /// </summary>
+        /// <returns>A string containing the DB provider</returns>
+        public string getVersion()
+        {
+            return database.getVersion();
         }
 
         /// <summary>
@@ -105,42 +181,33 @@ namespace OpenSim.Data.MySQL
         /// </summary>
         /// <param name="folderID">The folder to search</param>
         /// <returns>A list containing inventory items</returns>
-        public List<InventoryItemBase> getInventoryInFolder(UUID folderID)
+        public List<InventoryItemBase> getInventoryInFolder(LLUUID folderID)
         {
             try
             {
-                lock (m_dbLock)
+                lock (database)
                 {
                     List<InventoryItemBase> items = new List<InventoryItemBase>();
 
-                    using (MySqlConnection dbcon = new MySqlConnection(m_connectionString))
-                    {
-                        dbcon.Open();
+                    MySqlCommand result =
+                        new MySqlCommand("SELECT * FROM inventoryitems WHERE parentFolderID = ?uuid",
+                                         database.Connection);
+                    result.Parameters.AddWithValue("?uuid", folderID.ToString());
+                    MySqlDataReader reader = result.ExecuteReader();
 
-                        using (MySqlCommand result = new MySqlCommand("SELECT * FROM inventoryitems WHERE parentFolderID = ?uuid", dbcon))
-                        {
-                            result.Parameters.AddWithValue("?uuid", folderID.ToString());
+                    while (reader.Read())
+                        items.Add(readInventoryItem(reader));
 
-                            using (MySqlDataReader reader = result.ExecuteReader())
-                            {
-                                while (reader.Read())
-                                {
-                                    // A null item (because something went wrong) breaks everything in the folder
-                                    InventoryItemBase item = readInventoryItem(reader);
-                                    if (item != null)
-                                        items.Add(item);
-                                }
+                    reader.Close();
+                    result.Dispose();
 
-                                dbcon.Close();
-                                return items;
-                            }
-                        }
-                    }
+                    return items;
                 }
             }
             catch (Exception e)
             {
-                m_log.Error(e.Message, e);
+                database.Reconnect();
+                m_log.Error(e.ToString());
                 return null;
             }
         }
@@ -148,92 +215,83 @@ namespace OpenSim.Data.MySQL
         /// <summary>
         /// Returns a list of the root folders within a users inventory
         /// </summary>
-        /// <param name="user">The user whose inventory is to be searched</param>
+        /// <param name="user">The user whos inventory is to be searched</param>
         /// <returns>A list of folder objects</returns>
-        public List<InventoryFolderBase> getUserRootFolders(UUID user)
+        public List<InventoryFolderBase> getUserRootFolders(LLUUID user)
         {
             try
             {
-                lock (m_dbLock)
+                lock (database)
                 {
-                    using (MySqlConnection dbcon = new MySqlConnection(m_connectionString))
-                    {
-                        dbcon.Open();
+                    MySqlCommand result =
+                        new MySqlCommand(
+                            "SELECT * FROM inventoryfolders WHERE parentFolderID = ?zero AND agentID = ?uuid",
+                            database.Connection);
+                    result.Parameters.AddWithValue("?uuid", user.ToString());
+                    result.Parameters.AddWithValue("?zero", LLUUID.Zero.ToString());
+                    MySqlDataReader reader = result.ExecuteReader();
 
-                        using (MySqlCommand result = new MySqlCommand(
-                            "SELECT * FROM inventoryfolders WHERE parentFolderID = ?zero AND agentID = ?uuid", dbcon))
-                        {
-                            result.Parameters.AddWithValue("?uuid", user.ToString());
-                            result.Parameters.AddWithValue("?zero", UUID.Zero.ToString());
+                    List<InventoryFolderBase> items = new List<InventoryFolderBase>();
+                    while (reader.Read())
+                        items.Add(readInventoryFolder(reader));
 
-                            using (MySqlDataReader reader = result.ExecuteReader())
-                            {
-                                List<InventoryFolderBase> items = new List<InventoryFolderBase>();
-                                while (reader.Read())
-                                    items.Add(readInventoryFolder(reader));
 
-                                dbcon.Close();
-                                return items;
-                            }
-                        }
-                    }
+                    reader.Close();
+                    result.Dispose();
+
+                    return items;
                 }
             }
             catch (Exception e)
             {
-                m_log.Error(e.Message, e);
+                database.Reconnect();
+                m_log.Error(e.ToString());
                 return null;
             }
         }
 
-
-        /// <summary>
-        /// see <see cref="InventoryItemBase.getUserRootFolder"/>
-        /// </summary>
-        /// <param name="user">The user UUID</param>
-        /// <returns></returns>
-        public InventoryFolderBase getUserRootFolder(UUID user)
+        // see InventoryItemBase.getUserRootFolder
+        public InventoryFolderBase getUserRootFolder(LLUUID user)
         {
             try
             {
-                lock (m_dbLock)
+                lock (database)
                 {
-                    using (MySqlConnection dbcon = new MySqlConnection(m_connectionString))
+                    MySqlCommand result =
+                        new MySqlCommand(
+                            "SELECT * FROM inventoryfolders WHERE parentFolderID = ?zero AND agentID = ?uuid",
+                            database.Connection);
+                    result.Parameters.AddWithValue("?uuid", user.ToString());
+                    result.Parameters.AddWithValue("?zero", LLUUID.Zero.ToString());
+
+                    MySqlDataReader reader = result.ExecuteReader();
+
+                    List<InventoryFolderBase> items = new List<InventoryFolderBase>();
+                    while (reader.Read())
+                        items.Add(readInventoryFolder(reader));
+
+                    InventoryFolderBase rootFolder = null;
+
+                    // There should only ever be one root folder for a user.  However, if there's more
+                    // than one we'll simply use the first one rather than failing.  It would be even
+                    // nicer to print some message to this effect, but this feels like it's too low a
+                    // to put such a message out, and it's too minor right now to spare the time to
+                    // suitably refactor.
+                    if (items.Count > 0)
                     {
-                        dbcon.Open();
-
-                        using (MySqlCommand result = new MySqlCommand(
-                            "SELECT * FROM inventoryfolders WHERE parentFolderID = ?zero AND agentID = ?uuid", dbcon))
-                        {
-                            result.Parameters.AddWithValue("?uuid", user.ToString());
-                            result.Parameters.AddWithValue("?zero", UUID.Zero.ToString());
-
-                            using (MySqlDataReader reader = result.ExecuteReader())
-                            {
-                                List<InventoryFolderBase> items = new List<InventoryFolderBase>();
-                                while (reader.Read())
-                                    items.Add(readInventoryFolder(reader));
-
-                                InventoryFolderBase rootFolder = null;
-
-                                // There should only ever be one root folder for a user.  However, if there's more
-                                // than one we'll simply use the first one rather than failing.  It would be even
-                                // nicer to print some message to this effect, but this feels like it's too low a
-                                // to put such a message out, and it's too minor right now to spare the time to
-                                // suitably refactor.
-                                if (items.Count > 0)
-                                    rootFolder = items[0];
-
-                                dbcon.Close();
-                                return rootFolder;
-                            }
-                        }
+                        rootFolder = items[0];
                     }
+
+                    reader.Close();
+                    result.Dispose();
+
+                    return rootFolder;
                 }
             }
             catch (Exception e)
             {
-                m_log.Error(e.Message, e);
+                database.Reconnect();
+                m_log.Error(e.ToString());
                 return null;
             }
         }
@@ -245,36 +303,33 @@ namespace OpenSim.Data.MySQL
         /// </summary>
         /// <param name="parentID">The folder to search</param>
         /// <returns>A list of inventory folders</returns>
-        public List<InventoryFolderBase> getInventoryFolders(UUID parentID)
+        public List<InventoryFolderBase> getInventoryFolders(LLUUID parentID)
         {
             try
             {
-                lock (m_dbLock)
+                lock (database)
                 {
-                    using (MySqlConnection dbcon = new MySqlConnection(m_connectionString))
-                    {
-                        dbcon.Open();
+                    MySqlCommand result =
+                        new MySqlCommand("SELECT * FROM inventoryfolders WHERE parentFolderID = ?uuid",
+                                         database.Connection);
+                    result.Parameters.AddWithValue("?uuid", parentID.ToString());
+                    MySqlDataReader reader = result.ExecuteReader();
 
-                        using (MySqlCommand result = new MySqlCommand("SELECT * FROM inventoryfolders WHERE parentFolderID = ?uuid", dbcon))
-                        {
-                            result.Parameters.AddWithValue("?uuid", parentID.ToString());
-                            using (MySqlDataReader reader = result.ExecuteReader())
-                            {
-                                List<InventoryFolderBase> items = new List<InventoryFolderBase>();
+                    List<InventoryFolderBase> items = new List<InventoryFolderBase>();
 
-                                while (reader.Read())
-                                    items.Add(readInventoryFolder(reader));
+                    while (reader.Read())
+                        items.Add(readInventoryFolder(reader));
 
-                                dbcon.Close();
-                                return items;
-                            }
-                        }
-                    }
+                    reader.Close();
+                    result.Dispose();
+
+                    return items;
                 }
             }
             catch (Exception e)
             {
-                m_log.Error(e.Message, e);
+                database.Reconnect();
+                m_log.Error(e.ToString());
                 return null;
             }
         }
@@ -290,35 +345,23 @@ namespace OpenSim.Data.MySQL
             {
                 InventoryItemBase item = new InventoryItemBase();
 
-                // TODO: this is to handle a case where NULLs creep in there, which we are not sure is endemic to the system, or legacy.  It would be nice to live fix these.
-                // (DBGuid.FromDB() reads db NULLs as well, returns UUID.Zero)
-                item.CreatorId = reader["creatorID"].ToString();
-
-                // Be a bit safer in parsing these because the
-                // database doesn't enforce them to be not null, and
-                // the inventory still works if these are weird in the
-                // db
-
-                // (Empty is Ok, but "weird" will throw!)
-                item.Owner = DBGuid.FromDB(reader["avatarID"]);
-                item.GroupID = DBGuid.FromDB(reader["groupID"]);
-
-                // Rest of the parsing.  If these UUID's fail, we're dead anyway
-                item.ID = DBGuid.FromDB(reader["inventoryID"]);
-                item.AssetID = DBGuid.FromDB(reader["assetID"]);
+                item.ID = new LLUUID((string) reader["inventoryID"]);
+                item.AssetID = new LLUUID((string) reader["assetID"]);
                 item.AssetType = (int) reader["assetType"];
-                item.Folder = DBGuid.FromDB(reader["parentFolderID"]);
-                item.Name = (string)(reader["inventoryName"] ?? String.Empty);
-                item.Description = (string)(reader["inventoryDescription"] ?? String.Empty);
+                item.Folder = new LLUUID((string) reader["parentFolderID"]);
+                item.Owner = new LLUUID((string) reader["avatarID"]);
+                item.Name = (string) reader["inventoryName"];
+                item.Description = (string) reader["inventoryDescription"];
                 item.NextPermissions = (uint) reader["inventoryNextPermissions"];
                 item.CurrentPermissions = (uint) reader["inventoryCurrentPermissions"];
                 item.InvType = (int) reader["invType"];
+                item.Creator = new LLUUID((string) reader["creatorID"]);
                 item.BasePermissions = (uint) reader["inventoryBasePermissions"];
                 item.EveryOnePermissions = (uint) reader["inventoryEveryOnePermissions"];
-                item.GroupPermissions = (uint) reader["inventoryGroupPermissions"];
                 item.SalePrice = (int) reader["salePrice"];
-                item.SaleType = unchecked((byte)(Convert.ToSByte(reader["saleType"])));
+                item.SaleType = Convert.ToByte(reader["saleType"]);
                 item.CreationDate = (int) reader["creationDate"];
+                item.GroupID = new LLUUID(reader["groupID"].ToString());
                 item.GroupOwned = Convert.ToBoolean(reader["groupOwned"]);
                 item.Flags = (uint) reader["flags"];
 
@@ -337,36 +380,31 @@ namespace OpenSim.Data.MySQL
         /// </summary>
         /// <param name="item">The item to return</param>
         /// <returns>An inventory item</returns>
-        public InventoryItemBase getInventoryItem(UUID itemID)
+        public InventoryItemBase getInventoryItem(LLUUID itemID)
         {
             try
             {
-                lock (m_dbLock)
+                lock (database)
                 {
-                    using (MySqlConnection dbcon = new MySqlConnection(m_connectionString))
-                    {
-                        dbcon.Open();
+                    MySqlCommand result =
+                        new MySqlCommand("SELECT * FROM inventoryitems WHERE inventoryID = ?uuid", database.Connection);
+                    result.Parameters.AddWithValue("?uuid", itemID.ToString());
+                    MySqlDataReader reader = result.ExecuteReader();
 
-                        using (MySqlCommand result = new MySqlCommand("SELECT * FROM inventoryitems WHERE inventoryID = ?uuid", dbcon))
-                        {
-                            result.Parameters.AddWithValue("?uuid", itemID.ToString());
+                    InventoryItemBase item = null;
+                    if (reader.Read())
+                        item = readInventoryItem(reader);
 
-                            using (MySqlDataReader reader = result.ExecuteReader())
-                            {
-                                InventoryItemBase item = null;
-                                if (reader.Read())
-                                    item = readInventoryItem(reader);
+                    reader.Close();
+                    result.Dispose();
 
-                                dbcon.Close();
-                                return item;
-                            }
-                        }
-                    }
+                    return item;
                 }
             }
             catch (Exception e)
             {
-                m_log.Error(e.Message, e);
+                database.Reconnect();
+                m_log.Error(e.ToString());
             }
             return null;
         }
@@ -381,9 +419,9 @@ namespace OpenSim.Data.MySQL
             try
             {
                 InventoryFolderBase folder = new InventoryFolderBase();
-                folder.Owner = DBGuid.FromDB(reader["agentID"]);
-                folder.ParentID = DBGuid.FromDB(reader["parentFolderID"]);
-                folder.ID = DBGuid.FromDB(reader["folderID"]);
+                folder.Owner = new LLUUID((string) reader["agentID"]);
+                folder.ParentID = new LLUUID((string) reader["parentFolderID"]);
+                folder.ID = new LLUUID((string) reader["folderID"]);
                 folder.Name = (string) reader["folderName"];
                 folder.Type = (short) reader["type"];
                 folder.Version = (ushort) ((int) reader["version"]);
@@ -391,7 +429,7 @@ namespace OpenSim.Data.MySQL
             }
             catch (Exception e)
             {
-                m_log.Error(e.Message, e);
+                m_log.Error(e.ToString());
             }
 
             return null;
@@ -401,38 +439,31 @@ namespace OpenSim.Data.MySQL
         /// <summary>
         /// Returns a specified inventory folder
         /// </summary>
-        /// <param name="folderID">The folder to return</param>
+        /// <param name="folder">The folder to return</param>
         /// <returns>A folder class</returns>
-        public InventoryFolderBase getInventoryFolder(UUID folderID)
+        public InventoryFolderBase getInventoryFolder(LLUUID folderID)
         {
             try
             {
-                lock (m_dbLock)
+                lock (database)
                 {
-                    using (MySqlConnection dbcon = new MySqlConnection(m_connectionString))
-                    {
-                        dbcon.Open();
+                    MySqlCommand result =
+                        new MySqlCommand("SELECT * FROM inventoryfolders WHERE folderID = ?uuid", database.Connection);
+                    result.Parameters.AddWithValue("?uuid", folderID.ToString());
+                    MySqlDataReader reader = result.ExecuteReader();
 
-                        using (MySqlCommand result = new MySqlCommand("SELECT * FROM inventoryfolders WHERE folderID = ?uuid", dbcon))
-                        {
-                            result.Parameters.AddWithValue("?uuid", folderID.ToString());
+                    reader.Read();
+                    InventoryFolderBase folder = readInventoryFolder(reader);
+                    reader.Close();
+                    result.Dispose();
 
-                            using (MySqlDataReader reader = result.ExecuteReader())
-                            {
-                                InventoryFolderBase folder = null;
-                                if (reader.Read())
-                                    folder = readInventoryFolder(reader);
-
-                                dbcon.Close();
-                                return folder;
-                            }
-                        }
-                    }
+                    return folder;
                 }
             }
             catch (Exception e)
             {
-                m_log.Error(e.Message, e);
+                database.Reconnect();
+                m_log.Error(e.ToString());
                 return null;
             }
         }
@@ -446,73 +477,44 @@ namespace OpenSim.Data.MySQL
             string sql =
                 "REPLACE INTO inventoryitems (inventoryID, assetID, assetType, parentFolderID, avatarID, inventoryName"
                     + ", inventoryDescription, inventoryNextPermissions, inventoryCurrentPermissions, invType"
-                    + ", creatorID, inventoryBasePermissions, inventoryEveryOnePermissions, inventoryGroupPermissions, salePrice, saleType"
+                    + ", creatorID, inventoryBasePermissions, inventoryEveryOnePermissions, salePrice, saleType"
                     + ", creationDate, groupID, groupOwned, flags) VALUES ";
             sql +=
                 "(?inventoryID, ?assetID, ?assetType, ?parentFolderID, ?avatarID, ?inventoryName, ?inventoryDescription"
                     + ", ?inventoryNextPermissions, ?inventoryCurrentPermissions, ?invType, ?creatorID"
-                    + ", ?inventoryBasePermissions, ?inventoryEveryOnePermissions, ?inventoryGroupPermissions, ?salePrice, ?saleType, ?creationDate"
+                    + ", ?inventoryBasePermissions, ?inventoryEveryOnePermissions, ?salePrice, ?saleType, ?creationDate"
                     + ", ?groupID, ?groupOwned, ?flags)";
-
-            string itemName = item.Name;
-            if (item.Name.Length > 64)
-            {
-                itemName = item.Name.Substring(0, 64);
-                m_log.Warn("[INVENTORY DB]: Name field truncated from " + item.Name.Length + " to " + itemName.Length + " characters on add item");
-            }
-
-            string itemDesc = item.Description;
-            if (item.Description.Length > 128)
-            {
-                itemDesc = item.Description.Substring(0, 128);
-                m_log.Warn("[INVENTORY DB]: Description field truncated from " + item.Description.Length + " to " + itemDesc.Length + " characters on add item");
-            }
 
             try
             {
-                using (MySqlConnection dbcon = new MySqlConnection(m_connectionString))
+                MySqlCommand result = new MySqlCommand(sql, database.Connection);
+                result.Parameters.AddWithValue("?inventoryID", item.ID.ToString());
+                result.Parameters.AddWithValue("?assetID", item.AssetID.ToString());
+                result.Parameters.AddWithValue("?assetType", item.AssetType.ToString());
+                result.Parameters.AddWithValue("?parentFolderID", item.Folder.ToString());
+                result.Parameters.AddWithValue("?avatarID", item.Owner.ToString());
+                result.Parameters.AddWithValue("?inventoryName", item.Name);
+                result.Parameters.AddWithValue("?inventoryDescription", item.Description);
+                result.Parameters.AddWithValue("?inventoryNextPermissions", item.NextPermissions.ToString());
+                result.Parameters.AddWithValue("?inventoryCurrentPermissions",
+                                               item.CurrentPermissions.ToString());
+                result.Parameters.AddWithValue("?invType", item.InvType);
+                result.Parameters.AddWithValue("?creatorID", item.Creator.ToString());
+                result.Parameters.AddWithValue("?inventoryBasePermissions", item.BasePermissions);
+                result.Parameters.AddWithValue("?inventoryEveryOnePermissions", item.EveryOnePermissions);
+                result.Parameters.AddWithValue("?salePrice", item.SalePrice);
+                result.Parameters.AddWithValue("?saleType", item.SaleType);
+                result.Parameters.AddWithValue("?creationDate", item.CreationDate);
+                result.Parameters.AddWithValue("?groupID", item.GroupID);
+                result.Parameters.AddWithValue("?groupOwned", item.GroupOwned);
+                result.Parameters.AddWithValue("?flags", item.Flags);
+
+                lock (database)
                 {
-                    dbcon.Open();
-
-                    using (MySqlCommand result = new MySqlCommand(sql, dbcon))
-                    {
-                        result.Parameters.AddWithValue("?inventoryID", item.ID.ToString());
-                        result.Parameters.AddWithValue("?assetID", item.AssetID.ToString());
-                        result.Parameters.AddWithValue("?assetType", item.AssetType.ToString());
-                        result.Parameters.AddWithValue("?parentFolderID", item.Folder.ToString());
-                        result.Parameters.AddWithValue("?avatarID", item.Owner.ToString());
-                        result.Parameters.AddWithValue("?inventoryName", itemName);
-                        result.Parameters.AddWithValue("?inventoryDescription", itemDesc);
-                        result.Parameters.AddWithValue("?inventoryNextPermissions", item.NextPermissions.ToString());
-                        result.Parameters.AddWithValue("?inventoryCurrentPermissions",
-                                                       item.CurrentPermissions.ToString());
-                        result.Parameters.AddWithValue("?invType", item.InvType);
-                        result.Parameters.AddWithValue("?creatorID", item.CreatorId);
-                        result.Parameters.AddWithValue("?inventoryBasePermissions", item.BasePermissions);
-                        result.Parameters.AddWithValue("?inventoryEveryOnePermissions", item.EveryOnePermissions);
-                        result.Parameters.AddWithValue("?inventoryGroupPermissions", item.GroupPermissions);
-                        result.Parameters.AddWithValue("?salePrice", item.SalePrice);
-                        result.Parameters.AddWithValue("?saleType", unchecked((sbyte)item.SaleType));
-                        result.Parameters.AddWithValue("?creationDate", item.CreationDate);
-                        result.Parameters.AddWithValue("?groupID", item.GroupID);
-                        result.Parameters.AddWithValue("?groupOwned", item.GroupOwned);
-                        result.Parameters.AddWithValue("?flags", item.Flags);
-
-                        lock (m_dbLock)
-                            result.ExecuteNonQuery();
-
-                        result.Dispose();
-                    }
-
-                    using (MySqlCommand result = new MySqlCommand("update inventoryfolders set version=version+1 where folderID = ?folderID", dbcon))
-                    {
-                        result.Parameters.AddWithValue("?folderID", item.Folder.ToString());
-
-                        lock (m_dbLock)
-                            result.ExecuteNonQuery();
-                    }
-                    dbcon.Close();
+                    result.ExecuteNonQuery();
                 }
+
+                result.Dispose();
             }
             catch (MySqlException e)
             {
@@ -530,41 +532,27 @@ namespace OpenSim.Data.MySQL
         }
 
         /// <summary>
-        /// Detele the specified inventory item
+        ///
         /// </summary>
-        /// <param name="item">The inventory item UUID to delete</param>
-        public void deleteInventoryItem(UUID itemID)
+        /// <param name="item"></param>
+        public void deleteInventoryItem(LLUUID itemID)
         {
             try
             {
-                using (MySqlConnection dbcon = new MySqlConnection(m_connectionString))
+                MySqlCommand cmd =
+                    new MySqlCommand("DELETE FROM inventoryitems WHERE inventoryID=?uuid", database.Connection);
+                cmd.Parameters.AddWithValue("?uuid", itemID.ToString());
+
+                lock (database)
                 {
-                    dbcon.Open();
-
-                    using (MySqlCommand cmd = new MySqlCommand("DELETE FROM inventoryitems WHERE inventoryID=?uuid", dbcon))
-                    {
-                        cmd.Parameters.AddWithValue("?uuid", itemID.ToString());
-
-                        lock (m_dbLock)
-                            cmd.ExecuteNonQuery();
-                    }
-                    dbcon.Close();
+                    cmd.ExecuteNonQuery();
                 }
             }
             catch (MySqlException e)
             {
-                m_log.Error(e.Message, e);
+                database.Reconnect();
+                m_log.Error(e.ToString());
             }
-        }
-
-        public InventoryItemBase queryInventoryItem(UUID itemID)
-        {
-            return getInventoryItem(itemID);
-        }
-
-        public InventoryFolderBase queryInventoryFolder(UUID folderID)
-        {
-            return getInventoryFolder(folderID);
         }
 
         /// <summary>
@@ -577,39 +565,24 @@ namespace OpenSim.Data.MySQL
                 "REPLACE INTO inventoryfolders (folderID, agentID, parentFolderID, folderName, type, version) VALUES ";
             sql += "(?folderID, ?agentID, ?parentFolderID, ?folderName, ?type, ?version)";
 
-            string folderName = folder.Name;
-            if (folderName.Length > 64)
-            {
-                folderName = folderName.Substring(0, 64);
-                m_log.Warn("[INVENTORY DB]: Name field truncated from " + folder.Name.Length + " to " + folderName.Length + " characters on add folder");
-            }
+            MySqlCommand cmd = new MySqlCommand(sql, database.Connection);
+            cmd.Parameters.AddWithValue("?folderID", folder.ID.ToString());
+            cmd.Parameters.AddWithValue("?agentID", folder.Owner.ToString());
+            cmd.Parameters.AddWithValue("?parentFolderID", folder.ParentID.ToString());
+            cmd.Parameters.AddWithValue("?folderName", folder.Name);
+            cmd.Parameters.AddWithValue("?type", (short) folder.Type);
+            cmd.Parameters.AddWithValue("?version", folder.Version);
 
-            using (MySqlConnection dbcon = new MySqlConnection(m_connectionString))
+            try
             {
-                dbcon.Open();
-
-                using (MySqlCommand cmd = new MySqlCommand(sql, dbcon))
+                lock (database)
                 {
-                    cmd.Parameters.AddWithValue("?folderID", folder.ID.ToString());
-                    cmd.Parameters.AddWithValue("?agentID", folder.Owner.ToString());
-                    cmd.Parameters.AddWithValue("?parentFolderID", folder.ParentID.ToString());
-                    cmd.Parameters.AddWithValue("?folderName", folderName);
-                    cmd.Parameters.AddWithValue("?type", folder.Type);
-                    cmd.Parameters.AddWithValue("?version", folder.Version);
-
-                    try
-                    {
-                        lock (m_dbLock)
-                        {
-                            cmd.ExecuteNonQuery();
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        m_log.Error(e.ToString());
-                    }
+                    cmd.ExecuteNonQuery();
                 }
-                dbcon.Close();
+            }
+            catch (Exception e)
+            {
+                m_log.Error(e.ToString());
             }
         }
 
@@ -622,38 +595,28 @@ namespace OpenSim.Data.MySQL
             addInventoryFolder(folder);
         }
 
-        /// <summary>
-        /// Move an inventory folder
+        /// Creates a new inventory folder
         /// </summary>
-        /// <param name="folder">Folder to move</param>
-        /// <remarks>UPDATE inventoryfolders SET parentFolderID=?parentFolderID WHERE folderID=?folderID</remarks>
+        /// <param name="folder">Folder to create</param>
         public void moveInventoryFolder(InventoryFolderBase folder)
         {
             string sql =
                 "UPDATE inventoryfolders SET parentFolderID=?parentFolderID WHERE folderID=?folderID";
 
-            using (MySqlConnection dbcon = new MySqlConnection(m_connectionString))
+            MySqlCommand cmd = new MySqlCommand(sql, database.Connection);
+            cmd.Parameters.AddWithValue("?folderID", folder.ID.ToString());
+            cmd.Parameters.AddWithValue("?parentFolderID", folder.ParentID.ToString());
+
+            try
             {
-                dbcon.Open();
-
-                using (MySqlCommand cmd = new MySqlCommand(sql, dbcon))
+                lock (database)
                 {
-                    cmd.Parameters.AddWithValue("?folderID", folder.ID.ToString());
-                    cmd.Parameters.AddWithValue("?parentFolderID", folder.ParentID.ToString());
-
-                    try
-                    {
-                        lock (m_dbLock)
-                        {
-                            cmd.ExecuteNonQuery();
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        m_log.Error(e.ToString());
-                    }
+                    cmd.ExecuteNonQuery();
                 }
-                dbcon.Close();
+            }
+            catch (Exception e)
+            {
+                m_log.Error(e.ToString());
             }
         }
 
@@ -662,7 +625,7 @@ namespace OpenSim.Data.MySQL
         /// </summary>
         /// <param name="folders">list where folders will be appended</param>
         /// <param name="parentID">ID of parent</param>
-        protected void getInventoryFolders(ref List<InventoryFolderBase> folders, UUID parentID)
+        protected void getInventoryFolders(ref List<InventoryFolderBase> folders, LLUUID parentID)
         {
             List<InventoryFolderBase> subfolderList = getInventoryFolders(parentID);
 
@@ -670,186 +633,54 @@ namespace OpenSim.Data.MySQL
                 folders.Add(f);
         }
 
-
-        /// <summary>
-        /// See IInventoryDataPlugin
-        /// </summary>
-        /// <param name="parentID"></param>
-        /// <returns></returns>
-        public List<InventoryFolderBase> getFolderHierarchy(UUID parentID)
+        // See IInventoryData
+        public List<InventoryFolderBase> getFolderHierarchy(LLUUID parentID)
         {
-            /* Note: There are subtle changes between this implementation of getFolderHierarchy and the previous one
-                 * - We will only need to hit the database twice instead of n times.
-                 * - We assume the database is well-formed - no stranded/dangling folders, all folders in heirarchy owned
-                 *   by the same person, each user only has 1 inventory heirarchy
-                 * - The returned list is not ordered, instead of breadth-first ordered
-               There are basically 2 usage cases for getFolderHeirarchy:
-                 1) Getting the user's entire inventory heirarchy when they log in
-                 2) Finding a subfolder heirarchy to delete when emptying the trash.
-               This implementation will pull all inventory folders from the database, and then prune away any folder that
-               is not part of the requested sub-heirarchy. The theory is that it is cheaper to make 1 request from the
-               database than to make n requests. This pays off only if requested heirarchy is large.
-               By making this choice, we are making the worst case better at the cost of making the best case worse.
-               This way is generally better because we don't have to rebuild the connection/sql query per subfolder,
-               even if we end up getting more data from the SQL server than we need.
-                 - Francis
-             */
-            try
-            {
-                List<InventoryFolderBase> folders = new List<InventoryFolderBase>();
-                Dictionary<UUID, List<InventoryFolderBase>> hashtable = new Dictionary<UUID, List<InventoryFolderBase>>(); ;
-                List<InventoryFolderBase> parentFolder = new List<InventoryFolderBase>();
-                bool buildResultsFromHashTable = false;
+            List<InventoryFolderBase> folders = new List<InventoryFolderBase>();
+            getInventoryFolders(ref folders, parentID);
 
-                lock (m_dbLock)
-                {
-                    using (MySqlConnection dbcon = new MySqlConnection(m_connectionString))
-                    {
-                        dbcon.Open();
+            for (int i = 0; i < folders.Count; i++)
+                getInventoryFolders(ref folders, folders[i].ID);
 
-                        /* Fetch the parent folder from the database to determine the agent ID, and if
-                         * we're querying the root of the inventory folder tree */
-                        using (MySqlCommand result = new MySqlCommand("SELECT * FROM inventoryfolders WHERE folderID = ?uuid", dbcon))
-                        {
-                            result.Parameters.AddWithValue("?uuid", parentID.ToString());
-
-                            using (MySqlDataReader reader = result.ExecuteReader())
-                            {
-                                // Should be at most 1 result
-                                while (reader.Read())
-                                    parentFolder.Add(readInventoryFolder(reader));
-                            }
-                        }
-
-                        if (parentFolder.Count >= 1)   // No result means parent folder does not exist
-                        {
-                            if (parentFolder[0].ParentID == UUID.Zero) // We are querying the root folder
-                            {
-                                /* Get all of the agent's folders from the database, put them in a list and return it */
-                                using (MySqlCommand result = new MySqlCommand("SELECT * FROM inventoryfolders WHERE agentID = ?uuid", dbcon))
-                                {
-                                    result.Parameters.AddWithValue("?uuid", parentFolder[0].Owner.ToString());
-
-                                    using (MySqlDataReader reader = result.ExecuteReader())
-                                    {
-                                        while (reader.Read())
-                                        {
-                                            InventoryFolderBase curFolder = readInventoryFolder(reader);
-                                            if (curFolder.ID != parentID) // Do not need to add the root node of the tree to the list
-                                                folders.Add(curFolder);
-                                        }
-                                    }
-                                }
-                            } // if we are querying the root folder
-                            else // else we are querying a subtree of the inventory folder tree
-                            {
-                                /* Get all of the agent's folders from the database, put them all in a hash table
-                                 * indexed by their parent ID */
-                                using (MySqlCommand result = new MySqlCommand("SELECT * FROM inventoryfolders WHERE agentID = ?uuid", dbcon))
-                                {
-                                    result.Parameters.AddWithValue("?uuid", parentFolder[0].Owner.ToString());
-
-                                    using (MySqlDataReader reader = result.ExecuteReader())
-                                    {
-                                        while (reader.Read())
-                                        {
-                                            InventoryFolderBase curFolder = readInventoryFolder(reader);
-                                            if (hashtable.ContainsKey(curFolder.ParentID))      // Current folder already has a sibling
-                                                hashtable[curFolder.ParentID].Add(curFolder);   // append to sibling list
-                                            else // else current folder has no known (yet) siblings
-                                            {
-                                                List<InventoryFolderBase> siblingList = new List<InventoryFolderBase>();
-                                                siblingList.Add(curFolder);
-                                                // Current folder has no known (yet) siblings
-                                                hashtable.Add(curFolder.ParentID, siblingList);
-                                            }
-                                        } // while more items to read from the database
-                                    }
-                                }
-
-                                // Set flag so we know we need to build the results from the hash table after
-                                // we unlock the database
-                                buildResultsFromHashTable = true;
-
-                            } // else we are querying a subtree of the inventory folder tree
-                        } // if folder parentID exists
-
-                        if (buildResultsFromHashTable)
-                        {
-                            /* We have all of the user's folders stored in a hash table indexed by their parent ID
-                             * and we need to return the requested subtree. We will build the requested subtree
-                             * by performing a breadth-first-search on the hash table */
-                            if (hashtable.ContainsKey(parentID))
-                                folders.AddRange(hashtable[parentID]);
-                            for (int i = 0; i < folders.Count; i++) // **Note: folders.Count is *not* static
-                                if (hashtable.ContainsKey(folders[i].ID))
-                                    folders.AddRange(hashtable[folders[i].ID]);
-                        }
-                    }
-                } // lock (database)
-
-                return folders;
-            }
-            catch (Exception e)
-            {
-                m_log.Error(e.Message, e);
-                return null;
-            }
+            return folders;
         }
 
-        /// <summary>
-        /// Delete a folder from database
-        /// </summary>
-        /// <param name="folderID">the folder UUID</param>
-        protected void deleteOneFolder(UUID folderID)
+        protected void deleteOneFolder(LLUUID folderID)
         {
             try
             {
-                using (MySqlConnection dbcon = new MySqlConnection(m_connectionString))
+                MySqlCommand cmd =
+                    new MySqlCommand("DELETE FROM inventoryfolders WHERE folderID=?uuid", database.Connection);
+                cmd.Parameters.AddWithValue("?uuid", folderID.ToString());
+
+                lock (database)
                 {
-                    dbcon.Open();
-
-                    // System folders can never be deleted. Period.
-                    using (MySqlCommand cmd = new MySqlCommand("DELETE FROM inventoryfolders WHERE folderID=?uuid and type=-1", dbcon))
-                    {
-                        cmd.Parameters.AddWithValue("?uuid", folderID.ToString());
-
-                        lock (m_dbLock)
-                            cmd.ExecuteNonQuery();
-                    }
-                    dbcon.Close();
+                    cmd.ExecuteNonQuery();
                 }
             }
             catch (MySqlException e)
             {
-                m_log.Error(e.Message, e);
+                database.Reconnect();
+                m_log.Error(e.ToString());
             }
         }
 
-        /// <summary>
-        /// Delete all item in a folder
-        /// </summary>
-        /// <param name="folderID">the folder UUID</param>
-        protected void deleteItemsInFolder(UUID folderID)
+        protected void deleteItemsInFolder(LLUUID folderID)
         {
             try
             {
-                using (MySqlConnection dbcon = new MySqlConnection(m_connectionString))
+                MySqlCommand cmd =
+                    new MySqlCommand("DELETE FROM inventoryitems WHERE parentFolderID=?uuid", database.Connection);
+                cmd.Parameters.AddWithValue("?uuid", folderID.ToString());
+
+                lock (database)
                 {
-                    dbcon.Open();
-
-                    using (MySqlCommand cmd = new MySqlCommand("DELETE FROM inventoryitems WHERE parentFolderID=?uuid", dbcon))
-                    {
-                        cmd.Parameters.AddWithValue("?uuid", folderID.ToString());
-
-                        lock (m_dbLock)
-                            cmd.ExecuteNonQuery();
-                    }
-                    dbcon.Close();
+                    cmd.ExecuteNonQuery();
                 }
             }
             catch (MySqlException e)
             {
+                database.Reconnect();
                 m_log.Error(e.ToString());
             }
         }
@@ -858,7 +689,7 @@ namespace OpenSim.Data.MySQL
         /// Deletes an inventory folder
         /// </summary>
         /// <param name="folderId">Id of folder to delete</param>
-        public void deleteInventoryFolder(UUID folderID)
+        public void deleteInventoryFolder(LLUUID folderID)
         {
             List<InventoryFolderBase> subFolders = getFolderHierarchy(folderID);
 
@@ -872,45 +703,6 @@ namespace OpenSim.Data.MySQL
             //Delete the actual row
             deleteOneFolder(folderID);
             deleteItemsInFolder(folderID);
-        }
-
-        public List<InventoryItemBase> fetchActiveGestures(UUID avatarID)
-        {
-            lock (m_dbLock)
-            {
-                try
-                {
-                    using (MySqlConnection dbcon = new MySqlConnection(m_connectionString))
-                    {
-                        dbcon.Open();
-
-                        using (MySqlCommand sqlCmd = new MySqlCommand(
-                            "SELECT * FROM inventoryitems WHERE avatarId = ?uuid AND assetType = ?type and flags & 1", dbcon))
-                        {
-                            sqlCmd.Parameters.AddWithValue("?uuid", avatarID.ToString());
-                            sqlCmd.Parameters.AddWithValue("?type", (int)AssetType.Gesture);
-
-                            using (MySqlDataReader result = sqlCmd.ExecuteReader())
-                            {
-                                List<InventoryItemBase> list = new List<InventoryItemBase>();
-                                while (result.Read())
-                                {
-                                    InventoryItemBase item = readInventoryItem(result);
-                                    if (item != null)
-                                        list.Add(item);
-                                }
-                                dbcon.Close();
-                                return list;
-                            }
-                        }
-                    }
-                }
-                catch (Exception e)
-                {
-                    m_log.Error(e.Message, e);
-                    return null;
-                }
-            }
         }
     }
 }

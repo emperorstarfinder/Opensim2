@@ -9,7 +9,7 @@
  *     * Redistributions in binary form must reproduce the above copyright
  *       notice, this list of conditions and the following disclaimer in the
  *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the OpenSimulator Project nor the
+ *     * Neither the name of the OpenSim Project nor the
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
@@ -25,43 +25,16 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-using OpenSim.Framework;
 using Mono.Addins;
+
+[assembly : AddinRoot("OpenSim", "0.5")]
 
 namespace OpenSim
 {
-    /// <summary>
-    /// OpenSimulator Application Plugin framework interface
-    /// </summary>
-    [TypeExtensionPoint(NodeName="Plugin", NodeType = typeof(PluginExtensionNode), Path="/OpenSim/Startup")]
-    public interface IApplicationPlugin : IPlugin
+    [TypeExtensionPoint("/OpenSim/Startup")]
+    public interface IApplicationPlugin
     {
-        /// <summary>
-        /// Initialize the Plugin
-        /// </summary>
-        /// <param name="openSim">The Application instance</param>
         void Initialise(OpenSimBase openSim);
-
-        /// <summary>
-        /// Called when the application loading is completed
-        /// </summary>
-        void PostInitialise();
-    }
-
-
-    public class ApplicationPluginInitialiser : PluginInitialiserBase
-    {
-        private OpenSimBase server;
-
-        public ApplicationPluginInitialiser(OpenSimBase s)
-        {
-            server = s;
-        }
-
-        public override void Initialise(IPlugin plugin)
-        {
-            IApplicationPlugin p = plugin as IApplicationPlugin;
-            p.Initialise(server);
-        }
+        void Close();
     }
 }

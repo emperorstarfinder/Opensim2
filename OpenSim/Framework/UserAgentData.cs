@@ -9,7 +9,7 @@
  *     * Redistributions in binary form must reproduce the above copyright
  *       notice, this list of conditions and the following disclaimer in the
  *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the OpenSimulator Project nor the
+ *     * Neither the name of the OpenSim Project nor the
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
@@ -26,7 +26,7 @@
  */
 
 using System;
-using OpenMetaverse;
+using libsecondlife;
 
 namespace OpenSim.Framework
 {
@@ -36,25 +36,14 @@ namespace OpenSim.Framework
     public class UserAgentData
     {
         /// <summary>
-        /// The UUID of the users avatar (not the agent!)
-        /// </summary>
-        private UUID UUID;
-
-        /// <summary>
-        /// The session ID for the user (also the agent ID)
-        /// </summary>
-        private UUID sessionID;
-
-        /// <summary>
-        /// The "secure" session ID for the user
-        /// </summary>
-        /// <remarks>Not very secure. Dont rely on it for anything more than Linden Lab does.</remarks>
-        private UUID secureSessionID;
-
-        /// <summary>
         /// The IP address of the user
         /// </summary>
         private string agentIP = String.Empty;
+
+        /// <summary>
+        /// Is the user online?
+        /// </summary>
+        private bool agentOnline;
 
         /// <summary>
         /// The port of the user
@@ -62,9 +51,19 @@ namespace OpenSim.Framework
         private uint agentPort;
 
         /// <summary>
-        /// Is the user online?
+        /// Region handle of the current region the user is in
         /// </summary>
-        private bool agentOnline;
+        private ulong currentHandle;
+
+        /// <summary>
+        /// The position of the user within the region
+        /// </summary>
+        private LLVector3 currentPos;
+
+        /// <summary>
+        /// Current region the user is logged into
+        /// </summary>
+        private LLUUID currentRegion;
 
         /// <summary>
         /// A unix timestamp from when the user logged in
@@ -77,127 +76,114 @@ namespace OpenSim.Framework
         private int logoutTime;
 
         /// <summary>
-        /// Region ID the user is logged into
-        /// </summary>
-        private UUID regionID;
-
-        /// <summary>
-        /// Region handle of the current region the user is in
-        /// </summary>
-        private ulong regionHandle;
-
-        /// <summary>
-        /// The position of the user within the region
-        /// </summary>
-        private Vector3 currentPos;
-
-        /// <summary>
-        /// Current direction the user is looking at
-        /// </summary>
-        private Vector3 currentLookAt = Vector3.Zero;
-
-        /// <summary>
         /// The region the user logged into initially
         /// </summary>
-        private UUID originRegionID;
+        private LLUUID regionID;
 
-        public virtual UUID ProfileID
+        /// <summary>
+        /// The "secure" session ID for the user
+        /// </summary>
+        /// <remarks>Not very secure. Dont rely on it for anything more than Linden Lab does.</remarks>
+        private LLUUID secureSessionID;
+
+        /// <summary>
+        /// The session ID for the user (also the agent ID)
+        /// </summary>
+        private LLUUID sessionID;
+
+        /// <summary>
+        /// The UUID of the users avatar (not the agent!)
+        /// </summary>
+        private LLUUID UUID;
+
+        public LLUUID ProfileID
         {
             get { return UUID; }
             set { UUID = value; }
         }
 
-        public virtual UUID SessionID
-        {
-            get { return sessionID; }
-            set { sessionID = value; }
-        }
-
-        public virtual UUID SecureSessionID
-        {
-            get { return secureSessionID; }
-            set { secureSessionID = value; }
-        }
-
-        public virtual string AgentIP
+        public string AgentIP
         {
             get { return agentIP; }
             set { agentIP = value; }
         }
 
-        public virtual uint AgentPort
+        public uint AgentPort
         {
             get { return agentPort; }
             set { agentPort = value; }
         }
 
-        public virtual bool AgentOnline
+        public bool AgentOnline
         {
             get { return agentOnline; }
             set { agentOnline = value; }
         }
 
-        public virtual int LoginTime
+        public LLUUID SessionID
         {
-            get { return loginTime; }
-            set { loginTime = value; }
+            get { return sessionID; }
+            set { sessionID = value; }
         }
 
-        public virtual int LogoutTime
+        public LLUUID SecureSessionID
         {
-            get { return logoutTime; }
-            set { logoutTime = value; }
+            get { return secureSessionID; }
+            set { secureSessionID = value; }
         }
 
-        public virtual UUID Region
+        public LLUUID InitialRegion
         {
             get { return regionID; }
             set { regionID = value; }
         }
 
-        public virtual ulong Handle
+        public int LoginTime
         {
-            get { return regionHandle; }
-            set { regionHandle = value; }
+            get { return loginTime; }
+            set { loginTime = value; }
         }
 
-        public virtual Vector3 Position
+        public int LogoutTime
+        {
+            get { return logoutTime; }
+            set { logoutTime = value; }
+        }
+
+        public LLUUID Region
+        {
+            get { return currentRegion; }
+            set { currentRegion = value; }
+        }
+
+        public ulong Handle
+        {
+            get { return currentHandle; }
+            set { currentHandle = value; }
+        }
+
+        public LLVector3 Position
         {
             get { return currentPos; }
             set { currentPos = value; }
         }
 
-/* 2008-08-28-tyre: Not really useful
-        public virtual float PositionX
+        public float PositionX
         {
             get { return currentPos.X; }
             set { currentPos.X = value; }
         }
 
-        public virtual float PositionY
+        public float PositionY
         {
             get { return currentPos.Y; }
             set { currentPos.Y = value; }
         }
 
-        public virtual float PositionZ
+        public float PositionZ
         {
             get { return currentPos.Z; }
             set { currentPos.Z = value; }
         }
-*/
-
-        public virtual Vector3 LookAt
-        {
-            get { return currentLookAt; }
-            set { currentLookAt = value; }
-        }
-
-        public virtual UUID InitialRegion
-        {
-            get { return originRegionID; }
-            set { originRegionID = value; }
-        }
-
     }
 }

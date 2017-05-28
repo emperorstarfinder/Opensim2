@@ -9,7 +9,7 @@
  *     * Redistributions in binary form must reproduce the above copyright
  *       notice, this list of conditions and the following disclaimer in the
  *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the OpenSimulator Project nor the
+ *     * Neither the name of the OpenSim Project nor the
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
@@ -26,17 +26,17 @@
  */
 
 using System;
-using OpenMetaverse;
+using libsecondlife;
 
 namespace OpenSim.Framework
 {
     [Serializable]
     public class Location : ICloneable
     {
-        private readonly uint m_x;
-        private readonly uint m_y;
+        private readonly int m_x;
+        private readonly int m_y;
 
-        public Location(uint x, uint y)
+        public Location(int x, int y)
         {
             m_x = x;
             m_y = y;
@@ -44,21 +44,21 @@ namespace OpenSim.Framework
 
         public Location(ulong regionHandle)
         {
-            m_x =  (uint)(regionHandle >> 32);
-            m_y = (uint)(regionHandle & (ulong)uint.MaxValue);
+            m_x = (int) regionHandle;
+            m_y = (int) (regionHandle >> 32);
         }
 
         public ulong RegionHandle
         {
-            get { return Utils.UIntsToLong(m_x, m_y); }
+            get { return Helpers.UIntsToLong((uint) m_x, (uint) m_y); }
         }
 
-        public uint X
+        public int X
         {
             get { return m_x; }
         }
 
-        public uint Y
+        public int Y
         {
             get { return m_y; }
         }
@@ -86,19 +86,9 @@ namespace OpenSim.Framework
             return X == x && y == Y;
         }
 
-        public static bool operator ==(Location o, object o2)
-        {
-            return o.Equals(o2);
-        }
-
-        public static bool operator !=(Location o, object o2)
-        {
-            return !o.Equals(o2);
-        }
-
         public override int GetHashCode()
         {
-            return X.GetHashCode() ^ Y.GetHashCode();
+            return X.GetHashCode() * 29 + Y.GetHashCode();
         }
 
         public object Clone()

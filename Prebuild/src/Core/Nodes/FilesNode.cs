@@ -5,16 +5,16 @@ Copyright (c) 2004-2005 Matthew Holmes (matthew@wildfiregames.com), Dan Moorehea
 Redistribution and use in source and binary forms, with or without modification, are permitted
 provided that the following conditions are met:
 
-* Redistributions of source code must retain the above copyright notice, this list of conditions
-  and the following disclaimer.
-* Redistributions in binary form must reproduce the above copyright notice, this list of conditions
-  and the following disclaimer in the documentation and/or other materials provided with the
-  distribution.
-* The name of the author may not be used to endorse or promote products derived from this software
-  without specific prior written permission.
+* Redistributions of source code must retain the above copyright notice, this list of conditions 
+  and the following disclaimer. 
+* Redistributions in binary form must reproduce the above copyright notice, this list of conditions 
+  and the following disclaimer in the documentation and/or other materials provided with the 
+  distribution. 
+* The name of the author may not be used to endorse or promote products derived from this software 
+  without specific prior written permission. 
 
-THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING,
-BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, 
+BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
 ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
 EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
 OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
@@ -23,138 +23,157 @@ IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY O
 */
 #endregion
 
+#region CVS Information
+/*
+ * $Source$
+ * $Author: borrillis $
+ * $Date: 2007-05-25 01:03:16 +0900 (Fri, 25 May 2007) $
+ * $Revision: 243 $
+ */
+#endregion
+
 using System;
-using System.Collections.Generic;
+using System.Collections;
 using System.Collections.Specialized;
 using System.Xml;
 
 using Prebuild.Core.Attributes;
 using Prebuild.Core.Interfaces;
-using System.IO;
 
 namespace Prebuild.Core.Nodes
 {
-    /// <summary>
-    ///
-    /// </summary>
-    [DataNode("Files")]
-    public class FilesNode : DataNode
-    {
-        #region Fields
+	/// <summary>
+	/// 
+	/// </summary>
+	[DataNode("Files")]
+	public class FilesNode : DataNode
+	{
+		#region Fields
 
-        private readonly List<string> m_Files = new List<string>();
-        private readonly Dictionary<string,BuildAction> m_BuildActions = new Dictionary<string, BuildAction>();
-        private readonly Dictionary<string, SubType> m_SubTypes = new Dictionary<string, SubType>();
-        private readonly Dictionary<string, string> m_ResourceNames = new Dictionary<string, string>();
-        private readonly Dictionary<string, CopyToOutput> m_CopyToOutputs = new Dictionary<string, CopyToOutput>();
-        private readonly Dictionary<string, bool> m_Links = new Dictionary<string, bool>();
-        private readonly Dictionary<string, string> m_LinkPaths = new Dictionary<string, string>();
-        private readonly Dictionary<string, bool> m_PreservePaths = new Dictionary<string, bool>();
-        private readonly Dictionary<string, string> m_DestinationPath = new Dictionary<string, string>();
-        private readonly NameValueCollection m_CopyFiles = new NameValueCollection();
+		private StringCollection m_Files;
+		private Hashtable m_BuildActions;
+		private Hashtable m_SubTypes;
+		private Hashtable m_ResourceNames;
+		private Hashtable m_CopyToOutputs;
+		private Hashtable m_Links;
+		private Hashtable m_LinkPaths;
+        private Hashtable m_PreservePaths;
 
-        #endregion
+		#endregion
 
-        #region Properties
+		#region Constructors
 
-        public int Count
-        {
-            get
-            {
-                return m_Files.Count;
-            }
+		/// <summary>
+		/// 
+		/// </summary>
+		public FilesNode()
+		{
+			m_Files = new StringCollection();
+			m_BuildActions = new Hashtable();
+			m_SubTypes = new Hashtable();
+			m_ResourceNames = new Hashtable();
+			m_CopyToOutputs = new Hashtable();
+			m_Links = new Hashtable();
+			m_LinkPaths = new Hashtable();
+			m_PreservePaths = new Hashtable();
         }
 
-        public string[] Destinations
-        {
-            get { return m_CopyFiles.AllKeys; }
-        }
+		#endregion
 
-        public int CopyFiles
-        {
-            get { return m_CopyFiles.Count; }
-        }
+		#region Properties
 
-        #endregion
+		/// <summary>
+		/// 
+		/// </summary>
+		public int Count
+		{
+			get
+			{
+				return m_Files.Count;
+			}
+		}
 
-        #region Public Methods
+		#endregion
 
-        public BuildAction GetBuildAction(string file)
-        {
-            if(!m_BuildActions.ContainsKey(file))
-            {
-                return BuildAction.Compile;
-            }
+		#region Public Methods
 
-            return m_BuildActions[file];
-        }
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="file"></param>
+		/// <returns></returns>
+		public BuildAction GetBuildAction(string file)
+		{
+			if(!m_BuildActions.ContainsKey(file))
+			{
+				return BuildAction.Compile;
+			}
 
-        public string GetDestinationPath(string file)
-        {
-            if( !m_DestinationPath.ContainsKey(file))
-            {
-                return null;
-            }
-            return m_DestinationPath[file];
-        }
+			return (BuildAction)m_BuildActions[file];
+		}
 
-        public string[] SourceFiles(string dest)
-        {
-            return m_CopyFiles.GetValues(dest);
-        }
+		public CopyToOutput GetCopyToOutput(string file)
+		{
+			if (!this.m_CopyToOutputs.ContainsKey(file))
+			{
+				return CopyToOutput.Never;
+			}
+			return (CopyToOutput) this.m_CopyToOutputs[file];
+		}
 
-        public CopyToOutput GetCopyToOutput(string file)
-        {
-            if (!m_CopyToOutputs.ContainsKey(file))
-            {
-                return CopyToOutput.Never;
-            }
-            return m_CopyToOutputs[file];
-        }
+		public bool GetIsLink(string file)
+		{
+			if (!this.m_Links.ContainsKey(file))
+			{
+				return false;
+			}
+			return (bool) this.m_Links[file];
+		}
 
-        public bool GetIsLink(string file)
-        {
-            if (!m_Links.ContainsKey(file))
-            {
-                return false;
-            }
-            return m_Links[file];
-        }
+		public string GetLinkPath( string file )
+		{
+			if ( !this.m_LinkPaths.ContainsKey( file ) )
+			{
+				return string.Empty;
+			}
+			return (string)this.m_LinkPaths[ file ];
+		}
 
-        public bool Contains(string file)
-        {
-            return m_Files.Contains(file);
-        }
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="file"></param>
+		/// <returns></returns>
+		public SubType GetSubType(string file)
+		{
+			if(!m_SubTypes.ContainsKey(file))
+			{
+				return SubType.Code;
+			}
 
-        public string GetLinkPath( string file )
-        {
-            if ( !m_LinkPaths.ContainsKey( file ) )
-            {
-                return string.Empty;
-            }
-            return m_LinkPaths[ file ];
-        }
+			return (SubType)m_SubTypes[file];
+		}
 
-        public SubType GetSubType(string file)
-        {
-            if(!m_SubTypes.ContainsKey(file))
-            {
-                return SubType.Code;
-            }
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="file"></param>
+		/// <returns></returns>
+		public string GetResourceName(string file)
+		{
+			if(!m_ResourceNames.ContainsKey(file))
+			{
+				return "";
+			}
 
-            return m_SubTypes[file];
-        }
+			return (string)m_ResourceNames[file];
+		}
 
-        public string GetResourceName(string file)
-        {
-            if(!m_ResourceNames.ContainsKey(file))
-            {
-                return string.Empty;
-            }
-
-            return m_ResourceNames[file];
-        }
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="file"></param>
+        /// <returns></returns>
         public bool GetPreservePath( string file )
         {
             if ( !m_PreservePaths.ContainsKey( file ) )
@@ -162,77 +181,75 @@ namespace Prebuild.Core.Nodes
                 return false;
             }
 
-            return m_PreservePaths[ file ];
+            return (bool)m_PreservePaths[ file ];
         }
 
-        public override void Parse(XmlNode node)
-        {
-            if( node == null )
-            {
-                throw new ArgumentNullException("node");
-            }
-            foreach(XmlNode child in node.ChildNodes)
-            {
-                IDataNode dataNode = Kernel.Instance.ParseNode(child, this);
-                if(dataNode is FileNode)
-                {
-                    FileNode fileNode = (FileNode)dataNode;
-                    if(fileNode.IsValid)
-                    {
-                        if (!m_Files.Contains(fileNode.Path))
-                        {
-                            m_Files.Add(fileNode.Path);
-                            m_BuildActions[fileNode.Path] = fileNode.BuildAction;
-                            m_SubTypes[fileNode.Path] = fileNode.SubType;
-                            m_ResourceNames[fileNode.Path] = fileNode.ResourceName;
-                            m_PreservePaths[ fileNode.Path ] = fileNode.PreservePath;
-                            m_Links[ fileNode.Path ] = fileNode.IsLink;
-                            m_LinkPaths[ fileNode.Path ] = fileNode.LinkPath;
-                            m_CopyToOutputs[ fileNode.Path ] = fileNode.CopyToOutput;
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="node"></param>
+		public override void Parse(XmlNode node)
+		{
+			if( node == null )
+			{
+				throw new ArgumentNullException("node");
+			}
+			foreach(XmlNode child in node.ChildNodes)
+			{
+				IDataNode dataNode = Kernel.Instance.ParseNode(child, this);
+				if(dataNode is FileNode)
+				{
+					FileNode fileNode = (FileNode)dataNode;
+					if(fileNode.IsValid)
+					{
+						if (!m_Files.Contains(fileNode.Path))
+						{
+							m_Files.Add(fileNode.Path);
+							m_BuildActions[fileNode.Path] = fileNode.BuildAction;
+							m_SubTypes[fileNode.Path] = fileNode.SubType;
+							m_ResourceNames[fileNode.Path] = fileNode.ResourceName;
+                            this.m_PreservePaths[ fileNode.Path ] = fileNode.PreservePath;
+                            this.m_Links[ fileNode.Path ] = fileNode.IsLink;
+							this.m_LinkPaths[ fileNode.Path ] = fileNode.LinkPath;
+							this.m_CopyToOutputs[ fileNode.Path ] = fileNode.CopyToOutput;
 
-                        }
-                    }
-                }
-                else if(dataNode is MatchNode)
-                {
-                    foreach(string file in ((MatchNode)dataNode).Files)
-                    {
+						}
+					}
+				}
+				else if(dataNode is MatchNode)
+				{
+					foreach(string file in ((MatchNode)dataNode).Files)
+					{
                         MatchNode matchNode = (MatchNode)dataNode;
-                        if (!m_Files.Contains(file))
-                        {
-                            m_Files.Add(file);
-                            if (matchNode.BuildAction == null)
-                                m_BuildActions[file] = GetBuildActionByFileName(file);
-                            else
-                                m_BuildActions[file] = matchNode.BuildAction.Value;
-
-                            if (matchNode.BuildAction == BuildAction.Copy)
-                            {
-                                m_CopyFiles.Add(matchNode.DestinationPath, file);
-                                m_DestinationPath[file] = matchNode.DestinationPath;
-                            }
-
-                            m_SubTypes[file] = matchNode.SubType == null ? GetSubTypeByFileName(file) : matchNode.SubType.Value;
+						if (!m_Files.Contains(file))
+						{
+							m_Files.Add(file);
+                            m_BuildActions[ file ] = matchNode.BuildAction;
+                            m_SubTypes[ file ] = matchNode.SubType;
                             m_ResourceNames[ file ] = matchNode.ResourceName;
-                            m_PreservePaths[ file ] = matchNode.PreservePath;
-                            m_Links[ file ] = matchNode.IsLink;
-                            m_LinkPaths[ file ] = matchNode.LinkPath;
-                            m_CopyToOutputs[ file ] = matchNode.CopyToOutput;
+                            this.m_PreservePaths[ file ] = matchNode.PreservePath;
+                            this.m_Links[ file ] = matchNode.IsLink;
+							this.m_LinkPaths[ file ] = matchNode.LinkPath;
+							this.m_CopyToOutputs[ file ] = matchNode.CopyToOutput;
 
-                        }
-                    }
-                }
-            }
-        }
+						}
+					}
+				}
+			}
+		}
 
-        // TODO: Check in to why StringCollection's enumerator doesn't implement
-        // IEnumerator?
-        public IEnumerator<string> GetEnumerator()
-        {
-            return m_Files.GetEnumerator();
-        }
+		// TODO: Check in to why StringCollection's enumerator doesn't implement
+		// IEnumerator?
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <returns></returns>
+		public StringEnumerator GetEnumerator()
+		{
+			return m_Files.GetEnumerator();
+		}
 
-        #endregion
+		#endregion
 
     }
 }

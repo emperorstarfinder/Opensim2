@@ -9,7 +9,7 @@
  *     * Redistributions in binary form must reproduce the above copyright
  *       notice, this list of conditions and the following disclaimer in the
  *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the OpenSimulator Project nor the
+ *     * Neither the name of the OpenSim Project nor the
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
@@ -26,8 +26,7 @@
  */
 
 using System;
-using OpenMetaverse;
-using OpenMetaverse.StructuredData;
+using libsecondlife;
 
 namespace OpenSim.Framework
 {
@@ -35,32 +34,16 @@ namespace OpenSim.Framework
     {
         public byte Access;
         public byte Agents;
-        public UUID MapImageId;
+        public uint Flags;
+        public LLUUID MapImageId;
         public String Name;
         public uint RegionFlags;
         public byte WaterHeight;
         public ushort X;
         public ushort Y;
-        public ushort SizeX;
-        public ushort SizeY;
 
         public MapBlockData()
         {
-        }
-
-        public OSDMap ToOSD()
-        {
-            OSDMap map = new OSDMap();
-            map["X"] = X;
-            map["Y"] = Y;
-            map["SizeX"] = SizeX;
-            map["SizeY"] = SizeY;
-            map["Name"] = Name;
-            map["Access"] = Access;
-            map["RegionFlags"] = RegionFlags;
-            map["WaterHeight"] = WaterHeight;
-            map["MapImageID"] = MapImageId;
-            return map;
         }
     }
 }

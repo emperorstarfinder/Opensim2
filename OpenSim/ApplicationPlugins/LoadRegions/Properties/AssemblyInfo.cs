@@ -9,7 +9,7 @@
  *     * Redistributions in binary form must reproduce the above copyright
  *       notice, this list of conditions and the following disclaimer in the
  *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the OpenSimulator Project nor the
+ *     * Neither the name of the OpenSim Project nor the
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
@@ -27,18 +27,17 @@
 
 using System.Reflection;
 using System.Runtime.InteropServices;
-using Mono.Addins;
 
 // General information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 
-[assembly : AssemblyTitle("OpenSim.ApplicationPlugins.LoadRegions")]
+[assembly : AssemblyTitle("OpenSim.Addin")]
 [assembly : AssemblyDescription("")]
 [assembly : AssemblyConfiguration("")]
-[assembly : AssemblyCompany("http://opensimulator.org")]
-[assembly : AssemblyProduct("OpenSim")]
-[assembly : AssemblyCopyright("Copyright © OpenSimulator.org Developers 2007-2009")]
+[assembly : AssemblyCompany("")]
+[assembly : AssemblyProduct("OpenSim.Addin")]
+[assembly : AssemblyCopyright("Copyright © OpenSimulator.org Developers 2007-2008")]
 [assembly : AssemblyTrademark("")]
 [assembly : AssemblyCulture("")]
 
@@ -61,8 +60,7 @@ using Mono.Addins;
 //
 // You can specify all the values or you can default the Build and Revision Numbers
 // by using the '*' as shown below:
+// [assembly: AssemblyVersion("1.0.*")]
 
-[assembly : AssemblyVersion(OpenSim.VersionInfo.AssemblyVersionNumber)]
-
-[assembly: Addin("OpenSim.ApplicationPlugins.LoadRegions", OpenSim.VersionInfo.VersionNumber)]
-[assembly: AddinDependency("OpenSim", OpenSim.VersionInfo.VersionNumber)]
+[assembly : AssemblyVersion("1.0.0.0")]
+[assembly : AssemblyFileVersion("1.0.0.0")]

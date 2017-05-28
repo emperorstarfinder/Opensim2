@@ -9,7 +9,7 @@
  *     * Redistributions in binary form must reproduce the above copyright
  *       notice, this list of conditions and the following disclaimer in the
  *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the OpenSimulator Project nor the
+ *     * Neither the name of the OpenSim Project nor the
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
@@ -31,9 +31,9 @@ using System.Globalization;
 using System.Net;
 using System.Reflection;
 using System.Xml;
+using libsecondlife;
 using log4net;
-using OpenMetaverse;
-//using OpenSim.Framework.Console;
+using OpenSim.Framework.Console;
 
 namespace OpenSim.Framework
 {
@@ -179,7 +179,7 @@ namespace OpenSim.Framework
                 return;
             }
 
-            //m_log.Debug("[CONFIG]: Calling Configuration Load Function...");
+            m_log.Info("[CONFIG]: Calling Configuration Load Function...");
             loadFunction();
 
             if (configurationOptions.Count <= 0)
@@ -206,10 +206,7 @@ namespace OpenSim.Framework
                 }
                 catch (XmlException e)
                 {
-                    m_log.WarnFormat("[CONFIG] Not using {0}: {1}",
-                            configurationFilename,
-                            e.Message.ToString());
-                    //m_log.Error("Error loading " + configurationFilename + ": " + e.ToString());
+                    m_log.Error("Error loading " + configurationFilename + ": " + e.ToString());
                     useFile = false;
                 }
             }
@@ -284,11 +281,6 @@ namespace OpenSim.Framework
                     {
                         console_result = attribute;
                     }
-
-                    // if the first character is a "$", assume it's the name
-                    // of an environment variable and substitute with the value of that variable
-                    if (console_result.StartsWith("$"))
-                        console_result = Environment.GetEnvironmentVariable(console_result.Substring(1));
 
                     switch (configOption.configurationType)
                     {
@@ -367,36 +359,36 @@ namespace OpenSim.Framework
                             }
                             errorMessage = "an IP Address (IPAddress)";
                             break;
-                        case ConfigurationOption.ConfigurationTypes.TYPE_UUID:
-                            UUID uuidResult;
-                            if (UUID.TryParse(console_result, out uuidResult))
+                        case ConfigurationOption.ConfigurationTypes.TYPE_LLUUID:
+                            LLUUID uuidResult;
+                            if (LLUUID.TryParse(console_result, out uuidResult))
                             {
                                 convertSuccess = true;
                                 return_result = uuidResult;
                             }
-                            errorMessage = "a UUID (UUID)";
+                            errorMessage = "a UUID (LLUUID)";
                             break;
-                        case ConfigurationOption.ConfigurationTypes.TYPE_UUID_NULL_FREE:
-                            UUID uuidResult2;
-                            if (UUID.TryParse(console_result, out uuidResult2))
+                        case ConfigurationOption.ConfigurationTypes.TYPE_LLUUID_NULL_FREE:
+                            LLUUID uuidResult2;
+                            if (LLUUID.TryParse(console_result, out uuidResult2))
                             {
                                 convertSuccess = true;
 
-                                if (uuidResult2 == UUID.Zero)
-                                    uuidResult2 = UUID.Random();
+                                if (uuidResult2 == LLUUID.Zero)
+                                    uuidResult2 = LLUUID.Random();
 
                                 return_result = uuidResult2;
                             }
-                            errorMessage = "a non-null UUID (UUID)";
+                            errorMessage = "a non-null UUID (LLUUID)";
                             break;
-                        case ConfigurationOption.ConfigurationTypes.TYPE_Vector3:
-                            Vector3 vectorResult;
-                            if (Vector3.TryParse(console_result, out vectorResult))
+                        case ConfigurationOption.ConfigurationTypes.TYPE_LLVECTOR3:
+                            LLVector3 vectorResult;
+                            if (LLVector3.TryParse(console_result, out vectorResult))
                             {
                                 convertSuccess = true;
                                 return_result = vectorResult;
                             }
-                            errorMessage = "a vector (Vector3)";
+                            errorMessage = "a vector (LLVector3)";
                             break;
                         case ConfigurationOption.ConfigurationTypes.TYPE_UINT16:
                             ushort ushortResult;
@@ -428,7 +420,7 @@ namespace OpenSim.Framework
                         case ConfigurationOption.ConfigurationTypes.TYPE_FLOAT:
                             float floatResult;
                             if (
-                                float.TryParse(console_result, NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign, Culture.NumberFormatInfo,
+                                float.TryParse(console_result, NumberStyles.AllowDecimalPoint, Culture.NumberFormatInfo,
                                                out floatResult))
                             {
                                 convertSuccess = true;
@@ -439,7 +431,7 @@ namespace OpenSim.Framework
                         case ConfigurationOption.ConfigurationTypes.TYPE_DOUBLE:
                             double doubleResult;
                             if (
-                                Double.TryParse(console_result, NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign, Culture.NumberFormatInfo,
+                                Double.TryParse(console_result, NumberStyles.AllowDecimalPoint, Culture.NumberFormatInfo,
                                                 out doubleResult))
                             {
                                 convertSuccess = true;

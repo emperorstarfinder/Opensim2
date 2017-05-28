@@ -9,7 +9,7 @@
  *     * Redistributions in binary form must reproduce the above copyright
  *       notice, this list of conditions and the following disclaimer in the
  *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the OpenSimulator Project nor the
+ *     * Neither the name of the OpenSim Project nor the
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
@@ -26,61 +26,85 @@
  */
 
 using System;
+using System.Text.RegularExpressions;
 using log4net.Appender;
 using log4net.Core;
 
 namespace OpenSim.Framework.Console
 {
-    /// <summary>
-    /// Writes log information out onto the console
-    /// </summary>
     public class OpenSimAppender : AnsiColorTerminalAppender
     {
-        private ConsoleBase m_console = null;
-
-        public ConsoleBase Console
-        {
-            get { return m_console; }
-            set { m_console = value; }
-        }
-
         override protected void Append(LoggingEvent le)
         {
-            if (m_console != null)
-                m_console.LockOutput();
+            try {
+                string loggingMessage = RenderLoggingEvent(le);
 
-            string loggingMessage = RenderLoggingEvent(le);
+                string regex = @"^(?<Front>.*?)\[(?<Category>[^\]]+)\]:?(?<End>.*)";
 
-            try
-            {
-                if (m_console != null)
+                Regex RE = new Regex(regex, RegexOptions.Multiline);
+                MatchCollection matches = RE.Matches(loggingMessage);
+                // Get some direct matches $1 $4 is a
+                if (matches.Count == 1)
                 {
-                    string level = "normal";
+                    System.Console.Write(matches[0].Groups["Front"].Value);
+                    System.Console.Write("[");
+
+                    WriteColorText(DeriveColor(matches[0].Groups["Category"].Value), matches[0].Groups["Category"].Value);
+                    System.Console.Write("]:");
 
                     if (le.Level == Level.Error)
-                        level = "error";
+                    {
+                        WriteColorText(ConsoleColor.Red, matches[0].Groups["End"].Value);
+                    }
                     else if (le.Level == Level.Warn)
-                        level = "warn";
-
-                    m_console.Output(loggingMessage, level);
+                    {
+                        WriteColorText(ConsoleColor.Yellow, matches[0].Groups["End"].Value);
+                    }
+                    else
+                    {
+                        System.Console.Write(matches[0].Groups["End"].Value);
+                    }
+                    System.Console.WriteLine();
                 }
                 else
                 {
-                    if (!loggingMessage.EndsWith("\n"))
-                        System.Console.WriteLine(loggingMessage);
-                    else
-                        System.Console.Write(loggingMessage);
+                    System.Console.Write(loggingMessage);
                 }
             }
             catch (Exception e)
             {
-                System.Console.WriteLine("Couldn't write out log message: {0}", e.ToString());
+                System.Console.WriteLine("Couldn't write out log message", e.ToString());
             }
-            finally
+        }
+
+        private void WriteColorText(ConsoleColor color, string sender)
+        {
+            try
             {
-                if (m_console != null)
-                    m_console.UnlockOutput();
+                lock (this)
+                {
+                    try
+                    {
+                        System.Console.ForegroundColor = color;
+                        System.Console.Write(sender);
+                        System.Console.ResetColor();
+                    }
+                    catch (ArgumentNullException)
+                    {
+                        // Some older systems dont support coloured text.
+                        System.Console.WriteLine(sender);
+                    }
+                }
             }
+            catch (ObjectDisposedException)
+            {
+            }
+        }
+
+        private static ConsoleColor DeriveColor(string input)
+        {
+            int colIdx = (input.ToUpper().GetHashCode() % 6) + 9;
+            return (ConsoleColor) colIdx;
         }
     }
 }

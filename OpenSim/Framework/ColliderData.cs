@@ -9,7 +9,7 @@
  *     * Redistributions in binary form must reproduce the above copyright
  *       notice, this list of conditions and the following disclaimer in the
  *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the OpenSimulator Project nor the
+ *     * Neither the name of the OpenSim Project nor the
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
@@ -26,23 +26,23 @@
  */
 
 using System;
+using System.Collections;
+using libsecondlife;
 using System.Collections.Generic;
-using OpenMetaverse;
 
 namespace OpenSim.Framework
 {
     public class DetectedObject
     {
         public DetectedObject() { }
-        public UUID groupUUID = UUID.Zero;
-        public UUID ownerUUID = UUID.Zero;
-        public UUID keyUUID = UUID.Zero;
-        public Vector3 posVector = Vector3.Zero;
-        public Quaternion rotQuat = Quaternion.Identity;
-        public Vector3 velVector = Vector3.Zero;
+        public LLUUID groupUUID = LLUUID.Zero;
+        public LLUUID ownerUUID = LLUUID.Zero;
+        public LLUUID keyUUID = LLUUID.Zero;
+        public LLVector3 posVector = LLVector3.Zero;
+        public LLQuaternion rotQuat = LLQuaternion.Identity;
+        public LLVector3 velVector = LLVector3.Zero;
         public string nameStr = String.Empty;
         public int colliderType = 0;
-        public int linkNumber;
     }
 
     public class ColliderArgs : EventArgs

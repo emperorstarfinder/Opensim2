@@ -9,7 +9,7 @@
  *     * Redistributions in binary form must reproduce the above copyright
  *       notice, this list of conditions and the following disclaimer in the
  *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the OpenSimulator Project nor the
+ *     * Neither the name of the OpenSim Project nor the
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
@@ -26,27 +26,26 @@
  */
 
 using System;
-using OpenMetaverse;
+using libsecondlife;
 
 namespace OpenSim.Framework
 {
     public class Login
     {
-        public UUID Agent;
-        public UUID BaseFolder;
+        public LLUUID Agent;
+        public LLUUID BaseFolder;
         public string CapsPath = String.Empty;
         public uint CircuitCode;
         public string First = "Test";
-        public UUID InventoryFolder;
+        public LLUUID InventoryFolder;
         public string Last = "User";
-        public UUID SecureSession = UUID.Zero;
-        public UUID Session;
-        public Vector3 StartPos;
-        public AvatarAppearance Appearance;
+        public LLUUID SecureSession = LLUUID.Zero;
+        public LLUUID Session;
+        public LLVector3 StartPos;
 
         public Login()
         {
-            StartPos = new Vector3(128, 128, 70);
+            StartPos = new LLVector3(128, 128, 70);
         }
     }
 }

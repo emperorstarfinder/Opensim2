@@ -9,7 +9,7 @@
  *     * Redistributions in binary form must reproduce the above copyright
  *       notice, this list of conditions and the following disclaimer in the
  *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the OpenSimulator Project nor the
+ *     * Neither the name of the OpenSim Project nor the
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
@@ -25,22 +25,34 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-using OpenMetaverse;
+using libsecondlife;
 
 namespace OpenSim.Framework
 {
     /// <summary>
-    /// User inventory folder
+    /// A Class for folders which contain users inventory
     /// </summary>
-    public class InventoryFolderBase : InventoryNodeBase
+    public class InventoryFolderBase
     {
-        public static readonly string ROOT_FOLDER_NAME = "My Inventory";
-        public static readonly string SUITCASE_FOLDER_NAME = "My Suitcase";
+        /// <summary>
+        /// The UUID for this folder
+        /// </summary>
+        private LLUUID _id;
+
+        /// <summary>
+        /// The name of the folder (64 characters or less)
+        /// </summary>
+        private string _name;
+
+        /// <summary>
+        /// The agent who's inventory this is contained by
+        /// </summary>
+        private LLUUID _owner;
 
         /// <summary>
         /// The folder this folder is contained in
         /// </summary>
-        private UUID _parentID;
+        private LLUUID _parentID;
 
         /// <summary>
         /// Type of items normally stored in this folder
@@ -54,49 +66,40 @@ namespace OpenSim.Framework
         /// </summary>
         private ushort _version;
 
-        public virtual UUID ParentID
+        public string Name
+        {
+            get { return _name; }
+            set { _name = value; }
+        }
+
+        public LLUUID Owner
+        {
+            get { return _owner; }
+            set { _owner = value; }
+        }
+
+        public LLUUID ParentID
         {
             get { return _parentID; }
             set { _parentID = value; }
         }
 
-        public virtual short Type
+        public LLUUID ID
+        {
+            get { return _id; }
+            set { _id = value; }
+        }
+
+        public short Type
         {
             get { return _type; }
             set { _type = value; }
         }
 
-        public virtual ushort Version
+        public ushort Version
         {
             get { return _version; }
             set { _version = value; }
-        }
-
-        public InventoryFolderBase()
-        {
-        }
-
-        public InventoryFolderBase(UUID id) : this()
-        {
-            ID = id;
-        }
-
-        public InventoryFolderBase(UUID id, UUID owner) : this(id)
-        {
-            Owner = owner;
-        }
-
-        public InventoryFolderBase(UUID id, string name, UUID owner, UUID parent) : this(id, owner)
-        {
-            Name = name;
-            ParentID = parent;
-        }
-
-        public InventoryFolderBase(
-            UUID id, string name, UUID owner, short type, UUID parent, ushort version) : this(id, name, owner, parent)
-        {
-            Type = type;
-            Version = version;
         }
     }
 }

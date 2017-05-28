@@ -9,7 +9,7 @@
  *     * Redistributions in binary form must reproduce the above copyright
  *       notice, this list of conditions and the following disclaimer in the
  *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the OpenSimulator Project nor the
+ *     * Neither the name of the OpenSim Project nor the
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
@@ -26,89 +26,32 @@
  */
 
 using System;
-using OpenMetaverse;
 
 namespace OpenSim.Framework
 {
     [Serializable]
     public class GridInstantMessage
     {
+        public byte[] binaryBucket;
+        public byte dialog;
         public Guid fromAgentID;
         public string fromAgentName;
-        public Guid toAgentID;
-        public byte dialog;
+        public Guid fromAgentSession;
         public bool fromGroup;
-        public string message;
         public Guid imSessionID;
+
+        public string message;
         public byte offline;
-        public Vector3 Position;
-        public byte[] binaryBucket;
 
         public uint ParentEstateID;
+
+        public sLLVector3 Position;
+
         public Guid RegionID;
         public uint timestamp;
+        public Guid toAgentID;
 
         public GridInstantMessage()
-        {
-            binaryBucket = new byte[0];
-        }
-
-        public GridInstantMessage(GridInstantMessage im, bool addTimestamp)
-        {
-            fromAgentID = im.fromAgentID;
-            fromAgentName = im.fromAgentName;
-            toAgentID = im.toAgentID;
-            dialog = im.dialog;
-            fromGroup = im.fromGroup;
-            message = im.message;
-            imSessionID = im.imSessionID;
-            offline = im.offline;
-            Position = im.Position;
-            binaryBucket = im.binaryBucket;
-            RegionID = im.RegionID;
-            ParentEstateID = im.ParentEstateID;
-
-            if (addTimestamp)
-                timestamp = (uint)Util.UnixTimeSinceEpoch();
-        }
-
-        public GridInstantMessage(IScene scene, UUID _fromAgentID,
-                string _fromAgentName, UUID _toAgentID,
-                byte _dialog, bool _fromGroup, string _message,
-                UUID _imSessionID, bool _offline, Vector3 _position,
-                byte[] _binaryBucket, bool addTimestamp)
-        {
-            fromAgentID = _fromAgentID.Guid;
-            fromAgentName = _fromAgentName;
-            toAgentID = _toAgentID.Guid;
-            dialog = _dialog;
-            fromGroup = _fromGroup;
-            message = _message;
-            imSessionID = _imSessionID.Guid;
-
-            if (_offline)
-                offline = 1;
-            else
-                offline = 0;
-            Position = _position;
-            binaryBucket = _binaryBucket;
-
-            if (scene != null)
-            {
-                ParentEstateID = scene.RegionInfo.EstateSettings.ParentEstateID;
-                RegionID = scene.RegionInfo.RegionSettings.RegionUUID.Guid;
-            }
-
-            if (addTimestamp)
-                timestamp = (uint)Util.UnixTimeSinceEpoch();
-        }
-
-        public GridInstantMessage(IScene scene, UUID _fromAgentID,
-                string _fromAgentName, UUID _toAgentID, byte _dialog,
-                string _message, bool _offline,
-                Vector3 _position) : this(scene, _fromAgentID, _fromAgentName,
-                _toAgentID, _dialog, false, _message,
-                _fromAgentID ^ _toAgentID, _offline, _position, new byte[0], true)
         {
         }
     }

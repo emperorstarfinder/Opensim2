@@ -5,16 +5,16 @@ Copyright (c) 2004 Crestez Leonard (cleonard@go.ro)
 Redistribution and use in source and binary forms, with or without modification, are permitted
 provided that the following conditions are met:
 
-* Redistributions of source code must retain the above copyright notice, this list of conditions
-  and the following disclaimer.
-* Redistributions in binary form must reproduce the above copyright notice, this list of conditions
-  and the following disclaimer in the documentation and/or other materials provided with the
-  distribution.
-* The name of the author may not be used to endorse or promote products derived from this software
-  without specific prior written permission.
+* Redistributions of source code must retain the above copyright notice, this list of conditions 
+  and the following disclaimer. 
+* Redistributions in binary form must reproduce the above copyright notice, this list of conditions 
+  and the following disclaimer in the documentation and/or other materials provided with the 
+  distribution. 
+* The name of the author may not be used to endorse or promote products derived from this software 
+  without specific prior written permission. 
 
-THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING,
-BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, 
+BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
 ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
 EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
 OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
@@ -24,6 +24,8 @@ IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY O
 #endregion
 
 using System;
+using System.Collections;
+using System.Collections.Specialized;
 using System.IO;
 using System.Text.RegularExpressions;
 
@@ -108,7 +110,7 @@ namespace Prebuild.Core.Targets
             {
                 string path;
                 // Project references change with configurations.
-                if (solution.ProjectsTable.ContainsKey(refr.Name))
+                if (solution.ProjectsTable.Contains(refr.Name))
                     continue;
                 path = FindFileReference(refr.Name, project);
                 if (path != null)
@@ -218,7 +220,7 @@ namespace Prebuild.Core.Targets
                 }
                 // Dependencies on other projects.
                 foreach (ReferenceNode refr in project.References)
-                    if (solution.ProjectsTable.ContainsKey(refr.Name))
+                    if (solution.ProjectsTable.Contains(refr.Name))
                     {
                         ProjectNode refProj = (ProjectNode)solution.ProjectsTable[refr.Name];
                         if (ProjectClashes(refProj))
@@ -254,7 +256,7 @@ namespace Prebuild.Core.Targets
                 // Build references to other projects. Now that sux.
                 // We have to reference the other project in the same conf.
                 foreach (ReferenceNode refr in project.References)
-                    if (solution.ProjectsTable.ContainsKey(refr.Name))
+                    if (solution.ProjectsTable.Contains(refr.Name))
                     {
                         ProjectNode refProj;
                         refProj = (ProjectNode)solution.ProjectsTable[refr.Name];
@@ -272,7 +274,7 @@ namespace Prebuild.Core.Targets
                     {
                         string outPath, srcPath, destPath;
                         outPath = Helper.NormalizePath((string)conf.Options["OutputPath"]);
-                        if (solution.ProjectsTable.ContainsKey(refr.Name))
+                        if (solution.ProjectsTable.Contains(refr.Name))
                         {
                             ProjectNode refProj;
                             refProj = (ProjectNode)solution.ProjectsTable[refr.Name];

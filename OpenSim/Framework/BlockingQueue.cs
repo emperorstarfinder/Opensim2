@@ -9,7 +9,7 @@
  *     * Redistributions in binary form must reproduce the above copyright
  *       notice, this list of conditions and the following disclaimer in the
  *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the OpenSimulator Project nor the
+ *     * Neither the name of the OpenSim Project nor the
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
@@ -32,18 +32,8 @@ namespace OpenSim.Framework
 {
     public class BlockingQueue<T>
     {
-        private readonly Queue<T> m_pqueue = new Queue<T>();
         private readonly Queue<T> m_queue = new Queue<T>();
         private readonly object m_queueSync = new object();
-
-        public void PriorityEnqueue(T value)
-        {
-            lock (m_queueSync)
-            {
-                m_pqueue.Enqueue(value);
-                Monitor.Pulse(m_queueSync);
-            }
-        }
 
         public void Enqueue(T value)
         {
@@ -58,90 +48,36 @@ namespace OpenSim.Framework
         {
             lock (m_queueSync)
             {
-                while (m_queue.Count < 1 && m_pqueue.Count < 1)
+                if (m_queue.Count < 1)
                 {
                     Monitor.Wait(m_queueSync);
                 }
 
-                if (m_pqueue.Count > 0)
-                    return m_pqueue.Dequeue();
-
-                if (m_queue.Count > 0)
-                    return m_queue.Dequeue();
-                return default(T);
+                return m_queue.Dequeue();
             }
         }
 
-        public T Dequeue(int msTimeout)
-        {
-            lock (m_queueSync)
-            {
-                if (m_queue.Count < 1 && m_pqueue.Count < 1)
-                {
-                    if(!Monitor.Wait(m_queueSync, msTimeout))
-                        return default(T);
-                }
-
-                if (m_pqueue.Count > 0)
-                    return m_pqueue.Dequeue();
-                if (m_queue.Count > 0)
-                    return m_queue.Dequeue();
-                return default(T);
-            }
-        }
-
-        /// <summary>
-        /// Indicate whether this queue contains the given item.
-        /// </summary>
-        /// <remarks>
-        /// This method is not thread-safe.  Do not rely on the result without consistent external locking.
-        /// </remarks>
         public bool Contains(T item)
         {
             lock (m_queueSync)
             {
-                if (m_queue.Count < 1 && m_pqueue.Count < 1)
-                    return false;
-
-                if (m_pqueue.Contains(item))
-                    return true;
                 return m_queue.Contains(item);
             }
         }
 
-        /// <summary>
-        /// Return a count of the number of requests on this queue.
-        /// </summary>
         public int Count()
         {
             lock (m_queueSync)
-                return m_queue.Count + m_pqueue.Count;
+            {
+                return m_queue.Count;
+            }
         }
 
-        /// <summary>
-        /// Return the array of items on this queue.
-        /// </summary>
-        /// <remarks>
-        /// This method is not thread-safe.  Do not rely on the result without consistent external locking.
-        /// </remarks>
         public T[] GetQueueArray()
         {
             lock (m_queueSync)
             {
-                if (m_queue.Count < 1 && m_pqueue.Count < 1)
-                    return new T[0];
-
                 return m_queue.ToArray();
-            }
-        }
-
-        public void Clear()
-        {
-            lock (m_queueSync)
-            {
-                m_pqueue.Clear();
-                m_queue.Clear();
-                Monitor.Pulse(m_queueSync);
             }
         }
     }

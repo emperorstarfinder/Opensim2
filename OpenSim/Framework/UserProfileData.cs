@@ -9,7 +9,7 @@
  *     * Redistributions in binary form must reproduce the above copyright
  *       notice, this list of conditions and the following disclaimer in the
  *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the OpenSimulator Project nor the
+ *     * Neither the name of the OpenSim Project nor the
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
@@ -26,7 +26,7 @@
  */
 
 using System;
-using OpenMetaverse;
+using libsecondlife;
 
 namespace OpenSim.Framework
 {
@@ -38,364 +38,287 @@ namespace OpenSim.Framework
         /// <summary>
         /// A UNIX Timestamp (seconds since epoch) for the users creation
         /// </summary>
-        private int m_created;
+        private int _created;
 
         /// <summary>
         /// The users last registered agent (filled in on the user server)
         /// </summary>
-        private UserAgentData m_currentAgent;
+        private UserAgentData _currentAgent;
 
         /// <summary>
         /// The first component of a users account name
         /// </summary>
-        private string m_firstname;
+        private string _firstname;
 
         /// <summary>
         /// The coordinates inside the region of the home location
         /// </summary>
-        private Vector3 m_homeLocation;
+        private LLVector3 _homeLocation;
 
         /// <summary>
         /// Where the user will be looking when they rez.
         /// </summary>
-        private Vector3 m_homeLookAt;
+        private LLVector3 _homeLookAt;
 
-        private uint m_homeRegionX;
-        private uint m_homeRegionY;
+        private uint _homeRegionX;
+        private uint _homeRegionY;
 
         /// <summary>
         /// The ID value for this user
         /// </summary>
-        private UUID m_id;
+        private LLUUID _id;
 
         /// <summary>
         /// A UNIX Timestamp for the users last login date / time
         /// </summary>
-        private int m_lastLogin;
+        private int _lastLogin;
 
         /// <summary>
         /// A salted hash containing the users password, in the format md5(md5(password) + ":" + salt)
         /// </summary>
         /// <remarks>This is double MD5'd because the client sends an unsalted MD5 to the loginserver</remarks>
-        private string m_passwordHash;
+        private string _passwordHash;
 
         /// <summary>
         /// The salt used for the users hash, should be 32 bytes or longer
         /// </summary>
-        private string m_passwordSalt;
+        private string _passwordSalt;
 
         /// <summary>
         /// The about text listed in a users profile.
         /// </summary>
-        private string m_profileAboutText = String.Empty;
+        private string _profileAboutText = String.Empty;
 
         /// <summary>
         /// A uint mask containing the "I can do" fields of the users profile
         /// </summary>
-        private uint m_profileCanDoMask;
+        private uint _profileCanDoMask;
 
         /// <summary>
         /// The profile image for the users first life tab
         /// </summary>
-        private UUID m_profileFirstImage;
+        private LLUUID _profileFirstImage;
 
         /// <summary>
         /// The first life about text listed in a users profile
         /// </summary>
-        private string m_profileFirstText = String.Empty;
+        private string _profileFirstText = String.Empty;
 
         /// <summary>
         /// The profile image for an avatar stored on the asset server
         /// </summary>
-        private UUID m_profileImage;
+        private LLUUID _profileImage;
 
         /// <summary>
         /// A uint mask containing the "I want to do" part of the users profile
         /// </summary>
-        private uint m_profileWantDoMask; // Profile window "I want to" mask
+        private uint _profileWantDoMask; // Profile window "I want to" mask
 
-        /// <summary>
-        /// The profile url for an avatar
-        /// </summary>
-        private string m_profileUrl;
+        private LLUUID _rootInventoryFolderID;
 
         /// <summary>
         /// The second component of a users account name
         /// </summary>
-        private string m_surname;
-
-        /// <summary>
-        /// A valid email address for the account.  Useful for password reset requests.
-        /// </summary>
-        private string m_email = String.Empty;
+        private string _surname;
 
         /// <summary>
         /// A URI to the users asset server, used for foreigners and large grids.
         /// </summary>
-        private string m_userAssetUri = String.Empty;
+        private string _userAssetURI = String.Empty;
 
         /// <summary>
         /// A URI to the users inventory server, used for foreigners and large grids
         /// </summary>
-        private string m_userInventoryUri = String.Empty;
+        private string _userInventoryURI = String.Empty;
 
         /// <summary>
         /// The last used Web_login_key
         /// </summary>
-        private UUID m_webLoginKey;
-
-        // Data for estates and other goodies
-        // to get away from per-machine configs a little
-        //
-        private int m_userFlags;
-        private int m_godLevel;
-        private string m_customType;
-        private UUID m_partner;
+        private LLUUID _webLoginKey;
 
         /// <summary>
-        /// The regionhandle of the users preferred home region. If
-        /// multiple sims occupy the same spot, the grid may decide
-        /// which region the user logs into
+        /// The regionhandle of the users preffered home region. If multiple sims occupy the same spot, the grid may decide which region the user logs into
         /// </summary>
-        public virtual ulong HomeRegion
+        public ulong HomeRegion
         {
-            get
-            {
-                return Util.RegionWorldLocToHandle(Util.RegionToWorldLoc(m_homeRegionX), Util.RegionToWorldLoc(m_homeRegionY));
-                // return Utils.UIntsToLong( m_homeRegionX * (uint)Constants.RegionSize, m_homeRegionY * (uint)Constants.RegionSize);
-            }
-
+            get { return Helpers.UIntsToLong((_homeRegionX * (uint) Constants.RegionSize), (_homeRegionY * (uint) Constants.RegionSize)); }
             set
             {
-                uint regionWorldLocX, regionWorldLocY;
-                Util.RegionHandleToWorldLoc(value, out regionWorldLocX, out regionWorldLocY);
-                m_homeRegionX = Util.WorldToRegionLoc(regionWorldLocX);
-                m_homeRegionY = Util.WorldToRegionLoc(regionWorldLocY);
-                // m_homeRegionX = (uint) (value >> 40);
-                // m_homeRegionY = (((uint) (value)) >> 8);
+                _homeRegionX = (uint) (value >> 40);
+                _homeRegionY = (((uint) (value)) >> 8);
             }
-        }
-
-        private UUID m_homeRegionId;
-        /// <summary>
-        /// The regionID of the users home region. This is unique;
-        /// even if the position of the region changes within the
-        /// grid, this will refer to the same region.
-        /// </summary>
-        public UUID HomeRegionID
-        {
-            get { return m_homeRegionId; }
-            set { m_homeRegionId = value; }
         }
 
         // Property wrappers
-        public UUID ID
+        public LLUUID ID
         {
-            get { return m_id; }
-            set { m_id = value; }
+            get { return _id; }
+            set { _id = value; }
         }
 
-        public UUID WebLoginKey
+        public LLUUID WebLoginKey
         {
-            get { return m_webLoginKey; }
-            set { m_webLoginKey = value; }
+            get { return _webLoginKey; }
+            set { _webLoginKey = value; }
         }
 
         public string FirstName
         {
-            get { return m_firstname; }
-            set { m_firstname = value; }
+            get { return _firstname; }
+            set { _firstname = value; }
         }
 
         public string SurName
         {
-            get { return m_surname; }
-            set { m_surname = value; }
-        }
-
-        /// <value>
-        /// The concatentation of the various name components.
-        /// </value>
-        public string Name
-        {
-            get { return String.Format("{0} {1}", m_firstname, m_surname); }
-        }
-
-        public string Email
-        {
-            get { return m_email; }
-            set { m_email = value; }
+            get { return _surname; }
+            set { _surname = value; }
         }
 
         public string PasswordHash
         {
-            get { return m_passwordHash; }
-            set { m_passwordHash = value; }
+            get { return _passwordHash; }
+            set { _passwordHash = value; }
         }
 
         public string PasswordSalt
         {
-            get { return m_passwordSalt; }
-            set { m_passwordSalt = value; }
+            get { return _passwordSalt; }
+            set { _passwordSalt = value; }
         }
 
         public uint HomeRegionX
         {
-            get { return m_homeRegionX; }
-            set { m_homeRegionX = value; }
+            get { return _homeRegionX; }
+            set { _homeRegionX = value; }
         }
 
         public uint HomeRegionY
         {
-            get { return m_homeRegionY; }
-            set { m_homeRegionY = value; }
+            get { return _homeRegionY; }
+            set { _homeRegionY = value; }
         }
 
-        public Vector3 HomeLocation
+        public LLVector3 HomeLocation
         {
-            get { return m_homeLocation; }
-            set { m_homeLocation = value; }
+            get { return _homeLocation; }
+            set { _homeLocation = value; }
         }
 
         // for handy serialization
         public float HomeLocationX
         {
-            get { return m_homeLocation.X; }
-            set { m_homeLocation.X = value; }
+            get { return _homeLocation.X; }
+            set { _homeLocation.X = value; }
         }
 
         public float HomeLocationY
         {
-            get { return m_homeLocation.Y; }
-            set { m_homeLocation.Y = value; }
+            get { return _homeLocation.Y; }
+            set { _homeLocation.Y = value; }
         }
 
         public float HomeLocationZ
         {
-            get { return m_homeLocation.Z; }
-            set { m_homeLocation.Z = value; }
+            get { return _homeLocation.Z; }
+            set { _homeLocation.Z = value; }
         }
 
 
-        public Vector3 HomeLookAt
+        public LLVector3 HomeLookAt
         {
-            get { return m_homeLookAt; }
-            set { m_homeLookAt = value; }
+            get { return _homeLookAt; }
+            set { _homeLookAt = value; }
         }
 
         // for handy serialization
         public float HomeLookAtX
         {
-            get { return m_homeLookAt.X; }
-            set { m_homeLookAt.X = value; }
+            get { return _homeLookAt.X; }
+            set { _homeLookAt.X = value; }
         }
 
         public float HomeLookAtY
         {
-            get { return m_homeLookAt.Y; }
-            set { m_homeLookAt.Y = value; }
+            get { return _homeLookAt.Y; }
+            set { _homeLookAt.Y = value; }
         }
 
         public float HomeLookAtZ
         {
-            get { return m_homeLookAt.Z; }
-            set { m_homeLookAt.Z = value; }
+            get { return _homeLookAt.Z; }
+            set { _homeLookAt.Z = value; }
         }
 
         public int Created
         {
-            get { return m_created; }
-            set { m_created = value; }
+            get { return _created; }
+            set { _created = value; }
         }
 
         public int LastLogin
         {
-            get { return m_lastLogin; }
-            set { m_lastLogin = value; }
+            get { return _lastLogin; }
+            set { _lastLogin = value; }
+        }
+
+        public LLUUID RootInventoryFolderID
+        {
+            get { return _rootInventoryFolderID; }
+            set { _rootInventoryFolderID = value; }
         }
 
         public string UserInventoryURI
         {
-            get { return m_userInventoryUri; }
-            set { m_userInventoryUri = value; }
+            get { return _userInventoryURI; }
+            set { _userInventoryURI = value; }
         }
 
         public string UserAssetURI
         {
-            get { return m_userAssetUri; }
-            set { m_userAssetUri = value; }
+            get { return _userAssetURI; }
+            set { _userAssetURI = value; }
         }
 
         public uint CanDoMask
         {
-            get { return m_profileCanDoMask; }
-            set { m_profileCanDoMask = value; }
+            get { return _profileCanDoMask; }
+            set { _profileCanDoMask = value; }
         }
 
         public uint WantDoMask
         {
-            get { return m_profileWantDoMask; }
-            set { m_profileWantDoMask = value; }
+            get { return _profileWantDoMask; }
+            set { _profileWantDoMask = value; }
         }
 
         public string AboutText
         {
-            get { return m_profileAboutText; }
-            set { m_profileAboutText = value; }
+            get { return _profileAboutText; }
+            set { _profileAboutText = value; }
         }
 
         public string FirstLifeAboutText
         {
-            get { return m_profileFirstText; }
-            set { m_profileFirstText = value; }
+            get { return _profileFirstText; }
+            set { _profileFirstText = value; }
         }
 
-        public string ProfileUrl
+        public LLUUID Image
         {
-            get { return m_profileUrl; }
-            set { m_profileUrl = value; }
+            get { return _profileImage; }
+            set { _profileImage = value; }
         }
 
-        public UUID Image
+        public LLUUID FirstLifeImage
         {
-            get { return m_profileImage; }
-            set { m_profileImage = value; }
-        }
-
-        public UUID FirstLifeImage
-        {
-            get { return m_profileFirstImage; }
-            set { m_profileFirstImage = value; }
+            get { return _profileFirstImage; }
+            set { _profileFirstImage = value; }
         }
 
         public UserAgentData CurrentAgent
         {
-            get { return m_currentAgent; }
-            set { m_currentAgent = value; }
-        }
-
-        public int UserFlags
-        {
-            get { return m_userFlags; }
-            set { m_userFlags = value; }
-        }
-
-        public int GodLevel
-        {
-            get { return m_godLevel; }
-            set { m_godLevel = value; }
-        }
-
-        public string CustomType
-        {
-            get { return m_customType; }
-            set { m_customType = value; }
-        }
-
-        public UUID Partner
-        {
-            get { return m_partner; }
-            set { m_partner = value; }
+            get { return _currentAgent; }
+            set { _currentAgent = value; }
         }
     }
 }

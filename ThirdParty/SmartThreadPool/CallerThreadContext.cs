@@ -1,6 +1,3 @@
-
-#if !(_WINDOWS_CE) && !(_SILVERLIGHT) && !(WINDOWS_PHONE)
-
 using System;
 using System.Diagnostics;
 using System.Threading;
@@ -9,23 +6,23 @@ using System.Web;
 using System.Runtime.Remoting.Messaging;
 
 
-namespace Amib.Threading.Internal
+namespace Amib.Threading
 {
-#region CallerThreadContext class
+    #region CallerThreadContext class
 
     /// <summary>
     /// This class stores the caller call context in order to restore
-    /// it when the work item is executed in the thread pool environment.
+    /// it when the work item is executed in the thread pool environment. 
     /// </summary>
-    internal class CallerThreadContext
+    internal class CallerThreadContext 
     {
-#region Prepare reflection information
+        #region Prepare reflection information
 
         // Cached type information.
-        private static readonly MethodInfo getLogicalCallContextMethodInfo =
+        private static MethodInfo getLogicalCallContextMethodInfo =
             typeof(Thread).GetMethod("GetLogicalCallContext", BindingFlags.Instance | BindingFlags.NonPublic);
 
-        private static readonly MethodInfo setLogicalCallContextMethodInfo =
+        private static MethodInfo setLogicalCallContextMethodInfo =
             typeof(Thread).GetMethod("SetLogicalCallContext", BindingFlags.Instance | BindingFlags.NonPublic);
 
         private static string HttpContextSlotName = GetHttpContextSlotName();
@@ -34,20 +31,18 @@ namespace Amib.Threading.Internal
         {
             FieldInfo fi = typeof(HttpContext).GetField("CallContextSlotName", BindingFlags.Static | BindingFlags.NonPublic);
 
-            if (fi != null)
-            {
-                return (string) fi.GetValue(null);
-            }
-
-            return "HttpContext";
+            if( fi != null )
+                return (string)fi.GetValue(null);
+            else // Use the default "HttpContext" slot name
+                return "HttpContext";
         }
 
         #endregion
 
-#region Private fields
+        #region Private fields
 
-        private HttpContext _httpContext;
-        private LogicalCallContext _callContext;
+        private HttpContext _httpContext = null;
+        private LogicalCallContext _callContext = null;
 
         #endregion
 
@@ -79,7 +74,7 @@ namespace Amib.Threading.Internal
         /// </summary>
         /// <returns></returns>
         public static CallerThreadContext Capture(
-            bool captureCallContext,
+            bool captureCallContext, 
             bool captureHttpContext)
         {
             Debug.Assert(captureCallContext || captureHttpContext);
@@ -112,9 +107,9 @@ namespace Amib.Threading.Internal
         /// <param name="callerThreadContext"></param>
         public static void Apply(CallerThreadContext callerThreadContext)
         {
-            if (null == callerThreadContext)
+            if (null == callerThreadContext) 
             {
-                throw new ArgumentNullException("callerThreadContext");
+                throw new ArgumentNullException("callerThreadContext");            
             }
 
             // Todo: In NET 2.0, redo using the new feature of ExecutionContext class - Run()
@@ -124,15 +119,105 @@ namespace Amib.Threading.Internal
                 setLogicalCallContextMethodInfo.Invoke(Thread.CurrentThread, new object[] { callerThreadContext._callContext });
             }
 
-            // Restore HttpContext
+            // Restore HttpContext 
             if (callerThreadContext._httpContext != null)
             {
-                HttpContext.Current = callerThreadContext._httpContext;
-                //CallContext.SetData(HttpContextSlotName, callerThreadContext._httpContext);
+                CallContext.SetData(HttpContextSlotName, callerThreadContext._httpContext);
             }
         }
     }
 
     #endregion
+
 }
-#endif
+
+
+/*
+// Ami Bar
+// amibar@gmail.com
+
+using System;
+using System.Threading;
+using System.Globalization;
+using System.Security.Principal;
+using System.Reflection;
+using System.Runtime.Remoting.Contexts;
+
+namespace Amib.Threading.Internal
+{
+    #region CallerThreadContext class
+
+    /// <summary>
+    /// This class stores the caller thread context in order to restore
+    /// it when the work item is executed in the context of the thread 
+    /// from the pool.
+    /// Note that we can't store the thread's CompressedStack, because 
+    /// it throws a security exception
+    /// </summary>
+    public class CallerThreadContext
+    {
+        private CultureInfo _culture = null;
+        private CultureInfo _cultureUI = null;
+        private IPrincipal _principal;
+        private System.Runtime.Remoting.Contexts.Context _context;
+
+        private static FieldInfo _fieldInfo = GetFieldInfo();
+
+        private static FieldInfo GetFieldInfo()
+        {
+            Type threadType = typeof(Thread);
+            return threadType.GetField(
+                "m_Context",
+                BindingFlags.Instance | BindingFlags.NonPublic);
+        }
+
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        private CallerThreadContext()
+        {
+        }
+
+        /// <summary>
+        /// Captures the current thread context
+        /// </summary>
+        /// <returns></returns>
+        public static CallerThreadContext Capture()
+        {
+            CallerThreadContext callerThreadContext = new CallerThreadContext();
+
+            Thread thread = Thread.CurrentThread;
+            callerThreadContext._culture = thread.CurrentCulture;
+            callerThreadContext._cultureUI = thread.CurrentUICulture;
+            callerThreadContext._principal = Thread.CurrentPrincipal;
+            callerThreadContext._context = Thread.CurrentContext;
+            return callerThreadContext;
+        }
+
+        /// <summary>
+        /// Applies the thread context stored earlier
+        /// </summary>
+        /// <param name="callerThreadContext"></param>
+        public static void Apply(CallerThreadContext callerThreadContext)
+        {
+            Thread thread = Thread.CurrentThread;
+            thread.CurrentCulture = callerThreadContext._culture;
+            thread.CurrentUICulture = callerThreadContext._cultureUI;
+            Thread.CurrentPrincipal = callerThreadContext._principal;
+
+            // Uncomment the following block to enable the Thread.CurrentThread
+/*
+            if (null != _fieldInfo)
+            {
+                _fieldInfo.SetValue(
+                    Thread.CurrentThread, 
+                    callerThreadContext._context);
+            }
+* /            
+        }
+    }
+
+    #endregion
+}
+*/
+

@@ -9,7 +9,7 @@
  *     * Redistributions in binary form must reproduce the above copyright
  *       notice, this list of conditions and the following disclaimer in the
  *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the OpenSimulator Project nor the
+ *     * Neither the name of the OpenSim Project nor the
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
@@ -30,9 +30,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Xml;
+using libsecondlife;
 using log4net;
 using Nini.Config;
-using OpenMetaverse;
 
 /// <summary>
 /// Loads assets from the filesystem location.  Not yet a plugin, though it should be.
@@ -41,18 +41,20 @@ namespace OpenSim.Framework.AssetLoader.Filesystem
 {
     public class AssetLoaderFileSystem : IAssetLoader
     {
-        private static readonly UUID LIBRARY_OWNER_ID = new UUID("11111111-1111-0000-0000-000100bba000");
         private static readonly ILog m_log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-        protected static AssetBase CreateAsset(string assetIdStr, string name, string path, sbyte type)
+        protected static AssetBase CreateAsset(string assetIdStr, string name, string path, bool isImage)
         {
-            AssetBase asset = new AssetBase(new UUID(assetIdStr), name, type, LIBRARY_OWNER_ID.ToString());
+            AssetBase asset = new AssetBase(
+                new LLUUID(assetIdStr),
+                name
+                );
 
             if (!String.IsNullOrEmpty(path))
             {
-                //m_log.InfoFormat("[ASSETS]: Loading: [{0}][{1}]", name, path);
+                m_log.InfoFormat("[ASSETS]: Loading: [{0}][{1}]", name, path);
 
-                LoadAsset(asset, path);
+                LoadAsset(asset, isImage, path);
             }
             else
             {
@@ -62,31 +64,25 @@ namespace OpenSim.Framework.AssetLoader.Filesystem
             return asset;
         }
 
-        protected static void LoadAsset(AssetBase info, string path)
+        protected static void LoadAsset(AssetBase info, bool image, string path)
         {
-//            bool image =
-//               (info.Type == (sbyte)AssetType.Texture ||
-//                info.Type == (sbyte)AssetType.TextureTGA ||
-//                info.Type == (sbyte)AssetType.ImageJPEG ||
-//                info.Type == (sbyte)AssetType.ImageTGA);
-
             FileInfo fInfo = new FileInfo(path);
             long numBytes = fInfo.Length;
-            if (fInfo.Exists)
-            {
-                FileStream fStream = new FileStream(path, FileMode.Open, FileAccess.Read);
-                byte[] idata = new byte[numBytes];
-                BinaryReader br = new BinaryReader(fStream);
-                idata = br.ReadBytes((int)numBytes);
-                br.Close();
-                fStream.Close();
-                info.Data = idata;
-                //info.loaded=true;
-            }
-            else
-            {
-                m_log.ErrorFormat("[ASSETS]: file: [{0}] not found !", path);
-            }
+            FileStream fStream = new FileStream(path, FileMode.Open, FileAccess.Read);
+            byte[] idata = new byte[numBytes];
+            BinaryReader br = new BinaryReader(fStream);
+            idata = br.ReadBytes((int) numBytes);
+            br.Close();
+            fStream.Close();
+            info.Data = idata;
+            //info.loaded=true;
+        }
+
+        public void ForEachDefaultXmlAsset(Action<AssetBase> action)
+        {
+            string assetSetFilename = Path.Combine(Util.assetsDir(), "AssetSets.xml");
+
+            ForEachDefaultXmlAsset(assetSetFilename, action);
         }
 
         public void ForEachDefaultXmlAsset(string assetSetFilename, Action<AssetBase> action)
@@ -95,18 +91,16 @@ namespace OpenSim.Framework.AssetLoader.Filesystem
             if (File.Exists(assetSetFilename))
             {
                 string assetSetPath = "ERROR";
-                string assetRootPath = "";
+
                 try
                 {
                     XmlConfigSource source = new XmlConfigSource(assetSetFilename);
-                    assetRootPath = Path.GetFullPath(source.SavePath);
-                    assetRootPath = Path.GetDirectoryName(assetRootPath);
 
                     for (int i = 0; i < source.Configs.Count; i++)
                     {
                         assetSetPath = source.Configs[i].GetString("file", String.Empty);
 
-                        LoadXmlAssetSet(Path.Combine(assetRootPath, assetSetPath), assets);
+                        LoadXmlAssetSet(Path.Combine(Util.assetsDir(), assetSetPath), assets);
                     }
                 }
                 catch (XmlException e)
@@ -116,7 +110,7 @@ namespace OpenSim.Framework.AssetLoader.Filesystem
             }
             else
             {
-                m_log.ErrorFormat("[ASSETS]: Asset set control file {0} does not exist!  No assets loaded.", assetSetFilename);
+                m_log.Error("[ASSETS]: Asset set control file assets/AssetSets.xml does not exist!  No assets loaded.");
             }
 
             assets.ForEach(action);
@@ -129,7 +123,7 @@ namespace OpenSim.Framework.AssetLoader.Filesystem
         /// <param name="assets"></param>
         protected static void LoadXmlAssetSet(string assetSetPath, List<AssetBase> assets)
         {
-            //m_log.InfoFormat("[ASSETS]: Loading asset set {0}", assetSetPath);
+            m_log.InfoFormat("[ASSETS]: Loading asset set {0}", assetSetPath);
 
             if (File.Exists(assetSetPath))
             {
@@ -140,14 +134,16 @@ namespace OpenSim.Framework.AssetLoader.Filesystem
 
                     for (int i = 0; i < source.Configs.Count; i++)
                     {
-                        string assetIdStr = source.Configs[i].GetString("assetID", UUID.Random().ToString());
+                        string assetIdStr = source.Configs[i].GetString("assetID", LLUUID.Random().ToString());
                         string name = source.Configs[i].GetString("name", String.Empty);
-                        sbyte type = (sbyte)source.Configs[i].GetInt("assetType", 0);
+                        sbyte type = (sbyte) source.Configs[i].GetInt("assetType", 0);
+                        sbyte invType = (sbyte) source.Configs[i].GetInt("inventoryType", 0);
                         string assetPath = Path.Combine(dir, source.Configs[i].GetString("fileName", String.Empty));
 
-                        AssetBase newAsset = CreateAsset(assetIdStr, name, assetPath, type);
+                        AssetBase newAsset = CreateAsset(assetIdStr, name, assetPath, false);
 
                         newAsset.Type = type;
+                        newAsset.InvType = invType;
                         assets.Add(newAsset);
                     }
                 }

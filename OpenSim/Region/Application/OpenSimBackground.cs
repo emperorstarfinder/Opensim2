@@ -9,7 +9,7 @@
  *     * Redistributions in binary form must reproduce the above copyright
  *       notice, this list of conditions and the following disclaimer in the
  *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the OpenSimulator Project nor the
+ *     * Neither the name of the OpenSim Project nor the
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
@@ -33,9 +33,9 @@ using Nini.Config;
 namespace OpenSim
 {
     /// <summary>
-    /// Consoleless OpenSimulator region server
+    /// Consoleless OpenSim region server
     /// </summary>
-    public class OpenSimBackground : OpenSim
+    public class OpenSimBackground : OpenSimBase
     {
         private static readonly ILog m_log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
@@ -50,15 +50,21 @@ namespace OpenSim
         /// </summary>
         public override void Startup()
         {
-            m_gui = false;
+            //
+            // Called from app startup (OpenSim.Application)
+            //
+            m_log.Info("====================================================================");
+            m_log.Info("========================= STARTING OPENSIM =========================");
+            m_log.Info("====================================================================");
+            m_log.InfoFormat("[OPENSIM MAIN]: Running in background {0} mode", m_sandbox ? "sandbox" : "grid");
 
             base.Startup();
 
+            // We are done with startup
             m_log.InfoFormat("[OPENSIM MAIN]: Startup complete, serving {0} region{1}",
-                             SceneManager.Scenes.Count, SceneManager.Scenes.Count > 1 ? "s" : "");
+                             m_clientServers.Count.ToString(), m_clientServers.Count > 1 ? "s" : "");
 
             WorldHasComeToAnEnd.WaitOne();
-            WorldHasComeToAnEnd.Close();
         }
 
         /// <summary>
@@ -67,7 +73,7 @@ namespace OpenSim
         public override void Shutdown()
         {
             WorldHasComeToAnEnd.Set();
-            m_log.Info("[OPENSIM MAIN]: World has come to an end");
+
             base.Shutdown();
         }
     }

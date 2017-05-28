@@ -9,7 +9,7 @@
  *     * Redistributions in binary form must reproduce the above copyright
  *       notice, this list of conditions and the following disclaimer in the
  *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the OpenSimulator Project nor the
+ *     * Neither the name of the OpenSim Project nor the
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
@@ -32,19 +32,23 @@ namespace OpenSim.Framework
 {
     public class NetworkServersInfo
     {
-        public uint HttpListenerPort = ConfigSettings.DefaultRegionHttpPort;
-        public bool secureInventoryServer = false;
-        public bool isSandbox;
-        public bool HttpUsesSSL = false;
-        public string HttpSSLCN = "";
-        public uint httpSSLPort = 9001;
+        public static readonly uint DefaultHttpListenerPort = 9000;
+        public static uint RemotingListenerPort = 8895;
+        public string AssetSendKey = String.Empty;
+        public string AssetURL = "http://127.0.0.1:" + AssetConfig.DefaultHttpPort.ToString() + "/";
 
-        // "Out of band" managemnt https
-        public bool ssl_listener = false;
-        public bool ssl_external = false;
-        public uint https_port = 0;
-        public string cert_path = String.Empty;
-        public string cert_pass = String.Empty;
+        public string GridRecvKey = String.Empty;
+        public string GridSendKey = String.Empty;
+        public string GridURL = String.Empty;
+        public uint HttpListenerPort = DefaultHttpListenerPort;
+        public string InventoryURL = String.Empty;
+        public bool isSandbox;
+        private uint? m_defaultHomeLocX;
+        private uint? m_defaultHomeLocY;
+        public string UserRecvKey = String.Empty;
+        public string UserSendKey = String.Empty;
+        public string UserURL = String.Empty;
+
 
         public NetworkServersInfo()
         {
@@ -52,26 +56,43 @@ namespace OpenSim.Framework
 
         public NetworkServersInfo(uint defaultHomeLocX, uint defaultHomeLocY)
         {
+            m_defaultHomeLocX = defaultHomeLocX;
+            m_defaultHomeLocY = defaultHomeLocY;
+        }
+
+        public uint DefaultHomeLocX
+        {
+            get { return m_defaultHomeLocX.Value; }
+        }
+
+        public uint DefaultHomeLocY
+        {
+            get { return m_defaultHomeLocY.Value; }
         }
 
         public void loadFromConfiguration(IConfigSource config)
         {
-            HttpListenerPort =
-                (uint) config.Configs["Network"].GetInt("http_listener_port", (int) ConfigSettings.DefaultRegionHttpPort);
-            httpSSLPort =
-                (uint)config.Configs["Network"].GetInt("http_listener_sslport", ((int)ConfigSettings.DefaultRegionHttpPort+1));
-            HttpUsesSSL = config.Configs["Network"].GetBoolean("http_listener_ssl", false);
-            HttpSSLCN = config.Configs["Network"].GetString("http_listener_cn", "localhost");
+            m_defaultHomeLocX = (uint) config.Configs["StandAlone"].GetInt("default_location_x", 1000);
+            m_defaultHomeLocY = (uint) config.Configs["StandAlone"].GetInt("default_location_y", 1000);
 
-            // "Out of band management https"
-            ssl_listener = config.Configs["Network"].GetBoolean("https_listener",false);
-            ssl_external = config.Configs["Network"].GetBoolean("https_external",false);
-            if( ssl_listener)
-            {
-                cert_path = config.Configs["Network"].GetString("cert_path",String.Empty);
-                cert_pass = config.Configs["Network"].GetString("cert_pass",String.Empty);
-                https_port = (uint)config.Configs["Network"].GetInt("https_port", 0);
-            }
+            HttpListenerPort =
+                (uint) config.Configs["Network"].GetInt("http_listener_port", (int) DefaultHttpListenerPort);
+            RemotingListenerPort =
+                (uint) config.Configs["Network"].GetInt("remoting_listener_port", (int) RemotingListenerPort);
+            GridURL =
+                config.Configs["Network"].GetString("grid_server_url",
+                                                    "http://127.0.0.1:" + GridConfig.DefaultHttpPort.ToString());
+            GridSendKey = config.Configs["Network"].GetString("grid_send_key", "null");
+            GridRecvKey = config.Configs["Network"].GetString("grid_recv_key", "null");
+            UserURL =
+                config.Configs["Network"].GetString("user_server_url",
+                                                    "http://127.0.0.1:" + UserConfig.DefaultHttpPort.ToString());
+            UserSendKey = config.Configs["Network"].GetString("user_send_key", "null");
+            UserRecvKey = config.Configs["Network"].GetString("user_recv_key", "null");
+            AssetURL = config.Configs["Network"].GetString("asset_server_url", AssetURL);
+            InventoryURL = config.Configs["Network"].GetString("inventory_server_url",
+                                                               "http://127.0.0.1:" +
+                                                               InventoryConfig.DefaultHttpPort.ToString());
         }
     }
 }

@@ -9,7 +9,7 @@
  *     * Redistributions in binary form must reproduce the above copyright
  *       notice, this list of conditions and the following disclaimer in the
  *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the OpenSimulator Project nor the
+ *     * Neither the name of the OpenSim Project nor the
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
@@ -25,24 +25,12 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-using System;
-
 namespace OpenSim.Framework
 {
     /// <summary>
-    /// Exception thrown if Initialise has been called, but failed.
-    /// </summary>
-    public class PluginNotInitialisedException : Exception
-    {
-        public PluginNotInitialisedException () : base() {}
-        public PluginNotInitialisedException (string msg) : base(msg) {}
-        public PluginNotInitialisedException (string msg, Exception e) : base(msg, e) {}
-    }
-
-    /// <summary>
     /// This interface, describes a generic plugin
     /// </summary>
-    public interface IPlugin : IDisposable
+    public interface IPlugin
     {
         /// <summary>
         /// Returns the plugin version
@@ -57,24 +45,8 @@ namespace OpenSim.Framework
         string Name { get; }
 
         /// <summary>
-        /// Default-initialises the plugin
+        /// Initialises the plugin (artificial constructor)
         /// </summary>
         void Initialise();
     }
-
-    /// <summary>
-    /// Any plugins which need to pass parameters to their initialisers must
-    /// inherit this class and use it to set the PluginLoader Initialiser property
-    /// </summary>
-    public class PluginInitialiserBase
-    {
-        // this would be a lot simpler if C# supported currying or typedefs
-
-        // default initialisation
-        public virtual void Initialise (IPlugin plugin)
-        {
-            plugin.Initialise();
-        }
-    }
-
 }

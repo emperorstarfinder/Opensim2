@@ -9,7 +9,7 @@
  *     * Redistributions in binary form must reproduce the above copyright
  *       notice, this list of conditions and the following disclaimer in the
  *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the OpenSimulator Project nor the
+ *     * Neither the name of the OpenSim Project nor the
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
@@ -26,348 +26,206 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.Reflection;
+using System.Xml;
+using System.Xml.Schema;
+using System.Xml.Serialization;
+using libsecondlife;
 using log4net;
-using OpenMetaverse;
 
 namespace OpenSim.Framework
 {
+    /// <summary>
+    /// A dictionary for task inventory.
+    ///
+    /// This class is not thread safe.  Callers must synchronize on Dictionary methods.
+    /// </summary>
+    public class TaskInventoryDictionary : Dictionary<LLUUID, TaskInventoryItem>,
+                                           ICloneable, IXmlSerializable
+    {
+        private static readonly ILog m_log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+
+        private static XmlSerializer tiiSerializer = new XmlSerializer(typeof (TaskInventoryItem));
+
+        #region ICloneable Members
+
+        public Object Clone()
+        {
+            TaskInventoryDictionary clone = new TaskInventoryDictionary();
+
+            lock (this)
+            {
+                foreach (LLUUID uuid in Keys)
+                {
+                    clone.Add(uuid, (TaskInventoryItem) this[uuid].Clone());
+                }
+            }
+
+            return clone;
+        }
+
+        #endregion
+
+        // The alternative of simply serializing the list doesn't appear to work on mono, since
+        // we get a
+        //
+        // System.TypeInitializationException: An exception was thrown by the type initializer for OpenSim.Framework.TaskInventoryDictionary ---> System.ArgumentOutOfRangeException: < 0
+        // Parameter name: length
+        //   at System.String.Substring (Int32 startIndex, Int32 length) [0x00088] in /build/buildd/mono-1.2.4/mcs/class/corlib/System/String.cs:381
+        //   at System.Xml.Serialization.TypeTranslator.GetTypeData (System.Type runtimeType, System.String xmlDataType) [0x001f6] in /build/buildd/mono-1.2.4/mcs/class/System.XML/System.Xml.Serialization/TypeTranslator.cs:217
+        // ...
+//        private static XmlSerializer tiiSerializer
+//            = new XmlSerializer(typeof(Dictionary<LLUUID, TaskInventoryItem>.ValueCollection));
+
+        // see IXmlSerializable
+
+        #region IXmlSerializable Members
+
+        public XmlSchema GetSchema()
+        {
+            return null;
+        }
+
+        // see IXmlSerializable
+        public void ReadXml(XmlReader reader)
+        {
+            // m_log.DebugFormat("[TASK INVENTORY]: ReadXml current node before actions, {0}", reader.Name);
+
+            if (!reader.IsEmptyElement)
+            {
+                reader.Read();
+                while (tiiSerializer.CanDeserialize(reader))
+                {
+                    TaskInventoryItem item = (TaskInventoryItem) tiiSerializer.Deserialize(reader);
+                    Add(item.ItemID, item);
+
+                    //m_log.DebugFormat("[TASK INVENTORY]: Instanted prim item {0}, {1} from xml", item.Name, item.ItemID);
+                }
+
+               // m_log.DebugFormat("[TASK INVENTORY]: Instantiated {0} prim items in total from xml", Count);
+            }
+            // else
+            // {
+            //     m_log.DebugFormat("[TASK INVENTORY]: Skipping empty element {0}", reader.Name);
+            // }
+
+            // For some .net implementations, this last read is necessary so that we advance beyond the end tag
+            // of the element wrapping this object so that the rest of the serialization can complete normally.
+            reader.Read();
+
+            // m_log.DebugFormat("[TASK INVENTORY]: ReadXml current node after actions, {0}", reader.Name);
+        }
+
+        // see IXmlSerializable
+        public void WriteXml(XmlWriter writer)
+        {
+            lock (this)
+            {
+                foreach (TaskInventoryItem item in Values)
+                {
+                    tiiSerializer.Serialize(writer, item);
+                }
+            }
+
+            //tiiSerializer.Serialize(writer, Values);
+        }
+
+        #endregion
+
+        // see ICloneable
+    }
+
     /// <summary>
     /// Represents an item in a task inventory
     /// </summary>
     public class TaskInventoryItem : ICloneable
     {
-//        private static readonly ILog m_log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
-
         /// <summary>
         /// XXX This should really be factored out into some constants class.
         /// </summary>
         private const uint FULL_MASK_PERMISSIONS_GENERAL = 2147483647;
 
-        private UUID _assetID = UUID.Zero;
-
-        private uint _baseMask = FULL_MASK_PERMISSIONS_GENERAL;
-        private uint _creationDate = 0;
-        private UUID _creatorID = UUID.Zero;
-        private string _creatorData = String.Empty;
-        private string _description = String.Empty;
-        private uint _everyoneMask = FULL_MASK_PERMISSIONS_GENERAL;
-        private uint _flags = 0;
-        private UUID _groupID = UUID.Zero;
-        private uint _groupMask = FULL_MASK_PERMISSIONS_GENERAL;
-
-        private int _invType = 0;
-        private UUID _itemID = UUID.Zero;
-        private UUID _lastOwnerID = UUID.Zero;
-        private UUID _rezzerID = UUID.Zero;
-        private string _name = String.Empty;
-        private uint _nextOwnerMask = FULL_MASK_PERMISSIONS_GENERAL;
-        private UUID _ownerID = UUID.Zero;
-        private uint _ownerMask = FULL_MASK_PERMISSIONS_GENERAL;
-        private UUID _parentID = UUID.Zero; //parent folder id
-        private UUID _parentPartID = UUID.Zero; // SceneObjectPart this is inside
-        private UUID _permsGranter;
-        private int _permsMask;
-        private int _type = 0;
-        private UUID _oldID;
-        private UUID _loadedID = UUID.Zero;
-
-        private bool _ownerChanged = false;
-
-        public UUID AssetID {
-            get {
-                return _assetID;
-            }
-            set {
-                _assetID = value;
-            }
-        }
-
-        public uint BasePermissions {
-            get {
-                return _baseMask;
-            }
-            set {
-                _baseMask = value;
-            }
-        }
-
-        public uint CreationDate {
-            get {
-                return _creationDate;
-            }
-            set {
-                _creationDate = value;
-            }
-        }
-
-        public UUID CreatorID {
-            get {
-                return _creatorID;
-            }
-            set {
-                _creatorID = value;
-            }
-        }
-
-        public string CreatorData // = <profile url>;<name>
-        {
-            get { return _creatorData; }
-            set { _creatorData = value; }
-        }
+        /// <summary>
+        /// Inventory types
+        /// </summary>
+        public static string[] InvTypes = new string[]
+            {
+                "texture",
+                "sound",
+                "calling_card",
+                "landmark",
+                String.Empty,
+                String.Empty,
+                "object",
+                "notecard",
+                String.Empty,
+                String.Empty,
+                "lsl_text",
+                String.Empty,
+                String.Empty,
+                "bodypart",
+                String.Empty,
+                "snapshot",
+                String.Empty,
+                String.Empty,
+                "wearable",
+                "animation",
+                "gesture"
+            };
 
         /// <summary>
-        /// Used by the DB layer to retrieve / store the entire user identification.
-        /// The identification can either be a simple UUID or a string of the form
-        /// uuid[;profile_url[;name]]
+        /// Asset types
         /// </summary>
-        public string CreatorIdentification
-        {
-            get
+        public static string[] Types = new string[]
             {
-                if (!string.IsNullOrEmpty(_creatorData))
-                    return _creatorID.ToString() + ';' + _creatorData;
-                else
-                    return _creatorID.ToString();
-            }
-            set
-            {
-                if ((value == null) || (value != null && value == string.Empty))
-                {
-                    _creatorData = string.Empty;
-                    return;
-                }
+                "texture",
+                "sound",
+                "callcard",
+                "landmark",
+                "clothing", // Deprecated
+                "clothing",
+                "object",
+                "notecard",
+                "category",
+                "root",
+                "lsltext",
+                "lslbyte",
+                "txtr_tga",
+                "bodypart",
+                "trash",
+                "snapshot",
+                "lstndfnd",
+                "snd_wav",
+                "img_tga",
+                "jpeg",
+                "animatn",
+                "gesture"
+            };
 
-                if (!value.Contains(";")) // plain UUID
-                {
-                    UUID uuid = UUID.Zero;
-                    UUID.TryParse(value, out uuid);
-                    _creatorID = uuid;
-                }
-                else // <uuid>[;<endpoint>[;name]]
-                {
-                    string name = "Unknown User";
-                    string[] parts = value.Split(';');
-                    if (parts.Length >= 1)
-                    {
-                        UUID uuid = UUID.Zero;
-                        UUID.TryParse(parts[0], out uuid);
-                        _creatorID = uuid;
-                    }
-                    if (parts.Length >= 2)
-                        _creatorData = parts[1];
-                    if (parts.Length >= 3)
-                        name = parts[2];
+        public LLUUID AssetID = LLUUID.Zero;
 
-                    _creatorData += ';' + name;
+        public uint BaseMask = FULL_MASK_PERMISSIONS_GENERAL;
+        public uint CreationDate = 0;
+        public LLUUID CreatorID = LLUUID.Zero;
+        public string Description = String.Empty;
+        public uint EveryoneMask = FULL_MASK_PERMISSIONS_GENERAL;
+        public uint Flags = 0;
+        public LLUUID GroupID = LLUUID.Zero;
+        public uint GroupMask = FULL_MASK_PERMISSIONS_GENERAL;
 
-                }
-            }
-        }
-
-        public string Description {
-            get {
-                return _description;
-            }
-            set {
-                _description = value;
-            }
-        }
-
-        public uint EveryonePermissions {
-            get {
-                return _everyoneMask;
-            }
-            set {
-                _everyoneMask = value;
-            }
-        }
-
-        public uint Flags {
-            get {
-                return _flags;
-            }
-            set {
-                _flags = value;
-            }
-        }
-
-        public UUID GroupID {
-            get {
-                return _groupID;
-            }
-            set {
-                _groupID = value;
-            }
-        }
-
-        public uint GroupPermissions {
-            get {
-                return _groupMask;
-            }
-            set {
-                _groupMask = value;
-            }
-        }
-
-        public int InvType {
-            get {
-                return _invType;
-            }
-            set {
-                _invType = value;
-            }
-        }
-
-        public UUID ItemID {
-            get {
-                return _itemID;
-            }
-            set {
-                _itemID = value;
-            }
-        }
-
-        public UUID OldItemID {
-            get {
-                return _oldID;
-            }
-            set {
-                _oldID = value;
-            }
-        }
-
-        public UUID LoadedItemID {
-            get {
-                return _loadedID;
-            }
-            set {
-                _loadedID = value;
-            }
-        }
-
-        public UUID LastOwnerID {
-            get {
-                return _lastOwnerID;
-            }
-            set {
-                _lastOwnerID = value;
-            }
-        }
-
-        public UUID RezzerID
-        {
-            get {
-                return _rezzerID;
-            }
-            set {
-                _rezzerID = value;
-            }
-        }
-
-        public string Name {
-            get {
-                return _name;
-            }
-            set {
-                _name = value;
-            }
-        }
-
-        public uint NextPermissions {
-            get {
-                return _nextOwnerMask;
-            }
-            set {
-                _nextOwnerMask = value;
-            }
-        }
-
-        public UUID OwnerID {
-            get {
-                return _ownerID;
-            }
-            set {
-                _ownerID = value;
-            }
-        }
-
-        public uint CurrentPermissions {
-            get {
-                return _ownerMask;
-            }
-            set {
-                _ownerMask = value;
-            }
-        }
-
-        public UUID ParentID {
-            get {
-                return _parentID;
-            }
-            set {
-                _parentID = value;
-            }
-        }
-
-        public UUID ParentPartID {
-            get {
-                return _parentPartID;
-            }
-            set {
-                _parentPartID = value;
-            }
-        }
-
-        public UUID PermsGranter {
-            get {
-                return _permsGranter;
-            }
-            set {
-                _permsGranter = value;
-            }
-        }
-
-        public int PermsMask {
-            get {
-                return _permsMask;
-            }
-            set {
-                _permsMask = value;
-            }
-        }
-
-        public int Type {
-            get {
-                return _type;
-            }
-            set {
-                _type = value;
-            }
-        }
-
-        public bool OwnerChanged
-        {
-            get
-            {
-                return _ownerChanged;
-            }
-            set
-            {
-                _ownerChanged = value;
-//                m_log.DebugFormat(
-//                    "[TASK INVENTORY ITEM]: Owner changed set {0} for {1} {2} owned by {3}",
-//                    _ownerChanged, Name, ItemID, OwnerID);
-            }
-        }
-
-        /// <summary>
-        /// This used ONLY during copy. It can't be relied on at other times!
-        /// </summary>
-        /// <remarks>
-        /// For true script running status, use IEntityInventory.TryGetScriptInstanceRunning() for now.
-        /// </remarks>
-        public bool ScriptRunning { get; set; }
+        public int InvType = 0;
+        public LLUUID ItemID = LLUUID.Zero;
+        public LLUUID LastOwnerID = LLUUID.Zero;
+        public string Name = String.Empty;
+        public uint NextOwnerMask = FULL_MASK_PERMISSIONS_GENERAL;
+        public LLUUID OwnerID = LLUUID.Zero;
+        public uint OwnerMask = FULL_MASK_PERMISSIONS_GENERAL;
+        public LLUUID ParentID = LLUUID.Zero; //parent folder id
+        public LLUUID ParentPartID = LLUUID.Zero;
+        public LLUUID PermsGranter;
+        public int PermsMask;
+        public int Type = 0;
 
         // See ICloneable
 
@@ -381,22 +239,13 @@ namespace OpenSim.Framework
         #endregion
 
         /// <summary>
-        /// Reset the UUIDs for this item.
+        /// Reset the LLUUIDs for this item.
         /// </summary>
         /// <param name="partID">The new part ID to which this item belongs</param>
-        public void ResetIDs(UUID partID)
+        public void ResetIDs(LLUUID partID)
         {
-            LoadedItemID = OldItemID;
-            OldItemID = ItemID;
-            ItemID = UUID.Random();
+            ItemID = LLUUID.Random();
             ParentPartID = partID;
-            ParentID = partID;
-        }
-
-        public TaskInventoryItem()
-        {
-            ScriptRunning = true;
-            CreationDate = (uint)(DateTime.UtcNow - new DateTime(1970, 1, 1)).TotalSeconds;
         }
     }
 }

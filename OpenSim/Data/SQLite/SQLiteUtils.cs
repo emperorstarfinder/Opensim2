@@ -9,7 +9,7 @@
  *     * Redistributions in binary form must reproduce the above copyright
  *       notice, this list of conditions and the following disclaimer in the
  *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the OpenSimulator Project nor the
+ *     * Neither the name of the OpenSim Project nor the
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
@@ -27,11 +27,7 @@
 
 using System;
 using System.Data;
-#if CSharpSqlite
-    using Community.CsharpSqlite.Sqlite;
-#else
-    using Mono.Data.Sqlite;
-#endif
+using Mono.Data.SqliteClient;
 
 namespace OpenSim.Data.SQLite
 {
@@ -48,12 +44,6 @@ namespace OpenSim.Data.SQLite
          *
          **********************************************************************/
 
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="dt"></param>
-        /// <param name="name"></param>
-        /// <param name="type"></param>
         public static void createCol(DataTable dt, string name, Type type)
         {
             DataColumn col = new DataColumn(name, type);
@@ -70,24 +60,17 @@ namespace OpenSim.Data.SQLite
          *
          **********************************************************************/
 
-        /// <summary>
-        /// Create an insert command
-        /// </summary>
-        /// <param name="table">table name</param>
-        /// <param name="dt">data table</param>
-        /// <returns>the created command</returns>
-        /// <remarks>
-        /// This is subtle enough to deserve some commentary.
-        /// Instead of doing *lots* and *lots of hardcoded strings
-        /// for database definitions we'll use the fact that
-        /// realistically all insert statements look like "insert
-        /// into A(b, c) values(:b, :c) on the parameterized query
-        /// front.  If we just have a list of b, c, etc... we can
-        /// generate these strings instead of typing them out.
-        /// </remarks>
         public static SqliteCommand createInsertCommand(string table, DataTable dt)
         {
-
+            /**
+             *  This is subtle enough to deserve some commentary.
+             *  Instead of doing *lots* and *lots of hardcoded strings
+             *  for database definitions we'll use the fact that
+             *  realistically all insert statements look like "insert
+             *  into A(b, c) values(:b, :c) on the parameterized query
+             *  front.  If we just have a list of b, c, etc... we can
+             *  generate these strings instead of typing them out.
+             */
             string[] cols = new string[dt.Columns.Count];
             for (int i = 0; i < dt.Columns.Count; i++)
             {
@@ -112,13 +95,6 @@ namespace OpenSim.Data.SQLite
             return cmd;
         }
 
-        /// <summary>
-        /// create an update command
-        /// </summary>
-        /// <param name="table">table name</param>
-        /// <param name="pk"></param>
-        /// <param name="dt"></param>
-        /// <returns>the created command</returns>
         public static SqliteCommand createUpdateCommand(string table, string pk, DataTable dt)
         {
             string sql = "update " + table + " set ";
@@ -146,11 +122,7 @@ namespace OpenSim.Data.SQLite
             return cmd;
         }
 
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="dt">Data Table</param>
-        /// <returns></returns>
+
         public static string defineTable(DataTable dt)
         {
             string sql = "create table " + dt.TableName + "(";
@@ -186,21 +158,15 @@ namespace OpenSim.Data.SQLite
          **********************************************************************/
 
         ///<summary>
-        /// <para>
         /// This is a convenience function that collapses 5 repetitive
         /// lines for defining SqliteParameters to 2 parameters:
         /// column name and database type.
-        /// </para>
         ///
-        /// <para>
         /// It assumes certain conventions like :param as the param
         /// name to replace in parametrized queries, and that source
         /// version is always current version, both of which are fine
         /// for us.
-        /// </para>
         ///</summary>
-        /// <param name="name"></param>
-        /// <param name="type"></param>
         ///<returns>a built sqlite parameter</returns>
         public static SqliteParameter createSqliteParameter(string name, Type type)
         {
@@ -218,11 +184,6 @@ namespace OpenSim.Data.SQLite
          *
          **********************************************************************/
 
-        /// <summary>
-        /// Type conversion function
-        /// </summary>
-        /// <param name="type">a type</param>
-        /// <returns>a DbType</returns>
         public static DbType dbtypeFromType(Type type)
         {
             if (type == typeof (String))
@@ -263,11 +224,8 @@ namespace OpenSim.Data.SQLite
             }
         }
 
-        /// <summary>
-        /// </summary>
-        /// <param name="type">a Type</param>
-        /// <returns>a string</returns>
-        /// <remarks>this is something we'll need to implement for each db slightly differently.</remarks>
+        // this is something we'll need to implement for each db
+        // slightly differently.
         public static string sqliteType(Type type)
         {
             if (type == typeof (String))
