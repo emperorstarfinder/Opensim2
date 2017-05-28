@@ -24,7 +24,8 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-//#define SPAM
+
+ //#define SPAM
 
 using OpenSim.Region.Physics.Manager;
 
@@ -63,10 +64,16 @@ namespace OpenSim.Region.Physics.Meshing
         public float pathTaperX = 0.0f;
         public float pathTaperY = 0.0f;
 
+        /// <summary>
+        /// (depreciated) creates a 3 layer extruded mesh of a profile hull
+        /// </summary>
+        /// <param name="m"></param>
+        /// <returns></returns>
         public Mesh Extrude(Mesh m)
         {
             startParameter = float.MinValue;
             stopParameter = float.MaxValue;
+ 
             // Currently only works for iSteps=1;
             Mesh result = new Mesh();
 
@@ -114,11 +121,12 @@ namespace OpenSim.Region.Physics.Meshing
                 // Set the Z + .5 to match the rest of the scale of the mesh
                 // Scale it by Size, and Taper the scaling
                 v.Z *= size.Z;
-                v.X *= (size.X * ((taperTopFactorX + taperBotFactorX) /2));
+                v.X *= (size.X * ((taperTopFactorX + taperBotFactorX) / 2));
                 v.Y *= (size.Y * ((taperTopFactorY + taperBotFactorY) / 2));
 
                 v.X += (pushX / 2) * size.X;
                 v.Y += (pushY / 2) * size.Y;
+
                 //Push the top of the object over by the Top Shear amount
                 if (twistMid != 0)
                 {
@@ -187,14 +195,10 @@ namespace OpenSim.Region.Physics.Meshing
                 tSide = new Triangle(workingMiddle.vertices[i], workingMinus.vertices[i], workingMiddle.vertices[iNext]);
                 result.Add(tSide);
 
-                tSide =
-                    new Triangle(workingMiddle.vertices[iNext], workingMinus.vertices[i], workingMinus.vertices[iNext]);
+                tSide = new Triangle(workingMiddle.vertices[iNext], workingMinus.vertices[i], workingMinus.vertices[iNext]);
                 result.Add(tSide);
             }
-            //foreach (Triangle t in workingPlus.triangles)
-            //{
-                //t.invertNormal();
-           // }
+
             result.Append(workingPlus);
 
             iLastNull = 0;
@@ -222,8 +226,7 @@ namespace OpenSim.Region.Physics.Meshing
                 tSide = new Triangle(workingPlus.vertices[i], workingMiddle.vertices[i], workingPlus.vertices[iNext]);
                 result.Add(tSide);
 
-                tSide =
-                    new Triangle(workingPlus.vertices[iNext], workingMiddle.vertices[i], workingMiddle.vertices[iNext]);
+                tSide = new Triangle(workingPlus.vertices[iNext], workingMiddle.vertices[i], workingMiddle.vertices[iNext]);
                 result.Add(tSide);
             }
 
@@ -234,7 +237,7 @@ namespace OpenSim.Region.Physics.Meshing
                     // twist and shout
                     if (v != null)
                     {
-                        tt = new Quaternion(new Vertex(0, 0, -1), twistMid*2);
+                        tt = new Quaternion(new Vertex(0, 0, -1), twistMid * 2);
                         v2 = v * tt;
                         v.X = v2.X;
                         v.Y = v2.Y;
@@ -242,9 +245,198 @@ namespace OpenSim.Region.Physics.Meshing
                     }
                 }
             }
+
             return result;
         }
 
+        /// <summary>
+        /// Creates an extrusion of a profile along a linear path. Used to create prim types box, cylinder, and prism.
+        /// </summary>
+        /// <param name="m"></param>
+        /// <returns>A mesh of the extruded shape</returns>
+        public Mesh ExtrudeLinearPath(Mesh m)
+        {
+            Mesh result = new Mesh();
+
+            Quaternion tt = new Quaternion();
+            Vertex v2 = new Vertex(0, 0, 0);
+
+            Mesh newLayer;
+            Mesh lastLayer = null;
+
+            int step = 0;
+            int steps = 1;
+
+            float twistTotal = twistTop - twistBot;
+            
+            // if the profile has a lot of twist, add more layers otherwise the layers may overlap
+            // and the resulting mesh may be quite inaccurate. This method is arbitrary and may not
+            // accurately match the viewer
+            float twistTotalAbs = System.Math.Abs(twistTotal);
+
+            if (twistTotalAbs > 0.01)
+                steps += (int)(twistTotalAbs * 3.66f); // dahlia's magic number ;)
+
+#if SPAM
+            System.Console.WriteLine("ExtrudeLinearPath: twistTotalAbs: " + twistTotalAbs.ToString() + " steps: " + steps.ToString());
+#endif
+
+            double percentOfPathMultiplier = 1.0 / steps;
+
+            float start = -0.5f;
+
+            float stepSize = 1.0f / (float)steps;
+
+            float xProfileScale = 1.0f;
+            float yProfileScale = 1.0f;
+
+            float xOffset = 0.0f;
+            float yOffset = 0.0f;
+            float zOffset = start;
+
+            float xOffsetStepIncrement = pushX / steps;
+            float yOffsetStepIncrement = pushY / steps;
+
+#if SPAM
+            System.Console.WriteLine("Extruder: twistTop: " + twistTop.ToString() + " twistbot: " + twistBot.ToString() + " twisttotal: " + twistTotal.ToString());
+            System.Console.WriteLine("Extruder: taperBotFactorX: " + taperBotFactorX.ToString() + " taperBotFactorY: " + taperBotFactorY.ToString()
+                + " taperTopFactorX: " + taperTopFactorX.ToString() + " taperTopFactorY: " + taperTopFactorY.ToString());
+            System.Console.WriteLine("Extruder: PathScaleX: " + pathScaleX.ToString() + " pathScaleY: " + pathScaleY.ToString());
+#endif
+
+            float percentOfPath = 0.0f;
+            bool done = false;
+            do // loop through the length of the path and add the layers
+            {
+                newLayer = m.Clone();
+
+                if (taperBotFactorX < 1.0f)
+                    xProfileScale = 1.0f - (1.0f - percentOfPath) * (1.0f - taperBotFactorX);
+                else if (taperTopFactorX < 1.0f)
+                    xProfileScale = 1.0f - percentOfPath * (1.0f - taperTopFactorX);
+                else xProfileScale = 1.0f;
+
+                if (taperBotFactorY < 1.0f)
+                    yProfileScale = 1.0f - (1.0f - percentOfPath) * (1.0f - taperBotFactorY);
+                else if (taperTopFactorY < 1.0f)
+                    yProfileScale = 1.0f - percentOfPath * (1.0f - taperTopFactorY);
+                else yProfileScale = 1.0f;
+
+#if SPAM
+                //System.Console.WriteLine("xProfileScale: " + xProfileScale.ToString() + " yProfileScale: " + yProfileScale.ToString());
+#endif
+                Vertex vTemp = new Vertex(0.0f, 0.0f, 0.0f);
+
+                // apply the taper to the profile before any rotations
+                if (xProfileScale != 1.0f || yProfileScale != 1.0f)
+                {
+                    foreach (Vertex v in newLayer.vertices)
+                    {
+                        if (v != null)
+                        {
+                            v.X *= xProfileScale;
+                            v.Y *= yProfileScale;
+                        }
+                    }
+                }
+
+                float twist = twistBot + (twistTotal * (float)percentOfPath);
+#if SPAM
+                System.Console.WriteLine("Extruder: percentOfPath: " + percentOfPath.ToString() + " zOffset: " + zOffset.ToString()
+                    + " xProfileScale: " + xProfileScale.ToString() + " yProfileScale: " + yProfileScale.ToString());
+#endif
+
+                // apply twist rotation to the profile layer and position the layer in the prim
+                Quaternion profileRot = new Quaternion(new Vertex(0.0f, 0.0f, -1.0f), twist);
+                foreach (Vertex v in newLayer.vertices)
+                {
+                    if (v != null)
+                    {
+                        vTemp = v * profileRot;
+                        v.X = vTemp.X + xOffset;
+                        v.Y = vTemp.Y + yOffset;
+                        v.Z = vTemp.Z + zOffset;
+                    }
+                }
+
+                if (step == 0) // the first layer, invert normals
+                {
+                    foreach (Triangle t in newLayer.triangles)
+                    {
+                        t.invertNormal();
+                    }
+                }
+
+                result.Append(newLayer);
+
+                int iLastNull = 0;
+
+                if (lastLayer != null)
+                {
+                    int i, count = newLayer.vertices.Count;
+
+                    for (i = 0; i < count; i++)
+                    {
+                        int iNext = (i + 1);
+
+                        if (lastLayer.vertices[i] == null) // cant make a simplex here
+                        {
+                            iLastNull = i + 1;
+                        }
+                        else
+                        {
+                            if (i == count - 1) // End of list
+                                iNext = iLastNull;
+
+                            if (lastLayer.vertices[iNext] == null) // Null means wrap to begin of last segment
+                                iNext = iLastNull;
+
+                            result.Add(new Triangle(newLayer.vertices[i], lastLayer.vertices[i], newLayer.vertices[iNext]));
+                            result.Add(new Triangle(newLayer.vertices[iNext], lastLayer.vertices[i], lastLayer.vertices[iNext]));
+                        }
+                    }
+                }
+
+                lastLayer = newLayer;
+
+                // calc the step for the next interation of the loop
+                if (step < steps)
+                {
+                    step++;
+                    percentOfPath += (float)percentOfPathMultiplier;
+
+                    xOffset += xOffsetStepIncrement;
+                    yOffset += yOffsetStepIncrement;
+                    zOffset += stepSize;
+                }
+
+                else done = true;
+
+            } while (!done); // loop until all the layers in the path are completed
+
+            // scale the mesh to the desired size
+            float xScale = size.X;
+            float yScale = size.Y;
+            float zScale = size.Z;
+
+            foreach (Vertex v in result.vertices)
+            {
+                if (v != null)
+                {
+                    v.X *= xScale;
+                    v.Y *= yScale;
+                    v.Z *= zScale;
+                }
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Extrudes a shape around a circular path. Used to create prim types torus, ring, and tube.
+        /// </summary>
+        /// <param name="m"></param>
+        /// <returns>a mesh of the extruded shape</returns>
         public Mesh ExtrudeCircularPath(Mesh m)
         {
             Mesh result = new Mesh();
@@ -259,6 +451,7 @@ namespace OpenSim.Region.Physics.Meshing
             int steps = 24;
 
             float twistTotal = twistTop - twistBot;
+
             // if the profile has a lot of twist, add more layers otherwise the layers may overlap
             // and the resulting mesh may be quite inaccurate. This method is arbitrary and doesn't
             // accurately match the viewer
@@ -280,8 +473,6 @@ namespace OpenSim.Region.Physics.Meshing
             // increases and it may affect megaprims quite a bit. The effect of the Y top shear parameter on
             // the meshes generated with this technique appear nearly identical in shape to the same prims when
             // displayed by the viewer.
-
-
             float startAngle = (float)(System.Math.PI * 2.0 * pathCutBegin * revolutions) - pushY * 0.9f;
             float endAngle = (float)(System.Math.PI * 2.0 * pathCutEnd * revolutions) - pushY * 0.9f;
             float stepSize = (float)0.2617993878; // 2*PI / 24 segments per revolution
@@ -291,7 +482,6 @@ namespace OpenSim.Region.Physics.Meshing
 
             float xProfileScale = 1.0f;
             float yProfileScale = 1.0f;
-
 
 #if SPAM
             System.Console.WriteLine("Extruder: twistTop: " + twistTop.ToString() + " twistbot: " + twistBot.ToString() + " twisttotal: " + twistTotal.ToString());
@@ -354,33 +544,30 @@ namespace OpenSim.Region.Physics.Meshing
 #endif
 
                 float twist = twistBot + (twistTotal * (float)percentOfPath);
-
                 float xOffset;
                 float yOffset;
                 float zOffset;
 
-                
                 xOffset = 0.5f * (skewStart + totalSkew * (float)percentOfPath);
-                xOffset += (float) System.Math.Sin(angle) * pushX * 0.45f;
+                xOffset += (float)System.Math.Sin(angle) * pushX * 0.45f;
                 yOffset = (float)(System.Math.Cos(angle) * (0.5f - yPathScale)) * radiusScale;
                 zOffset = (float)(System.Math.Sin(angle + pushY * 0.9f) * (0.5f - yPathScale)) * radiusScale;
 
-
-                    // next apply twist rotation to the profile layer
-                    if (twistTotal != 0.0f || twistBot != 0.0f)
+                // next apply twist rotation to the profile layer
+                if (twistTotal != 0.0f || twistBot != 0.0f)
+                {
+                    Quaternion profileRot = new Quaternion(new Vertex(0.0f, 0.0f, -1.0f), twist);
+                    foreach (Vertex v in newLayer.vertices)
                     {
-                        Quaternion profileRot = new Quaternion(new Vertex(0.0f, 0.0f, -1.0f), twist);
-                        foreach (Vertex v in newLayer.vertices)
+                        if (v != null)
                         {
-                            if (v != null)
-                            {
-                                vTemp = v * profileRot;
-                                v.X = vTemp.X;
-                                v.Y = vTemp.Y;
-                                v.Z = vTemp.Z;
-                            }
+                            vTemp = v * profileRot;
+                            v.X = vTemp.X;
+                            v.Y = vTemp.Y;
+                            v.Z = vTemp.Z;
                         }
                     }
+                }
 
                 // now orient the rotation of the profile layer relative to it's position on the path
                 // adding pushY to the angle used to generate the quat appears to approximate the viewer
@@ -433,6 +620,7 @@ namespace OpenSim.Region.Physics.Meshing
                         }
                     }
                 }
+
                 lastLayer = newLayer;
 
                 // calc the angle for the next interation of the loop
@@ -443,6 +631,7 @@ namespace OpenSim.Region.Physics.Meshing
                 else
                 {
                     angle = stepSize * ++step;
+
                     if (angle > endAngle)
                         angle = endAngle;
                 }

@@ -24,6 +24,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 //#define SPAM
 
 using System;
@@ -53,44 +54,14 @@ namespace OpenSim.Region.Physics.Meshing
 
     public class Meshmerizer : IMesher
     {
-        //private static readonly log4net.ILog m_log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-
         // Setting baseDir to a path will enable the dumping of raw files
         // raw files can be imported by blender so a visual inspection of the results can be done
         //        const string baseDir = "rawFiles";
+#if SPAM
         private const string baseDir = null; //"rawFiles";
+#else
         private const float DEG_TO_RAD = 0.01745329238f;
-
-// TODO: unused
-//         private static void IntersectionParameterPD(PhysicsVector p1, PhysicsVector r1, PhysicsVector p2,
-//                                                     PhysicsVector r2, ref float lambda, ref float mu)
-//         {
-//             // p1, p2, points on the straight
-//             // r1, r2, directional vectors of the straight. Not necessarily of length 1!
-//             // note, that l, m can be scaled such, that the range 0..1 is mapped to the area between two points,
-//             // thus allowing to decide whether an intersection is between two points
-
-//             float r1x = r1.X;
-//             float r1y = r1.Y;
-//             float r2x = r2.X;
-//             float r2y = r2.Y;
-
-//             float denom = r1y*r2x - r1x*r2y;
-
-//             if (denom == 0.0)
-//             {
-//                 lambda = Single.NaN;
-//                 mu = Single.NaN;
-//                 return;
-//             }
-
-//             float p1x = p1.X;
-//             float p1y = p1.Y;
-//             float p2x = p2.X;
-//             float p2y = p2.Y;
-//             lambda = (-p2x*r2y + p1x*r2y + (p2y - p1y)*r2x)/denom;
-//             mu = (-p2x*r1y + p1x*r1y + (p2y - p1y)*r1x)/denom;
-//         }
+#endif
 
         private static List<Triangle> FindInfluencedTriangles(List<Triangle> triangles, Vertex v)
         {
@@ -102,6 +73,7 @@ namespace OpenSim.Region.Physics.Meshing
                     influenced.Add(t);
                 }
             }
+
             return influenced;
         }
 
@@ -125,8 +97,10 @@ namespace OpenSim.Region.Physics.Meshing
 
                 // Find the triangles that are influenced by the new vertex
                 Vertex v = vertices[iCurrentVertex];
+
                 if (v == null)
                     continue; // Null is polygon stop marker. Ignore it
+
                 List<Triangle> influencedTriangles = FindInfluencedTriangles(triangles, v);
 
                 List<Simplex> simplices = new List<Simplex>();
@@ -141,6 +115,7 @@ namespace OpenSim.Region.Physics.Meshing
                     simplices.AddRange(newSimplices);
                     triangles.Remove(t);
                 }
+
                 // Now sort the simplices. That will make identical ones reside side by side in the list
                 simplices.Sort();
 
@@ -169,6 +144,7 @@ namespace OpenSim.Region.Physics.Meshing
                 foreach (Simplex s in simplices)
                 {
                     Triangle t = new Triangle(s.v1, s.v2, vertices[iCurrentVertex]);
+
                     if (!t.isDegraded())
                     {
                         triangles.Add(t);
@@ -186,7 +162,7 @@ namespace OpenSim.Region.Physics.Meshing
             {
                 case ProfileShape.Square:
                     if (hshape == HollowShape.Same)
-                        hshape= HollowShape.Square;
+                        hshape = HollowShape.Square;
                     break;
                 case ProfileShape.EquilateralTriangle:
                     fhollowFactor = ((float)hollowFactor / 1.9f);
@@ -194,9 +170,7 @@ namespace OpenSim.Region.Physics.Meshing
                     {
                         hshape = HollowShape.Triangle;
                     }
-
                     break;
-
                 case ProfileShape.HalfCircle:
                 case ProfileShape.Circle:
                     if (pbs.PathCurve == (byte)Extrusion.Straight)
@@ -207,14 +181,11 @@ namespace OpenSim.Region.Physics.Meshing
                         }
                     }
                     break;
-
-
                 default:
                     if (hshape == HollowShape.Same)
-                        hshape= HollowShape.Square;
+                        hshape = HollowShape.Square;
                     break;
             }
-
 
             SimpleHull holeHull = null;
 
@@ -255,102 +226,13 @@ namespace OpenSim.Region.Physics.Meshing
                 holeHull.AddVertex(IPP);
                 holeHull.AddVertex(IPM);
             }
-            //if (hshape == HollowShape.Circle && pbs.PathCurve == (byte)Extrusion.Straight)
+
             if (hshape == HollowShape.Circle)
             {
                 float hollowFactorF = (float)fhollowFactor / (float)50000;
 
-                //Vertex IQ1Q15 = new Vertex(-0.35f * hollowFactorF, -0.35f * hollowFactorF, 0.0f);
-                //Vertex IQ1Q16 = new Vertex(-0.30f * hollowFactorF, -0.40f * hollowFactorF, 0.0f);
-                //Vertex IQ1Q17 = new Vertex(-0.24f * hollowFactorF, -0.43f * hollowFactorF, 0.0f);
-                //Vertex IQ1Q18 = new Vertex(-0.18f * hollowFactorF, -0.46f * hollowFactorF, 0.0f);
-                //Vertex IQ1Q19 = new Vertex(-0.11f * hollowFactorF, -0.48f * hollowFactorF, 0.0f);
-
-                //Vertex IQ2Q10 = new Vertex(+0.0f * hollowFactorF, -0.50f * hollowFactorF, 0.0f);
-                //Vertex IQ2Q11 = new Vertex(+0.11f * hollowFactorF, -0.48f * hollowFactorF, 0.0f);
-                //Vertex IQ2Q12 = new Vertex(+0.18f * hollowFactorF, -0.46f * hollowFactorF, 0.0f);
-                //Vertex IQ2Q13 = new Vertex(+0.24f * hollowFactorF, -0.43f * hollowFactorF, 0.0f);
-                //Vertex IQ2Q14 = new Vertex(+0.30f * hollowFactorF, -0.40f * hollowFactorF, 0.0f);
-                //Vertex IQ2Q15 = new Vertex(+0.35f * hollowFactorF, -0.35f * hollowFactorF, 0.0f);
-                //Vertex IQ2Q16 = new Vertex(+0.40f * hollowFactorF, -0.30f * hollowFactorF, 0.0f);
-                //Vertex IQ2Q17 = new Vertex(+0.43f * hollowFactorF, -0.24f * hollowFactorF, 0.0f);
-                //Vertex IQ2Q18 = new Vertex(+0.46f * hollowFactorF, -0.18f * hollowFactorF, 0.0f);
-                //Vertex IQ2Q19 = new Vertex(+0.48f * hollowFactorF, -0.11f * hollowFactorF, 0.0f);
-
-                //Vertex IQ2Q20 = new Vertex(+0.50f * hollowFactorF, +0.0f * hollowFactorF, 0.0f);
-                //Vertex IQ2Q21 = new Vertex(+0.48f * hollowFactorF, +0.11f * hollowFactorF, 0.0f);
-                //Vertex IQ2Q22 = new Vertex(+0.46f * hollowFactorF, +0.18f * hollowFactorF, 0.0f);
-                //Vertex IQ2Q23 = new Vertex(+0.43f * hollowFactorF, +0.24f * hollowFactorF, 0.0f);
-                //Vertex IQ2Q24 = new Vertex(+0.40f * hollowFactorF, +0.30f * hollowFactorF, 0.0f);
-                //Vertex IQ2Q25 = new Vertex(+0.35f * hollowFactorF, +0.35f * hollowFactorF, 0.0f);
-                //Vertex IQ2Q26 = new Vertex(+0.30f * hollowFactorF, +0.40f * hollowFactorF, 0.0f);
-                //Vertex IQ2Q27 = new Vertex(+0.24f * hollowFactorF, +0.43f * hollowFactorF, 0.0f);
-                //Vertex IQ2Q28 = new Vertex(+0.18f * hollowFactorF, +0.46f * hollowFactorF, 0.0f);
-                //Vertex IQ2Q29 = new Vertex(+0.11f * hollowFactorF, +0.48f * hollowFactorF, 0.0f);
-
-                //Vertex IQ1Q20 = new Vertex(+0.0f * hollowFactorF, +0.50f * hollowFactorF, 0.0f);
-                //Vertex IQ1Q21 = new Vertex(-0.11f * hollowFactorF, +0.48f * hollowFactorF, 0.0f);
-                //Vertex IQ1Q22 = new Vertex(-0.18f * hollowFactorF, +0.46f * hollowFactorF, 0.0f);
-                //Vertex IQ1Q23 = new Vertex(-0.24f * hollowFactorF, +0.43f * hollowFactorF, 0.0f);
-                //Vertex IQ1Q24 = new Vertex(-0.30f * hollowFactorF, +0.40f * hollowFactorF, 0.0f);
-                //Vertex IQ1Q25 = new Vertex(-0.35f * hollowFactorF, +0.35f * hollowFactorF, 0.0f);
-                //Vertex IQ1Q26 = new Vertex(-0.40f * hollowFactorF, +0.30f * hollowFactorF, 0.0f);
-                //Vertex IQ1Q27 = new Vertex(-0.43f * hollowFactorF, +0.24f * hollowFactorF, 0.0f);
-                //Vertex IQ1Q28 = new Vertex(-0.46f * hollowFactorF, +0.18f * hollowFactorF, 0.0f);
-                //Vertex IQ1Q29 = new Vertex(-0.48f * hollowFactorF, +0.11f * hollowFactorF, 0.0f);
-
-                //Vertex IQ1Q10 = new Vertex(-0.50f * hollowFactorF, +0.0f * hollowFactorF, 0.0f);
-                //Vertex IQ1Q11 = new Vertex(-0.48f * hollowFactorF, -0.11f * hollowFactorF, 0.0f);
-                //Vertex IQ1Q12 = new Vertex(-0.46f * hollowFactorF, -0.18f * hollowFactorF, 0.0f);
-                //Vertex IQ1Q13 = new Vertex(-0.43f * hollowFactorF, -0.24f * hollowFactorF, 0.0f);
-                //Vertex IQ1Q14 = new Vertex(-0.40f * hollowFactorF, -0.30f * hollowFactorF, 0.0f);
-
                 //Counter clockwise around the quadrants
                 holeHull = new SimpleHull();
-                //holeHull.AddVertex(IQ1Q15);
-                //holeHull.AddVertex(IQ1Q14);
-                //holeHull.AddVertex(IQ1Q13);
-                //holeHull.AddVertex(IQ1Q12);
-                //holeHull.AddVertex(IQ1Q11);
-                //holeHull.AddVertex(IQ1Q10);
-
-                //holeHull.AddVertex(IQ1Q29);
-                //holeHull.AddVertex(IQ1Q28);
-                //holeHull.AddVertex(IQ1Q27);
-                //holeHull.AddVertex(IQ1Q26);
-                //holeHull.AddVertex(IQ1Q25);
-                //holeHull.AddVertex(IQ1Q24);
-                //holeHull.AddVertex(IQ1Q23);
-                //holeHull.AddVertex(IQ1Q22);
-                //holeHull.AddVertex(IQ1Q21);
-                //holeHull.AddVertex(IQ1Q20);
-
-                //holeHull.AddVertex(IQ2Q29);
-                //holeHull.AddVertex(IQ2Q28);
-                //holeHull.AddVertex(IQ2Q27);
-                //holeHull.AddVertex(IQ2Q26);
-                //holeHull.AddVertex(IQ2Q25);
-                //holeHull.AddVertex(IQ2Q24);
-                //holeHull.AddVertex(IQ2Q23);
-                //holeHull.AddVertex(IQ2Q22);
-                //holeHull.AddVertex(IQ2Q21);
-                //holeHull.AddVertex(IQ2Q20);
-
-                //holeHull.AddVertex(IQ2Q19);
-                //holeHull.AddVertex(IQ2Q18);
-                //holeHull.AddVertex(IQ2Q17);
-                //holeHull.AddVertex(IQ2Q16);
-                //holeHull.AddVertex(IQ2Q15);
-                //holeHull.AddVertex(IQ2Q14);
-                //holeHull.AddVertex(IQ2Q13);
-                //holeHull.AddVertex(IQ2Q12);
-                //holeHull.AddVertex(IQ2Q11);
-                //holeHull.AddVertex(IQ2Q10);
-
-                //holeHull.AddVertex(IQ1Q19);
-                //holeHull.AddVertex(IQ1Q18);
-                //holeHull.AddVertex(IQ1Q17);
-                //holeHull.AddVertex(IQ1Q16);
 
                 holeHull.AddVertex(new Vertex(0.353553f * hollowFactorF, 0.353553f * hollowFactorF, 0.0f)); // 45 degrees
                 holeHull.AddVertex(new Vertex(0.433013f * hollowFactorF, 0.250000f * hollowFactorF, 0.0f)); // 30 degrees
@@ -377,8 +259,8 @@ namespace OpenSim.Region.Physics.Meshing
                 holeHull.AddVertex(new Vertex(0.129410f * hollowFactorF, 0.482963f * hollowFactorF, 0.0f)); // 75 degrees
                 holeHull.AddVertex(new Vertex(0.250000f * hollowFactorF, 0.433013f * hollowFactorF, 0.0f)); // 60 degrees
                 holeHull.AddVertex(new Vertex(0.353553f * hollowFactorF, 0.353553f * hollowFactorF, 0.0f)); // 45 degrees
-
             }
+
             if (hshape == HollowShape.Triangle)
             {
                 float hollowFactorF = (float)fhollowFactor / (float)50000;
@@ -389,10 +271,6 @@ namespace OpenSim.Region.Physics.Meshing
                 if (pshape == ProfileShape.Square)
                 {
                     // corner points are at 345, 105, and 225 degrees for the triangle within a box
-
-                    //IMM = new Vertex(((float)Math.Cos(345.0 * DEG_TO_RAD) * 0.5f) * hollowFactorF, ((float)Math.Sin(345.0 * DEG_TO_RAD) * 0.5f) * hollowFactorF, 0.0f);
-                    //IPM = new Vertex(((float)Math.Cos(105.0 * DEG_TO_RAD) * 0.5f) * hollowFactorF, ((float)Math.Sin(105.0 * DEG_TO_RAD) * 0.5f) * hollowFactorF, 0.0f);
-                    //IPP = new Vertex(((float)Math.Cos(225.0 * DEG_TO_RAD) * 0.5f) * hollowFactorF, ((float)Math.Sin(225.0 * DEG_TO_RAD) * 0.5f) * hollowFactorF, 0.0f);
 
                     // hard coded here for speed, the equations are in the commented out lines above
                     IMM = new Vertex(0.48296f * hollowFactorF, -0.12941f * hollowFactorF, 0.0f);
@@ -411,16 +289,13 @@ namespace OpenSim.Region.Physics.Meshing
                 holeHull.AddVertex(IMM);
                 holeHull.AddVertex(IPP);
                 holeHull.AddVertex(IPM);
-
             }
 
             return holeHull;
-
-
         }
 
         private static Mesh CreateBoxMesh(String primName, PrimitiveBaseShape primShape, PhysicsVector size)
-            // Builds the z (+ and -) surfaces of a box shaped prim
+        // Builds the z (+ and -) surfaces of a box shaped prim
         {
             UInt16 hollowFactor = primShape.ProfileHollow;
             UInt16 profileBegin = primShape.ProfileBegin;
@@ -436,11 +311,6 @@ namespace OpenSim.Region.Physics.Meshing
             reportPrimParams("[BOX] " + primName, primShape);
 #endif
 
-            //m_log.Error("pathShear:" + primShape.PathShearX.ToString() + "," + primShape.PathShearY.ToString());
-            //m_log.Error("pathTaper:" + primShape.PathTaperX.ToString() + "," + primShape.PathTaperY.ToString());
-            //m_log.Error("ProfileBegin:" + primShape.ProfileBegin.ToString() + "," + primShape.ProfileBegin.ToString());
-            //m_log.Error("PathScale:" + primShape.PathScaleX.ToString() + "," + primShape.PathScaleY.ToString());
-
             // Procedure: This is based on the fact that the upper (plus) and lower (minus) Z-surface
             // of a block are basically the same
             // They may be warped differently but the shape is identical
@@ -455,10 +325,6 @@ namespace OpenSim.Region.Physics.Meshing
             Vertex MP = new Vertex(-0.5f, +0.5f, 0.0f);
 
             SimpleHull outerHull = new SimpleHull();
-            //outerHull.AddVertex(MM);
-            //outerHull.AddVertex(PM);
-            //outerHull.AddVertex(PP);
-            //outerHull.AddVertex(MP);
             outerHull.AddVertex(PP);
             outerHull.AddVertex(MP);
             outerHull.AddVertex(MM);
@@ -467,11 +333,13 @@ namespace OpenSim.Region.Physics.Meshing
             // Deal with cuts now
             if ((profileBegin != 0) || (profileEnd != 0))
             {
-                double fProfileBeginAngle = profileBegin/50000.0*360.0;
-                    // In degree, for easier debugging and understanding
+                double fProfileBeginAngle = profileBegin / 50000.0 * 360.0;
+
+                // In degree, for easier debugging and understanding
                 fProfileBeginAngle -= (90.0 + 45.0); // for some reasons, the SL client counts from the corner -X/-Y
-                double fProfileEndAngle = 360.0 - profileEnd/50000.0*360.0; // Pathend comes as complement to 1.0
+                double fProfileEndAngle = 360.0 - profileEnd / 50000.0 * 360.0; // Pathend comes as complement to 1.0
                 fProfileEndAngle -= (90.0 + 45.0);
+
                 if (fProfileBeginAngle < fProfileEndAngle)
                     fProfileEndAngle -= 360.0;
 
@@ -480,9 +348,10 @@ namespace OpenSim.Region.Physics.Meshing
                 // and we approximate this arc by a polygon chain
                 // Also note, that these vectors are of length 1.0 and thus their endpoints lay outside the model space
                 // So it can easily be subtracted from the outer hull
-                int iSteps = (int) (((fProfileBeginAngle - fProfileEndAngle)/45.0) + .5);
-                    // how many steps do we need with approximately 45 degree
-                double dStepWidth = (fProfileBeginAngle - fProfileEndAngle)/iSteps;
+                int iSteps = (int)(((fProfileBeginAngle - fProfileEndAngle) / 45.0) + .5);
+
+                // how many steps do we need with approximately 45 degree
+                double dStepWidth = (fProfileBeginAngle - fProfileEndAngle) / iSteps;
 
                 Vertex origin = new Vertex(0.0f, 0.0f, 0.0f);
 
@@ -491,12 +360,12 @@ namespace OpenSim.Region.Physics.Meshing
                 cutHull.AddVertex(origin);
                 for (int i = 0; i < iSteps; i++)
                 {
-                    double angle = fProfileBeginAngle - i*dStepWidth; // we count against the angle orientation!!!!
-                    Vertex v = Vertex.FromAngle(angle*Math.PI/180.0);
+                    double angle = fProfileBeginAngle - i * dStepWidth; // we count against the angle orientation!!!!
+                    Vertex v = Vertex.FromAngle(angle * Math.PI / 180.0);
                     cutHull.AddVertex(v);
                 }
-                Vertex legEnd = Vertex.FromAngle(fProfileEndAngle*Math.PI/180.0);
-                    // Calculated separately to avoid errors
+                Vertex legEnd = Vertex.FromAngle(fProfileEndAngle * Math.PI / 180.0);
+                // Calculated separately to avoid errors
                 cutHull.AddVertex(legEnd);
 
                 //m_log.DebugFormat("Starting cutting of the hollow shape from the prim {1}", 0, primName);
@@ -513,7 +382,6 @@ namespace OpenSim.Region.Physics.Meshing
                 if (holeHull != null)
                 {
                     SimpleHull hollowedHull = SimpleHull.SubtractHull(outerHull, holeHull);
-
                     outerHull = hollowedHull;
                 }
             }
@@ -545,6 +413,7 @@ namespace OpenSim.Region.Physics.Meshing
             foreach (Triangle t in m.triangles)
             {
                 PhysicsVector n = t.getNormal();
+
                 if (n.Z < 0.0)
                     t.invertNormal();
             }
@@ -558,14 +427,11 @@ namespace OpenSim.Region.Physics.Meshing
                 if (taperX > 100)
                 {
                     extr.taperTopFactorX = 1.0f - ((float)(taperX - 100) / 100);
-                    //System.Console.WriteLine("taperTopFactorX: " + extr.taperTopFactorX.ToString());
                 }
                 else
                 {
                     extr.taperBotFactorX = 1.0f - ((100 - (float)taperX) / 100);
-                    //System.Console.WriteLine("taperBotFactorX: " + extr.taperBotFactorX.ToString());
                 }
-
             }
 
             if (taperY != 100)
@@ -573,28 +439,23 @@ namespace OpenSim.Region.Physics.Meshing
                 if (taperY > 100)
                 {
                     extr.taperTopFactorY = 1.0f - ((float)(taperY - 100) / 100);
-                    //System.Console.WriteLine("taperTopFactorY: " + extr.taperTopFactorY.ToString());
                 }
                 else
                 {
                     extr.taperBotFactorY = 1.0f - ((100 - (float)taperY) / 100);
-                    //System.Console.WriteLine("taperBotFactorY: " + extr.taperBotFactorY.ToString());
                 }
             }
 
             if (pathShearX != 0)
             {
-                //System.Console.WriteLine("pushX: " + pathShearX.ToString());
                 if (pathShearX > 50)
                 {
                     // Complimentary byte.  Negative values wrap around the byte.  Positive values go up to 50
                     extr.pushX = (((float)(256 - pathShearX) / 100) * -1f);
-                    //System.Console.WriteLine("pushX: " + extr.pushX);
                 }
                 else
                 {
                     extr.pushX = (float)pathShearX / 100;
-                    //System.Console.WriteLine("pushX: " + extr.pushX);
                 }
             }
 
@@ -604,51 +465,17 @@ namespace OpenSim.Region.Physics.Meshing
                 {
                     // Complimentary byte.  Negative values wrap around the byte.  Positive values go up to 50
                     extr.pushY = (((float)(256 - pathShearY) / 100) * -1f);
-                    //System.Console.WriteLine("pushY: " + extr.pushY);
                 }
                 else
                 {
                     extr.pushY = (float)pathShearY / 100;
-                    //System.Console.WriteLine("pushY: " + extr.pushY);
                 }
             }
 
-            if (twistTop != 0)
-            {
-                extr.twistTop = 180 * ((float)twistTop / 100);
-                if (extr.twistTop > 0)
-                {
-                    extr.twistTop = 360 - (-1 * extr.twistTop);
+            extr.twistTop = (float)primShape.PathTwist * (float)Math.PI * 0.01f;
+            extr.twistBot = (float)primShape.PathTwistBegin * (float)Math.PI * 0.01f;
 
-                }
-
-
-                extr.twistTop = (float)(extr.twistTop * DEG_TO_RAD);
-            }
-
-            float twistMid = ((twistTop + twistBot) * 0.5f);
-
-            if (twistMid != 0)
-            {
-                extr.twistMid = 180 * ((float)twistMid / 100);
-                if (extr.twistMid > 0)
-                {
-                    extr.twistMid = 360 - (-1 * extr.twistMid);
-                }
-                extr.twistMid = (float)(extr.twistMid * DEG_TO_RAD);
-            }
-
-            if (twistBot != 0)
-            {
-                extr.twistBot = 180 * ((float)twistBot / 100);
-                if (extr.twistBot > 0)
-                {
-                    extr.twistBot = 360 - (-1 * extr.twistBot);
-                }
-                extr.twistBot = (float)(extr.twistBot * DEG_TO_RAD);
-            }
-
-            Mesh result = extr.Extrude(m);
+            Mesh result = extr.ExtrudeLinearPath(m);
             result.DumpRaw(baseDir, primName, "Z extruded");
             return result;
         }
@@ -656,7 +483,6 @@ namespace OpenSim.Region.Physics.Meshing
         private static Mesh CreateCylinderMesh(String primName, PrimitiveBaseShape primShape, PhysicsVector size)
         // Builds the z (+ and -) surfaces of a box shaped prim
         {
-
             UInt16 hollowFactor = primShape.ProfileHollow;
             UInt16 profileBegin = primShape.ProfileBegin;
             UInt16 profileEnd = primShape.ProfileEnd;
@@ -671,110 +497,15 @@ namespace OpenSim.Region.Physics.Meshing
             reportPrimParams("[CYLINDER] " + primName, primShape);
 #endif
 
-
             // Procedure: This is based on the fact that the upper (plus) and lower (minus) Z-surface
             // of a block are basically the same
             // They may be warped differently but the shape is identical
             // So we only create one surface as a model and derive both plus and minus surface of the block from it
             // This is done in a model space where the block spans from -.5 to +.5 in X and Y
             // The mapping to Scene space is done later during the "extrusion" phase
-
-            // Base
-            // Q1Q15 = Quadrant 1, Quadrant1, Vertex 5
-            //Vertex Q1Q15 = new Vertex(-0.35f, -0.35f, 0.0f);
-            //Vertex Q1Q16 = new Vertex(-0.30f, -0.40f, 0.0f);
-            //Vertex Q1Q17 = new Vertex(-0.24f, -0.43f, 0.0f);
-            //Vertex Q1Q18 = new Vertex(-0.18f, -0.46f, 0.0f);
-            //Vertex Q1Q19 = new Vertex(-0.11f, -0.48f, 0.0f);
-
-            //Vertex Q2Q10 = new Vertex(+0.0f, -0.50f, 0.0f);
-            //Vertex Q2Q11 = new Vertex(+0.11f, -0.48f, 0.0f);
-            //Vertex Q2Q12 = new Vertex(+0.18f, -0.46f, 0.0f);
-            //Vertex Q2Q13 = new Vertex(+0.24f, -0.43f, 0.0f);
-            //Vertex Q2Q14 = new Vertex(+0.30f, -0.40f, 0.0f);
-            //Vertex Q2Q15 = new Vertex(+0.35f, -0.35f, 0.0f);
-            //Vertex Q2Q16 = new Vertex(+0.40f, -0.30f, 0.0f);
-            //Vertex Q2Q17 = new Vertex(+0.43f, -0.24f, 0.0f);
-            //Vertex Q2Q18 = new Vertex(+0.46f, -0.18f, 0.0f);
-            //Vertex Q2Q19 = new Vertex(+0.48f, -0.11f, 0.0f);
-
-            //Vertex Q2Q20 = new Vertex(+0.50f, +0.0f, 0.0f);
-            //Vertex Q2Q21 = new Vertex(+0.48f, +0.11f, 0.0f);
-            //Vertex Q2Q22 = new Vertex(+0.46f, +0.18f, 0.0f);
-            //Vertex Q2Q23 = new Vertex(+0.43f, +0.24f, 0.0f);
-            //Vertex Q2Q24 = new Vertex(+0.40f, +0.30f, 0.0f);
-            //Vertex Q2Q25 = new Vertex(+0.35f, +0.35f, 0.0f);
-            //Vertex Q2Q26 = new Vertex(+0.30f, +0.40f, 0.0f);
-            //Vertex Q2Q27 = new Vertex(+0.24f, +0.43f, 0.0f);
-            //Vertex Q2Q28 = new Vertex(+0.18f, +0.46f, 0.0f);
-            //Vertex Q2Q29 = new Vertex(+0.11f, +0.48f, 0.0f);
-
-            //Vertex Q1Q20 = new Vertex(+0.0f, +0.50f, 0.0f);
-            //Vertex Q1Q21 = new Vertex(-0.11f, +0.48f, 0.0f);
-            //Vertex Q1Q22 = new Vertex(-0.18f, +0.46f, 0.0f);
-            //Vertex Q1Q23 = new Vertex(-0.24f, +0.43f, 0.0f);
-            //Vertex Q1Q24 = new Vertex(-0.30f, +0.40f, 0.0f);
-            //Vertex Q1Q25 = new Vertex(-0.35f, +0.35f, 0.0f);
-            //Vertex Q1Q26 = new Vertex(-0.40f, +0.30f, 0.0f);
-            //Vertex Q1Q27 = new Vertex(-0.43f, +0.24f, 0.0f);
-            //Vertex Q1Q28 = new Vertex(-0.46f, +0.18f, 0.0f);
-            //Vertex Q1Q29 = new Vertex(-0.48f, +0.11f, 0.0f);
-
-            //Vertex Q1Q10 = new Vertex(-0.50f, +0.0f, 0.0f);
-            //Vertex Q1Q11 = new Vertex(-0.48f, -0.11f, 0.0f);
-            //Vertex Q1Q12 = new Vertex(-0.46f, -0.18f, 0.0f);
-            //Vertex Q1Q13 = new Vertex(-0.43f, -0.24f, 0.0f);
-            //Vertex Q1Q14 = new Vertex(-0.40f, -0.30f, 0.0f);
-
             SimpleHull outerHull = new SimpleHull();
-            //Clockwise around the quadrants
-            //outerHull.AddVertex(Q1Q15);
-            //outerHull.AddVertex(Q1Q16);
-            //outerHull.AddVertex(Q1Q17);
-            //outerHull.AddVertex(Q1Q18);
-            //outerHull.AddVertex(Q1Q19);
-
-            //outerHull.AddVertex(Q2Q10);
-            //outerHull.AddVertex(Q2Q11);
-            //outerHull.AddVertex(Q2Q12);
-            //outerHull.AddVertex(Q2Q13);
-            //outerHull.AddVertex(Q2Q14);
-            //outerHull.AddVertex(Q2Q15);
-            //outerHull.AddVertex(Q2Q16);
-            //outerHull.AddVertex(Q2Q17);
-            //outerHull.AddVertex(Q2Q18);
-            //outerHull.AddVertex(Q2Q19);
-
-            //outerHull.AddVertex(Q2Q20);
-            //outerHull.AddVertex(Q2Q21);
-            //outerHull.AddVertex(Q2Q22);
-            //outerHull.AddVertex(Q2Q23);
-            //outerHull.AddVertex(Q2Q24);
-            //outerHull.AddVertex(Q2Q25);
-            //outerHull.AddVertex(Q2Q26);
-            //outerHull.AddVertex(Q2Q27);
-            //outerHull.AddVertex(Q2Q28);
-            //outerHull.AddVertex(Q2Q29);
-
-            //outerHull.AddVertex(Q1Q20);
-            //outerHull.AddVertex(Q1Q21);
-            //outerHull.AddVertex(Q1Q22);
-            //outerHull.AddVertex(Q1Q23);
-            //outerHull.AddVertex(Q1Q24);
-            //outerHull.AddVertex(Q1Q25);
-            //outerHull.AddVertex(Q1Q26);
-            //outerHull.AddVertex(Q1Q27);
-            //outerHull.AddVertex(Q1Q28);
-            //outerHull.AddVertex(Q1Q29);
-
-            //outerHull.AddVertex(Q1Q10);
-            //outerHull.AddVertex(Q1Q11);
-            //outerHull.AddVertex(Q1Q12);
-            //outerHull.AddVertex(Q1Q13);
-            //outerHull.AddVertex(Q1Q14);
 
             // counter-clockwise around the quadrants, start at 45 degrees
-
             outerHull.AddVertex(new Vertex(0.353553f, 0.353553f, 0.0f)); // 45 degrees
             outerHull.AddVertex(new Vertex(0.250000f, 0.433013f, 0.0f)); // 60 degrees
             outerHull.AddVertex(new Vertex(0.129410f, 0.482963f, 0.0f)); // 75 degrees
@@ -800,16 +531,14 @@ namespace OpenSim.Region.Physics.Meshing
             outerHull.AddVertex(new Vertex(0.482963f, 0.129410f, 0.0f)); // 15 degrees
             outerHull.AddVertex(new Vertex(0.433013f, 0.250000f, 0.0f)); // 30 degrees
 
-
-
             // Deal with cuts now
             if ((profileBegin != 0) || (profileEnd != 0))
             {
                 double fProfileBeginAngle = profileBegin / 50000.0 * 360.0;
+
                 // In degree, for easier debugging and understanding
-                //fProfileBeginAngle -= (90.0 + 45.0); // for some reasons, the SL client counts from the corner -X/-Y
                 double fProfileEndAngle = 360.0 - profileEnd / 50000.0 * 360.0; // Pathend comes as complement to 1.0
-                //fProfileEndAngle -= (90.0 + 45.0);
+
                 if (fProfileBeginAngle < fProfileEndAngle)
                     fProfileEndAngle -= 360.0;
 
@@ -819,6 +548,7 @@ namespace OpenSim.Region.Physics.Meshing
                 // Also note, that these vectors are of length 1.0 and thus their endpoints lay outside the model space
                 // So it can easily be subtracted from the outer hull
                 int iSteps = (int)(((fProfileBeginAngle - fProfileEndAngle) / 45.0) + .5);
+
                 // how many steps do we need with approximately 45 degree
                 double dStepWidth = (fProfileBeginAngle - fProfileEndAngle) / iSteps;
 
@@ -827,13 +557,16 @@ namespace OpenSim.Region.Physics.Meshing
                 // Note the sequence of vertices here. It's important to have the other rotational sense than in outerHull
                 SimpleHull cutHull = new SimpleHull();
                 cutHull.AddVertex(origin);
+
                 for (int i = 0; i < iSteps; i++)
                 {
                     double angle = fProfileBeginAngle - i * dStepWidth; // we count against the angle orientation!!!!
                     Vertex v = Vertex.FromAngle(angle * Math.PI / 180.0);
                     cutHull.AddVertex(v);
                 }
+
                 Vertex legEnd = Vertex.FromAngle(fProfileEndAngle * Math.PI / 180.0);
+
                 // Calculated separately to avoid errors
                 cutHull.AddVertex(legEnd);
 
@@ -882,6 +615,7 @@ namespace OpenSim.Region.Physics.Meshing
             foreach (Triangle t in m.triangles)
             {
                 PhysicsVector n = t.getNormal();
+
                 if (n.Z < 0.0)
                     t.invertNormal();
             }
@@ -890,20 +624,15 @@ namespace OpenSim.Region.Physics.Meshing
 
             extr.size = size;
 
-            //System.Console.WriteLine("taperFactorX: " + taperX.ToString());
-            //System.Console.WriteLine("taperFactorY: " + taperY.ToString());
-
             if (taperX != 100)
             {
                 if (taperX > 100)
                 {
                     extr.taperTopFactorX = 1.0f - ((float)(taperX - 100) / 100);
-                    //System.Console.WriteLine("taperTopFactorX: " + extr.taperTopFactorX.ToString());
                 }
                 else
                 {
                     extr.taperBotFactorX = 1.0f - ((100 - (float)taperX) / 100);
-                    //System.Console.WriteLine("taperBotFactorX: " + extr.taperBotFactorX.ToString());
                 }
 
             }
@@ -913,12 +642,10 @@ namespace OpenSim.Region.Physics.Meshing
                 if (taperY > 100)
                 {
                     extr.taperTopFactorY = 1.0f - ((float)(taperY - 100) / 100);
-                   // System.Console.WriteLine("taperTopFactorY: " + extr.taperTopFactorY.ToString());
                 }
                 else
                 {
                     extr.taperBotFactorY = 1.0f - ((100 - (float)taperY) / 100);
-                    //System.Console.WriteLine("taperBotFactorY: " + extr.taperBotFactorY.ToString());
                 }
             }
 
@@ -928,12 +655,10 @@ namespace OpenSim.Region.Physics.Meshing
                 {
                     // Complimentary byte.  Negative values wrap around the byte.  Positive values go up to 50
                     extr.pushX = (((float)(256 - pathShearX) / 100) * -1f);
-                    //m_log.Warn("pushX: " + extr.pushX);
                 }
                 else
                 {
                     extr.pushX = (float)pathShearX / 100;
-                    //m_log.Warn("pushX: " + extr.pushX);
                 }
             }
 
@@ -943,53 +668,17 @@ namespace OpenSim.Region.Physics.Meshing
                 {
                     // Complimentary byte.  Negative values wrap around the byte.  Positive values go up to 50
                     extr.pushY = (((float)(256 - pathShearY) / 100) * -1f);
-                    //m_log.Warn("pushY: " + extr.pushY);
                 }
                 else
                 {
                     extr.pushY = (float)pathShearY / 100;
-                    //m_log.Warn("pushY: " + extr.pushY);
                 }
-
             }
 
-            if (twistTop != 0)
-            {
-                extr.twistTop = 180 * ((float)twistTop / 100);
-                if (extr.twistTop > 0)
-                {
-                    extr.twistTop = 360 - (-1 * extr.twistTop);
+            extr.twistTop = (float)primShape.PathTwist * (float)Math.PI * 0.01f;
+            extr.twistBot = (float)primShape.PathTwistBegin * (float)Math.PI * 0.01f;
 
-                }
-
-
-                extr.twistTop = (float)(extr.twistTop * DEG_TO_RAD);
-            }
-
-            float twistMid = ((twistTop + twistBot) * 0.5f);
-
-            if (twistMid != 0)
-            {
-                extr.twistMid = 180 * ((float)twistMid / 100);
-                if (extr.twistMid > 0)
-                {
-                    extr.twistMid = 360 - (-1 * extr.twistMid);
-                }
-                extr.twistMid = (float)(extr.twistMid * DEG_TO_RAD);
-            }
-
-            if (twistBot != 0)
-            {
-                extr.twistBot = 180 * ((float)twistBot / 100);
-                if (extr.twistBot > 0)
-                {
-                    extr.twistBot = 360 - (-1 * extr.twistBot);
-                }
-                extr.twistBot = (float)(extr.twistBot * DEG_TO_RAD);
-            }
-
-            //System.Console.WriteLine("[MESH]: twistTop = " + twistTop.ToString() + "|" + extr.twistTop.ToString() + ", twistMid = " + twistMid.ToString() + "|" + extr.twistMid.ToString() + ", twistbot = " + twistBot.ToString() + "|" + extr.twistBot.ToString());
-            Mesh result = extr.Extrude(m);
+            Mesh result = extr.ExtrudeLinearPath(m);
             result.DumpRaw(baseDir, primName, "Z extruded");
             return result;
         }
@@ -1012,11 +701,6 @@ namespace OpenSim.Region.Physics.Meshing
             reportPrimParams("[PRISM] " + primName, primShape);
 #endif
 
-            //m_log.Error("pathShear:" + primShape.PathShearX.ToString() + "," + primShape.PathShearY.ToString());
-            //m_log.Error("pathTaper:" + primShape.PathTaperX.ToString() + "," + primShape.PathTaperY.ToString());
-            //m_log.Error("ProfileBegin:" + primShape.ProfileBegin.ToString() + "," + primShape.ProfileBegin.ToString());
-            //m_log.Error("PathScale:" + primShape.PathScaleX.ToString() + "," + primShape.PathScaleY.ToString());
-
             // Procedure: This is based on the fact that the upper (plus) and lower (minus) Z-surface
             // of a block are basically the same
             // They may be warped differently but the shape is identical
@@ -1029,11 +713,7 @@ namespace OpenSim.Region.Physics.Meshing
             Vertex PM = new Vertex(+0.5f, 0f, 0.0f);
             Vertex PP = new Vertex(-0.25f, +0.45f, 0.0f);
 
-
             SimpleHull outerHull = new SimpleHull();
-            //outerHull.AddVertex(MM);
-            //outerHull.AddVertex(PM);
-            //outerHull.AddVertex(PP);
             outerHull.AddVertex(PP);
             outerHull.AddVertex(MM);
             outerHull.AddVertex(PM);
@@ -1042,10 +722,10 @@ namespace OpenSim.Region.Physics.Meshing
             if ((profileBegin != 0) || (profileEnd != 0))
             {
                 double fProfileBeginAngle = profileBegin / 50000.0 * 360.0;
+
                 // In degree, for easier debugging and understanding
-                //fProfileBeginAngle -= (90.0 + 45.0); // for some reasons, the SL client counts from the corner -X/-Y
                 double fProfileEndAngle = 360.0 - profileEnd / 50000.0 * 360.0; // Pathend comes as complement to 1.0
-                //fProfileEndAngle -= (90.0 + 45.0);
+
                 if (fProfileBeginAngle < fProfileEndAngle)
                     fProfileEndAngle -= 360.0;
 
@@ -1055,6 +735,7 @@ namespace OpenSim.Region.Physics.Meshing
                 // Also note, that these vectors are of length 1.0 and thus their endpoints lay outside the model space
                 // So it can easily be subtracted from the outer hull
                 int iSteps = (int)(((fProfileBeginAngle - fProfileEndAngle) / 45.0) + .5);
+
                 // how many steps do we need with approximately 45 degree
                 double dStepWidth = (fProfileBeginAngle - fProfileEndAngle) / iSteps;
 
@@ -1069,7 +750,9 @@ namespace OpenSim.Region.Physics.Meshing
                     Vertex v = Vertex.FromAngle(angle * Math.PI / 180.0);
                     cutHull.AddVertex(v);
                 }
+
                 Vertex legEnd = Vertex.FromAngle(fProfileEndAngle * Math.PI / 180.0);
+
                 // Calculated separately to avoid errors
                 cutHull.AddVertex(legEnd);
 
@@ -1131,14 +814,11 @@ namespace OpenSim.Region.Physics.Meshing
                 if (taperX > 100)
                 {
                     extr.taperTopFactorX = 1.0f - ((float)(taperX - 100) / 100);
-                    //System.Console.WriteLine("taperTopFactorX: " + extr.taperTopFactorX.ToString());
                 }
                 else
                 {
                     extr.taperBotFactorX = 1.0f - ((100 - (float)taperX) / 100);
-                    //System.Console.WriteLine("taperBotFactorX: " + extr.taperBotFactorX.ToString());
                 }
-
             }
 
             if (taperY != 100)
@@ -1146,12 +826,10 @@ namespace OpenSim.Region.Physics.Meshing
                 if (taperY > 100)
                 {
                     extr.taperTopFactorY = 1.0f - ((float)(taperY - 100) / 100);
-                    // System.Console.WriteLine("taperTopFactorY: " + extr.taperTopFactorY.ToString());
                 }
                 else
                 {
                     extr.taperBotFactorY = 1.0f - ((100 - (float)taperY) / 100);
-                    //System.Console.WriteLine("taperBotFactorY: " + extr.taperBotFactorY.ToString());
                 }
             }
 
@@ -1161,12 +839,10 @@ namespace OpenSim.Region.Physics.Meshing
                 {
                     // Complimentary byte.  Negative values wrap around the byte.  Positive values go up to 50
                     extr.pushX = (((float)(256 - pathShearX) / 100) * -1f);
-                    // m_log.Warn("pushX: " + extr.pushX);
                 }
                 else
                 {
                     extr.pushX = (float)pathShearX / 100;
-                    // m_log.Warn("pushX: " + extr.pushX);
                 }
             }
 
@@ -1176,55 +852,20 @@ namespace OpenSim.Region.Physics.Meshing
                 {
                     // Complimentary byte.  Negative values wrap around the byte.  Positive values go up to 50
                     extr.pushY = (((float)(256 - pathShearY) / 100) * -1f);
-                    //m_log.Warn("pushY: " + extr.pushY);
                 }
                 else
                 {
                     extr.pushY = (float)pathShearY / 100;
-                    //m_log.Warn("pushY: " + extr.pushY);
                 }
             }
 
-            if (twistTop != 0)
-            {
-                extr.twistTop = 180 * ((float)twistTop / 100);
-                if (extr.twistTop > 0)
-                {
-                    extr.twistTop = 360 - (-1 * extr.twistTop);
+            extr.twistTop = (float)primShape.PathTwist * (float)Math.PI * 0.01f;
+            extr.twistBot = (float)primShape.PathTwistBegin * (float)Math.PI * 0.01f;
 
-                }
-
-
-                extr.twistTop = (float)(extr.twistTop * DEG_TO_RAD);
-            }
-
-            float twistMid = ((twistTop + twistBot) * 0.5f);
-
-            if (twistMid != 0)
-            {
-                extr.twistMid = 180 * ((float)twistMid / 100);
-                if (extr.twistMid > 0)
-                {
-                    extr.twistMid = 360 - (-1 * extr.twistMid);
-                }
-                extr.twistMid = (float)(extr.twistMid * DEG_TO_RAD);
-            }
-
-            if (twistBot != 0)
-            {
-                extr.twistBot = 180 * ((float)twistBot / 100);
-                if (extr.twistBot > 0)
-                {
-                    extr.twistBot = 360 - (-1 * extr.twistBot);
-                }
-                extr.twistBot = (float)(extr.twistBot * DEG_TO_RAD);
-            }
-
-            Mesh result = extr.Extrude(m);
+            Mesh result = extr.ExtrudeLinearPath(m);
             result.DumpRaw(baseDir, primName, "Z extruded");
             return result;
         }
-
 
         private static Mesh CreateSphereMesh(String primName, PrimitiveBaseShape primShape, PhysicsVector size)
         {
@@ -1237,7 +878,6 @@ namespace OpenSim.Region.Physics.Meshing
             // http://local.wasp.uwa.edu.au/~pbourke/geometry/polyhedra/index.html
 
             // Still have more to do here.
-
             UInt16 hollowFactor = primShape.ProfileHollow;
             UInt16 profileBegin = primShape.ProfileBegin;
             UInt16 profileEnd = primShape.ProfileEnd;
@@ -1253,12 +893,11 @@ namespace OpenSim.Region.Physics.Meshing
 
             float LOD = 0.2f;
             float diameter = 0.5f;// Our object will result in -0.5 to 0.5
-            float sq5 = (float) Math.Sqrt(5.0);
+            float sq5 = (float)Math.Sqrt(5.0);
             float phi = (1 + sq5) * 0.5f;
-            float rat = (float) Math.Sqrt(10f + (2f * sq5)) / (4f * phi);
+            float rat = (float)Math.Sqrt(10f + (2f * sq5)) / (4f * phi);
             float a = (diameter / rat) * 0.5f;
             float b = (diameter / rat) / (2.0f * phi);
-
 
             // 12 Icosahedron vertexes
             Vertex v1 = new Vertex(0f, b, -a);
@@ -1273,8 +912,6 @@ namespace OpenSim.Region.Physics.Meshing
             Vertex v10 = new Vertex(-a, 0f, -b);
             Vertex v11 = new Vertex(b, -a, 0);
             Vertex v12 = new Vertex(-b, -a, 0);
-
-
 
             // Base Faces of the Icosahedron (20)
             SphereLODTriangle(v1, v2, v3, diameter, LOD, m);
@@ -1312,11 +949,13 @@ namespace OpenSim.Region.Physics.Meshing
             {
                 t.invertNormal();
             }
+
             // Dump the faces for visualization in blender.
             m.DumpRaw(baseDir, primName, "Icosahedron");
 
             return m;
         }
+
         private SculptMesh CreateSculptMesh(string primName, PrimitiveBaseShape primShape, PhysicsVector size, float lod)
         {
 
@@ -1325,6 +964,7 @@ namespace OpenSim.Region.Physics.Meshing
 #endif
 
             SculptMesh sm = new SculptMesh(primShape.SculptData, lod);
+
             // Scale the mesh based on our prim scale
             foreach (Vertex v in sm.vertices)
             {
@@ -1335,20 +975,20 @@ namespace OpenSim.Region.Physics.Meshing
                 v.Y *= size.Y;
                 v.Z *= size.Z;
             }
+
             // This was built with the normals pointing inside..
             // therefore we have to invert the normals
             foreach (Triangle t in sm.triangles)
             {
                 t.invertNormal();
             }
+
             sm.DumpRaw(baseDir, primName, "Sculpt");
             return sm;
-
         }
 
         private static Mesh CreateCircularPathMesh(String primName, PrimitiveBaseShape primShape, PhysicsVector size)
         {
-
             UInt16 hollowFactor = primShape.ProfileHollow;
             UInt16 profileBegin = primShape.ProfileBegin;
             UInt16 profileEnd = primShape.ProfileEnd;
@@ -1370,9 +1010,6 @@ namespace OpenSim.Region.Physics.Meshing
             SimpleHull outerHull = new SimpleHull();
 
             if ((primShape.ProfileCurve & 0x07) == (byte)ProfileShape.Circle)
-
-            //if ((primShape.ProfileCurve & 0x07) == (byte)ProfileShape.Circle
-            //    || (primShape.ProfileCurve & 0x07) == (byte) ProfileShape.Square)
             {
 #if SPAM
                 Console.WriteLine("Meshmerizer thinks " + primName + " is a TORUS");
@@ -1382,7 +1019,6 @@ namespace OpenSim.Region.Physics.Meshing
 
                 // build the profile shape
                 // counter-clockwise around the quadrants, start at 45 degrees
-
                 outerHull.AddVertex(new Vertex(0.353553f, 0.353553f, 0.0f)); // 45 degrees
                 outerHull.AddVertex(new Vertex(0.250000f, 0.433013f, 0.0f)); // 60 degrees
                 outerHull.AddVertex(new Vertex(0.129410f, 0.482963f, 0.0f)); // 75 degrees
@@ -1434,7 +1070,6 @@ namespace OpenSim.Region.Physics.Meshing
                 outerHull.AddVertex(new Vertex(+0.255f, -0.375f, 0.0f));
                 outerHull.AddVertex(new Vertex(+0.25f, +0.375f, 0.0f));
                 outerHull.AddVertex(new Vertex(-0.5f, +0.0f, 0.0f));
-
             }
 
             else if ((primShape.ProfileCurve & 0x07) == (byte)ProfileShape.HalfCircle)
@@ -1453,10 +1088,10 @@ namespace OpenSim.Region.Physics.Meshing
             if ((profileBegin != 0) || (profileEnd != 0))
             {
                 double fProfileBeginAngle = profileBegin / 50000.0 * 360.0;
+
                 // In degree, for easier debugging and understanding
-                //fProfileBeginAngle -= (90.0 + 45.0); // for some reasons, the SL client counts from the corner -X/-Y
                 double fProfileEndAngle = 360.0 - profileEnd / 50000.0 * 360.0; // Pathend comes as complement to 1.0
-                //fProfileEndAngle -= (90.0 + 45.0);
+
                 if (fProfileBeginAngle < fProfileEndAngle)
                     fProfileEndAngle -= 360.0;
 
@@ -1466,6 +1101,7 @@ namespace OpenSim.Region.Physics.Meshing
                 // Also note, that these vectors are of length 1.0 and thus their endpoints lay outside the model space
                 // So it can easily be subtracted from the outer hull
                 int iSteps = (int)(((fProfileBeginAngle - fProfileEndAngle) / 45.0) + .5);
+
                 // how many steps do we need with approximately 45 degree
                 double dStepWidth = (fProfileBeginAngle - fProfileEndAngle) / iSteps;
 
@@ -1480,7 +1116,9 @@ namespace OpenSim.Region.Physics.Meshing
                     Vertex v = Vertex.FromAngle(angle * Math.PI / 180.0);
                     cutHull.AddVertex(v);
                 }
+
                 Vertex legEnd = Vertex.FromAngle(fProfileEndAngle * Math.PI / 180.0);
+
                 // Calculated separately to avoid errors
                 cutHull.AddVertex(legEnd);
 
@@ -1513,7 +1151,7 @@ namespace OpenSim.Region.Physics.Meshing
                 {
                     holeHull = new SimpleHull();
 
-                    float hollowFactorF = (float) hollowFactor / 50000.0f;
+                    float hollowFactorF = (float)hollowFactor / 50000.0f;
 
                     if ((primShape.ProfileCurve & 0x07) == (byte)ProfileShape.EquilateralTriangle)
                     {
@@ -1526,17 +1164,6 @@ namespace OpenSim.Region.Physics.Meshing
                         holeHull.AddVertex(new Vertex(+0.25f * hollowFactorF, -0.45f * hollowFactorF, 0.0f));
                         holeHull.AddVertex(new Vertex(-0.5f * hollowFactorF, -0f * hollowFactorF, 0.0f));
                         holeHull.AddVertex(new Vertex(+0.25f * hollowFactorF, +0.45f * hollowFactorF, 0.0f));
-
-                        ////holeHull.AddVertex(new Vertex(-0.5f * hollowFactorF, -0f * hollowFactorF, 0.0f));
-
-                        ////holeHull.AddVertex(new Vertex(+0.25f * hollowFactorF, +0.45f * hollowFactorF, 0.0f));
-                        
-                        ////holeHull.AddVertex(new Vertex(+0.25f * hollowFactorF, -0.45f * hollowFactorF, 0.0f));
-
-                        //holeHull.AddVertex(new Vertex(-0.5f * hollowFactorF, +0f * hollowFactorF, 0.0f));
-                        //holeHull.AddVertex(new Vertex(+0.25f * hollowFactorF, -0.45f * hollowFactorF, 0.0f));
-                        //holeHull.AddVertex(new Vertex(+0.25f * hollowFactorF, +0.45f * hollowFactorF, 0.0f));
-                        ////holeHull.AddVertex(new Vertex(-0.5f * hollowFactorF, +0f * hollowFactorF, 0.0f));
                     }
                 }
                 else
@@ -1581,7 +1208,6 @@ namespace OpenSim.Region.Physics.Meshing
 
             Vertex vTemp = new Vertex(0.0f, 0.0f, 0.0f);
 
-            
             float skew = primShape.PathSkew * 0.01f;
             float pathScaleX = (float)(200 - primShape.PathScaleX) * 0.01f;
             float pathScaleY = (float)(200 - primShape.PathScaleY) * 0.01f;
@@ -1594,13 +1220,12 @@ namespace OpenSim.Region.Physics.Meshing
             Console.WriteLine("skew: " + skew.ToString() + " profileXComp: " + profileXComp.ToString());
 #endif
 
-            
             foreach (Vertex v in m.vertices)
                 if (v != null)
                 {
+                    // Torus profile is scaled to y axis
                     v.X *= profileXComp;
                     v.Y *= pathScaleY;
-                    //v.Y *= 0.5f; // torus profile is scaled in y axis
                 }
 
             Extruder extr = new Extruder();
@@ -1631,21 +1256,16 @@ namespace OpenSim.Region.Physics.Meshing
             //System.Console.WriteLine("primShape.PathRadiusOffset: " + primShape.PathRadiusOffset.ToString());
 #endif
 
-
-
-
             if (pathShearX != 0)
             {
                 if (pathShearX > 50)
                 {
                     // Complimentary byte.  Negative values wrap around the byte.  Positive values go up to 50
                     extr.pushX = (((float)(256 - pathShearX) / 100) * -1f);
-                    //m_log.Warn("pushX: " + extr.pushX);
                 }
                 else
                 {
                     extr.pushX = (float)pathShearX / 100;
-                    //m_log.Warn("pushX: " + extr.pushX);
                 }
             }
 
@@ -1655,14 +1275,11 @@ namespace OpenSim.Region.Physics.Meshing
                 {
                     // Complimentary byte.  Negative values wrap around the byte.  Positive values go up to 50
                     extr.pushY = (((float)(256 - pathShearY) / 100) * -1f);
-                    //m_log.Warn("pushY: " + extr.pushY);
                 }
                 else
                 {
                     extr.pushY = (float)pathShearY / 100;
-                    //m_log.Warn("pushY: " + extr.pushY);
                 }
-
             }
 
             extr.twistTop = (float)primShape.PathTwist * (float)Math.PI * 0.02f;
@@ -1678,7 +1295,7 @@ namespace OpenSim.Region.Physics.Meshing
         {
             int iTriangles = mesh.triangles.Count;
 
-            mesh.normals = new float[iTriangles*3];
+            mesh.normals = new float[iTriangles * 3];
 
             int i = 0;
             foreach (Triangle t in mesh.triangles)
@@ -1699,7 +1316,6 @@ namespace OpenSim.Region.Physics.Meshing
                 wy = t.v3.Y;
                 wz = t.v3.Z;
 
-
                 // Vectors for edges
                 float e1x, e1y, e1z;
                 float e2x, e2y, e2z;
@@ -1712,15 +1328,14 @@ namespace OpenSim.Region.Physics.Meshing
                 e2y = uy - wy;
                 e2z = uz - wz;
 
-
                 // Cross product for normal
                 float nx, ny, nz;
-                nx = e1y*e2z - e1z*e2y;
-                ny = e1z*e2x - e1x*e2z;
-                nz = e1x*e2y - e1y*e2x;
+                nx = e1y * e2z - e1z * e2y;
+                ny = e1z * e2x - e1x * e2z;
+                nz = e1x * e2y - e1y * e2x;
 
                 // Length
-                float l = (float) Math.Sqrt(nx*nx + ny*ny + nz*nz);
+                float l = (float)Math.Sqrt(nx * nx + ny * ny + nz * nz);
 
                 // Normalized "normal"
                 nx /= l;
@@ -1738,7 +1353,7 @@ namespace OpenSim.Region.Physics.Meshing
         public static Vertex midUnitRadialPoint(Vertex a, Vertex b, float radius)
         {
             Vertex midpoint = new Vertex(a + b) * 0.5f;
-            return  (midpoint.normalize() * radius);
+            return (midpoint.normalize() * radius);
         }
 
         public static void SphereLODTriangle(Vertex a, Vertex b, Vertex c, float diameter, float LOD, Mesh m)
@@ -1751,11 +1366,12 @@ namespace OpenSim.Region.Physics.Meshing
             {
                 // We don't want duplicate verticies.  Duplicates cause the scale algorithm to produce a spikeball
                 // spikes are novel, but we want ellipsoids.
-
                 if (!m.vertices.Contains(a))
                     m.Add(a);
+
                 if (!m.vertices.Contains(b))
                     m.Add(b);
+
                 if (!m.vertices.Contains(c))
                     m.Add(c);
 
@@ -1774,16 +1390,15 @@ namespace OpenSim.Region.Physics.Meshing
                 SphereLODTriangle(ab, b, bc, diameter, LOD, m);
                 SphereLODTriangle(ca, bc, c, diameter, LOD, m);
                 SphereLODTriangle(ab, bc, ca, diameter, LOD, m);
-
             }
         }
 
         public IMesh CreateMesh(String primName, PrimitiveBaseShape primShape, PhysicsVector size, float lod)
         {
             Mesh mesh = null;
+
             if (primShape.SculptEntry && primShape.SculptType != (byte)0 && primShape.SculptData.Length > 0)
             {
-                
                 SculptMesh smesh = CreateSculptMesh(primName, primShape, size, lod);
                 mesh = (Mesh)smesh;
                 CalcNormals(mesh);
@@ -1798,7 +1413,6 @@ namespace OpenSim.Region.Physics.Meshing
                 else if (primShape.PathCurve == (byte)LLObject.PathCurve.Circle)
                 { // tube
                     // do a cylinder for now
-                    //mesh = CreateCylinderMesh(primName, primShape, size);
                     mesh = CreateCircularPathMesh(primName, primShape, size);
                     CalcNormals(mesh);
                 }
@@ -1813,15 +1427,15 @@ namespace OpenSim.Region.Physics.Meshing
 
                 // look at LLObject.cs in libsecondlife for how to know the prim type
                 // ProfileCurve seems to combine hole shape and profile curve so we need to only compare against the lower 3 bits
-                else if (primShape.PathCurve == (byte) Extrusion.Curve1 && LLObject.UnpackPathScale(primShape.PathScaleY) <= 0.75f)
-                {  // dahlia's favorite, a torus :)
+                else if (primShape.PathCurve == (byte)Extrusion.Curve1 && LLObject.UnpackPathScale(primShape.PathScaleY) <= 0.75f)
+                {  // torus
                     mesh = CreateCircularPathMesh(primName, primShape, size);
                     CalcNormals(mesh);
                 }
             }
             else if ((primShape.ProfileCurve & 0x07) == (byte)ProfileShape.HalfCircle)
             {
-                if (primShape.PathCurve == (byte)Extrusion.Curve1 || primShape.PathCurve == (byte) Extrusion.Curve2)
+                if (primShape.PathCurve == (byte)Extrusion.Curve1 || primShape.PathCurve == (byte)Extrusion.Curve2)
                 {
                     mesh = CreateSphereMesh(primName, primShape, size);
                     CalcNormals(mesh);
@@ -1834,9 +1448,8 @@ namespace OpenSim.Region.Physics.Meshing
                     mesh = CreatePrismMesh(primName, primShape, size);
                     CalcNormals(mesh);
                 }
-                else if (primShape.PathCurve == (byte) Extrusion.Curve1)
+                else if (primShape.PathCurve == (byte)Extrusion.Curve1)
                 {  // a ring - do a cylinder for now
-                    //mesh = CreateCylinderMesh(primName, primShape, size);
                     mesh = CreateCircularPathMesh(primName, primShape, size);
                     CalcNormals(mesh);
                 }
@@ -1846,53 +1459,6 @@ namespace OpenSim.Region.Physics.Meshing
                 mesh = CreateBoxMesh(primName, primShape, size);
                 CalcNormals(mesh);
             }
-
-            //else
-            //{
-            //    switch (primShape.ProfileShape)
-            //    {
-            //        case ProfileShape.Square:
-            //            mesh = CreateBoxMesh(primName, primShape, size);
-            //            CalcNormals(mesh);
-            //            break;
-            //        case ProfileShape.Circle:
-            //            if (primShape.PathCurve == (byte)Extrusion.Straight)
-            //            {
-            //                mesh = CreateCylinderMesh(primName, primShape, size);
-            //                CalcNormals(mesh);
-            //            }
-
-            //            // look at LLObject.cs in libsecondlife for how to know the prim type
-            //            // ProfileCurve seems to combine hole shape and profile curve so we need to only compare against the lower 3 bits
-            //            else if ((primShape.ProfileCurve & 0x07) == (byte)LLObject.ProfileCurve.Circle && LLObject.UnpackPathScale(primShape.PathScaleY) <= 0.75f)
-            //            {  // dahlia's favorite, a torus :)
-            //                mesh = CreateCylinderMesh(primName, primShape, size);
-            //                CalcNormals(mesh);
-            //            }
-
-            //            break;
-            //        case ProfileShape.HalfCircle:
-            //            if (primShape.PathCurve == (byte)Extrusion.Curve1)
-            //            {
-            //                mesh = CreateSphereMesh(primName, primShape, size);
-            //                CalcNormals(mesh);
-            //            }
-            //            break;
-
-            //        case ProfileShape.EquilateralTriangle:
-            //            mesh = CreatePrismMesh(primName, primShape, size);
-            //            CalcNormals(mesh);
-            //            break;
-
-            //        default:
-            //            mesh = CreateBoxMesh(primName, primShape, size);
-            //            CalcNormals(mesh);
-            //            //Set default mesh to cube otherwise it'll return
-            //            // null and crash on the 'setMesh' method in the physics plugins.
-            //            //mesh = null;
-            //            break;
-            //    }
-            //}
 
             return mesh;
         }
