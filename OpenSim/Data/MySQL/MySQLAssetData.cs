@@ -125,8 +125,8 @@ namespace OpenSim.Data.MySQL
                     new MySqlCommand(
                         "SELECT name, description, assetType, invType, local, temporary, data FROM assets WHERE id=?id",
                         _dbConnection.Connection);
-                MySqlParameter p = cmd.Parameters.Add("?id", MySqlDbType.Binary, 16);
-                p.Value = assetID.GetBytes();
+
+                cmd.Parameters.AddWithValue("?id", assetID.ToString());
 
                 try
                 {
@@ -143,6 +143,7 @@ namespace OpenSim.Data.MySQL
                             asset.Name = (string) dbReader["name"];
                             asset.Type = (sbyte) dbReader["assetType"];
                         }
+
                         dbReader.Close();
                         cmd.Dispose();
                     }
@@ -152,9 +153,11 @@ namespace OpenSim.Data.MySQL
                     m_log.ErrorFormat(
                         "[ASSETS DB]: MySql failure fetching asset {0}" + Environment.NewLine + e.ToString()
                         + Environment.NewLine + "Attempting reconnection", assetID);
+
                     _dbConnection.Reconnect();
                 }
             }
+
             return asset;
         }
 
@@ -180,8 +183,7 @@ namespace OpenSim.Data.MySQL
                 {
                     using (cmd)
                     {
-                        MySqlParameter p = cmd.Parameters.Add("?id", MySqlDbType.Binary, 16);
-                        p.Value = asset.FullID.GetBytes();
+                        cmd.Parameters.AddWithValue("?id", asset.FullID.ToString());
                         cmd.Parameters.AddWithValue("?name", asset.Name);
                         cmd.Parameters.AddWithValue("?description", asset.Description);
                         cmd.Parameters.AddWithValue("?assetType", asset.Type);
@@ -199,6 +201,7 @@ namespace OpenSim.Data.MySQL
                         "[ASSETS DB]: " +
                         "MySql failure creating asset {0} with name {1}" + Environment.NewLine + e.ToString()
                         + Environment.NewLine + "Attempting reconnection", asset.FullID, asset.Name);
+
                     _dbConnection.Reconnect();
                 }
             }
@@ -219,8 +222,8 @@ namespace OpenSim.Data.MySQL
                     new MySqlCommand(
                         "SELECT id FROM assets WHERE id=?id",
                         _dbConnection.Connection);
-                MySqlParameter p = cmd.Parameters.Add("?id", MySqlDbType.Binary, 16);
-                p.Value = uuid.GetBytes();
+
+                cmd.Parameters.AddWithValue("?id", uuid.ToString());
 
                 try
                 {
@@ -240,6 +243,7 @@ namespace OpenSim.Data.MySQL
                     m_log.ErrorFormat(
                         "[ASSETS DB]: MySql failure fetching asset {0}" + Environment.NewLine + e.ToString()
                         + Environment.NewLine + "Attempting reconnection", uuid);
+
                     _dbConnection.Reconnect();
                 }
             }

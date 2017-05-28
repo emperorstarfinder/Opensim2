@@ -77,11 +77,11 @@ namespace OpenSim.Data
         private string _subtype;
         private Assembly _assem;
         private Regex _match;
-        
+
         private static readonly string _migrations_create = "create table migrations(name varchar(100), version int)";
         private static readonly string _migrations_init = "insert into migrations values('migrations', 1)";
         private static readonly string _migrations_find = "select version from migrations where name='migrations'";
-        
+
         public Migration(DbConnection conn, Assembly assem, string type)
         {
             _type = type;
@@ -105,7 +105,7 @@ namespace OpenSim.Data
             // clever, eh, we figure out which migrations version we are
             int migration_version = FindVersion("migrations");
 
-            if (migration_version > 0) 
+            if (migration_version > 0)
                 return;
 
             // If not, create the migration tables
@@ -123,12 +123,12 @@ namespace OpenSim.Data
 
             SortedList<int, string> migrations = GetMigrationsAfter(version);
             DbCommand cmd = _conn.CreateCommand();
-            foreach (KeyValuePair<int, string> kvp in migrations) 
+            foreach (KeyValuePair<int, string> kvp in migrations)
             {
                 int newversion = kvp.Key;
                 cmd.CommandText = kvp.Value;
                 cmd.ExecuteNonQuery();
-                
+
                 if (version == 0)
                 {
                     InsertVersion(_type, newversion);
@@ -137,6 +137,7 @@ namespace OpenSim.Data
                 {
                     UpdateVersion(_type, newversion);
                 }
+
                 version = newversion;
             }
         }
@@ -149,20 +150,24 @@ namespace OpenSim.Data
             foreach (string s in names)
             {
                 Match m = _match.Match(s);
-                if (m.Success) 
+
+                if (m.Success)
                 {
                     int MigrationVersion = int.Parse(m.Groups[1].ToString());
+
                     if (MigrationVersion > max)
                         max = MigrationVersion;
                 }
             }
+
             return max;
         }
 
-        public int Version 
+        public int Version
         {
             get { return FindVersion(_type); }
-            set { 
+            set
+            {
                 if (Version < 1)
                 {
                     InsertVersion(_type, value);
@@ -170,11 +175,11 @@ namespace OpenSim.Data
                 else
                 {
                     UpdateVersion(_type, value);
-                } 
+                }
             }
         }
 
-        private int FindVersion(string type) 
+        private int FindVersion(string type)
         {
             int version = 0;
             DbCommand cmd = _conn.CreateCommand();
@@ -194,25 +199,26 @@ namespace OpenSim.Data
             {
                 // Something went wrong, so we're version 0
             }
+
             return version;
         }
 
-        private void InsertVersion(string type, int version) 
+        private void InsertVersion(string type, int version)
         {
             DbCommand cmd = _conn.CreateCommand();
             cmd.CommandText = "insert into migrations(name, version) values('" + type + "', " + version + ")";
             m_log.InfoFormat("Creating {0} at version {1}", type, version);
             cmd.ExecuteNonQuery();
         }
-        
-        private void UpdateVersion(string type, int version) 
+
+        private void UpdateVersion(string type, int version)
         {
             DbCommand cmd = _conn.CreateCommand();
-            cmd.CommandText = "update migrations set version=" + version + " where name='" + type + "'";
+            cmd.Co0000mmandText = "update migrations set version=" + version + " where name='" + type + "'";
             m_log.InfoFormat("Updating {0} to version {1}", type, version);
             cmd.ExecuteNonQuery();
         }
-        
+
         private SortedList<int, string> GetAllMigrations()
         {
             return GetMigrationsAfter(0);
@@ -223,14 +229,20 @@ namespace OpenSim.Data
             string[] names = _assem.GetManifestResourceNames();
             SortedList<int, string> migrations = new SortedList<int, string>();
 
+            // because life is funny if we don't
+            +Array.Sort(names);
+
             foreach (string s in names)
             {
                 Match m = _match.Match(s);
+
                 if (m.Success)
                 {
                     m_log.Info("MIGRATION: Match: " + m.Groups[1].ToString());
                     int version = int.Parse(m.Groups[1].ToString());
-                    if (version > after) {
+
+                    if (version > after)
+                    {
                         using (Stream resource = _assem.GetManifestResourceStream(s))
                         {
                             using (StreamReader resourceReader = new StreamReader(resource))
@@ -244,9 +256,11 @@ namespace OpenSim.Data
             }
 
             // TODO: once this is working, get rid of this
-            if (migrations.Count < 1) {
+            if (migrations.Count < 1)
+            {
                 m_log.InfoFormat("Resource '{0}' was not found", _type);
             }
+
             return migrations;
         }
     }
