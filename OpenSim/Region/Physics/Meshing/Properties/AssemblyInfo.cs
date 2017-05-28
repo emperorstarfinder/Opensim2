@@ -34,11 +34,11 @@ using System.Runtime.InteropServices;
 // change them to the information which is associated with the assembly
 // you compile.
 
-[assembly : AssemblyTitle("BasicPhysicsPlugin")]
+[assembly : AssemblyTitle("Meshing")]
 [assembly : AssemblyDescription("")]
 [assembly : AssemblyConfiguration("")]
 [assembly : AssemblyCompany("")]
-[assembly : AssemblyProduct("BasicPhysicsPlugin")]
+[assembly : AssemblyProduct("Meshing")]
 [assembly : AssemblyCopyright("")]
 [assembly : AssemblyTrademark("")]
 [assembly : AssemblyCulture("")]
