@@ -25,14 +25,14 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-using OpenSim.Framework;
-using OpenSim.Region.Environment.Scenes;
-using OpenSim.Region.Environment.Modules.World.Serialiser;
 using System;
 using System.IO;
 using System.Reflection;
 using libsecondlife;
 using log4net;
+using OpenSim.Framework;
+using OpenSim.Region.Environment.Scenes;
+using OpenSim.Region.Environment.Modules.World.Serialiser;
 
 namespace OpenSim.Region.Environment.Modules.World.Archiver
 {
@@ -69,8 +69,7 @@ namespace OpenSim.Region.Environment.Modules.World.Archiver
             byte[] data;
             while ((data = archive.ReadEntry(out filePath)) != null)
             {
-                m_log.DebugFormat(
-                    "[ARCHIVER]: Successfully read {0} ({1} bytes) from archive {2}", filePath, data.Length, m_loadPath);
+                m_log.DebugFormat("[Archiver]: Successfully read {0} ({1} bytes) from archive {2}", filePath, data.Length, m_loadPath);
 
                 if (filePath.Equals(ArchiveConstants.PRIMS_PATH))
                 {
@@ -87,18 +86,18 @@ namespace OpenSim.Region.Environment.Modules.World.Archiver
                 }
             }
 
-            m_log.Debug("[ARCHIVER]: Reached end of archive");
+            m_log.Debug("[Archiver]: Reached end of archive");
 
             archive.Close();
 
             if (serializedPrims.Equals(string.Empty))
             {
-                m_log.ErrorFormat("[ARCHIVER]: Archive did not contain a {0} file", ArchiveConstants.PRIMS_PATH);
+                m_log.ErrorFormat("[Archiver]: Archive did not contain a {0} file", ArchiveConstants.PRIMS_PATH);
                 return;
             }
 
             // Reload serialized prims
-            m_log.InfoFormat("[ARCHIVER]: Loading prim data");
+            m_log.InfoFormat("[Archiver]: Loading prim data");
 
             IRegionSerialiser serialiser = m_scene.RequestModuleInterface<IRegionSerialiser>();
             serialiser.LoadPrimsFromXml2(m_scene, new StringReader(serializedPrims));
