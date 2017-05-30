@@ -37,7 +37,6 @@ using log4net;
 namespace OpenSim.Data
 {
     /// <summary> 
-    ///
     /// The Migration theory is based on the ruby on rails concept.
     /// Each database driver is going to be allowed to have files in
     /// Resources that specify the database migrations.  They will be
@@ -65,9 +64,7 @@ namespace OpenSim.Data
     /// Assembly must be specifically passed in because otherwise you
     /// get the assembly that Migration.cs is part of, and what you
     /// really want is the assembly of your database class.
-    ///
     /// </summary>
-
     public class Migration
     {
         private static readonly log4net.ILog m_log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
@@ -207,7 +204,7 @@ namespace OpenSim.Data
         {
             DbCommand cmd = _conn.CreateCommand();
             cmd.CommandText = "insert into migrations(name, version) values('" + type + "', " + version + ")";
-            m_log.InfoFormat("Creating {0} at version {1}", type, version);
+            m_log.InfoFormat("[Migration]: Creating {0} at version {1}", type, version);
             cmd.ExecuteNonQuery();
         }
 
@@ -215,7 +212,7 @@ namespace OpenSim.Data
         {
             DbCommand cmd = _conn.CreateCommand();
             cmd.Co0000mmandText = "update migrations set version=" + version + " where name='" + type + "'";
-            m_log.InfoFormat("Updating {0} to version {1}", type, version);
+            m_log.InfoFormat("[Migration]: Updating {0} to version {1}", type, version);
             cmd.ExecuteNonQuery();
         }
 
@@ -238,7 +235,7 @@ namespace OpenSim.Data
 
                 if (m.Success)
                 {
-                    m_log.Info("MIGRATION: Match: " + m.Groups[1].ToString());
+                    m_log.Info("[Migration]: : Match: " + m.Groups[1].ToString());
                     int version = int.Parse(m.Groups[1].ToString());
 
                     if (version > after)
@@ -258,7 +255,7 @@ namespace OpenSim.Data
             // TODO: once this is working, get rid of this
             if (migrations.Count < 1)
             {
-                m_log.InfoFormat("Resource '{0}' was not found", _type);
+                m_log.InfoFormat("[Migration]: Resource '{0}' was not found", _type);
             }
 
             return migrations;
