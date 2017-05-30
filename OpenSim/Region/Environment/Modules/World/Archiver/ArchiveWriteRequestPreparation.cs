@@ -40,31 +40,22 @@ using OpenSim.Region.Environment.Scenes;
 namespace OpenSim.Region.Environment.Modules.World.Archiver
 {
     /// <summary>
-    /// Method called when all the necessary assets for an archive request have been received.
-    /// </summary>
-    public delegate void AssetsRequestCallback(IDictionary<LLUUID, AssetBase> assets);
-
-    /// <summary>
-    /// Handles an individual archive write request
+    ///     Prepare to write out an archive
     /// </summary>
     public class ArchiveWriteRequest
     {
         private static readonly ILog m_log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         private Scene m_scene;
-        private string m_savePath;
+        private string savePath;
 
-        private string m_serializedEntities;
-
-        public ArchiveWriteRequest(Scene scene, string savePath)
+        public ArchiveWriteRequestPreparation(Scene scene, string savePath)
         {
             m_scene = scene;
             m_savePath = savePath;
-
-            ArchiveRegion();
         }
 
-        protected void ArchiveRegion()
+        public void ArchiveRegion()
         {
             Dictionary<LLUUID, int> assetUuids = new Dictionary<LLUUID, int>();
 
@@ -107,34 +98,17 @@ namespace OpenSim.Region.Environment.Modules.World.Archiver
                 }
             }
 
-            m_serializedEntities = SerializeObjects(entities);
+            string serializedEntities = SerializeObjects(entities);
 
-            if (m_serializedEntities != null && m_serializedEntities.Length > 0)
+            if (serializedEntities != null && serializedEntities.Length > 0)
             {
                 m_log.DebugFormat("[Archiver]: Successfully got serialization for {0} entities", entities.Count);
                 m_log.DebugFormat("[Archiver]: Requiring save of {0} textures", assetUuids.Count);
 
                 // Asynchronously request all the assets required to perform this archive operation
+                ArchiveWriteRequestExecution awre = new ArchiveWriteRequestExecution(serializedEntities, m_savePath);
                 new AssetsRequest(ReceivedAllAssets, m_scene.AssetCache, assetUuids.Keys);
             }
-        }
-
-        protected internal void ReceivedAllAssets(IDictionary<LLUUID, AssetBase> assets)
-        {
-            m_log.DebugFormat("[Archiver]: Received all {0} textures required", assets.Count);
-
-            // Shouldn't hijack the asset async callback thread like this - this is only temporary
-
-            TarArchiveWriter archive = new TarArchiveWriter();
-
-            archive.AddFile(ArchiveConstants.PRIMS_PATH, m_serializedEntities);
-
-            AssetsArchiver assetsArchiver = new AssetsArchiver(assets);
-            assetsArchiver.Archive(archive);
-
-            archive.WriteTar(m_savePath);
-
-            m_log.InfoFormat("[Archiver]: Wrote out OpenSimulator archive {0}", m_savePath);
         }
 
         /// <summary>

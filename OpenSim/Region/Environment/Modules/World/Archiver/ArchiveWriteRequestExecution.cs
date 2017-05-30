@@ -29,54 +29,45 @@ using System.Collections.Generic;
 using System.Reflection;
 using libsecondlife;
 using log4net;
-using Nini.COnfig;
-using OpenSim.Framework.Communications.Cache;
-using OpenSim.Region.Environment.Interfaces;
-using OpenSim.Region.Environment.Modules.World.Serialiser;
-using OpenSim.Region.Environment.Scenes;
+using OpenSim.Framework;
 
 namespace OpenSim.Region.Environment.Modules.World.Archiver
 {
     /// <summary>
-    /// This module loads and saves OpenSimulator archives
+    /// Method called when all the necessary assets for an archive request have been received.
     /// </summary>
-    public class ArchiverModule : IRegionModule, IRegionArchiver
+    public delegate void AssetsRequestCallback(IDictionary<LLUUID, AssetBase> assets);
+
+    /// <summary>
+    /// Execute the write of an archive once we have received all the necessary data
+    /// </summary>
+    public class ArchiveWriteRequestExecution
     {
         private static readonly ILog m_log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-        /// <summary>
-        /// Scene to which this module belongs
-        /// </summary>
-        /// <param name="scene"></param>
-        /// <param name="source"></param>
-        private Scene m_scene;
+        protected string m_savePath;
+        protected string m_serializedEntities;
 
-        public string Name { get { return "ArchiverModule"; } }
-
-        public bool IsSharedModule { get { return false; } }
-
-        public void Initialise(Scene scene, IConfigSource source)
+        public ArchiveWriteRequestExecution(string serializedEntities, string savePath)
         {
-            m_scene = scene;
-            m_scene.RegisterModuleInterface<IRegionArchiver>(this);
+            m_serializedEntities = serializedEntities;
+            m_savePath = savePath;
         }
 
-        public void PostInitialise()
+        protected internal void ReceivedAllAssets(IDictionary<LLUUID, AssetBase> assets)
         {
-        }
+            m_log.DebugFormat("[Archiver]: Received all {0} assets required", assets.Count);
 
-        public void Close()
-        {
-        }
+            TarArchiveWriter archive = new TarArchiveWriter();
 
-        public void ArchiveRegion(string savePath)
-        {
-            new ArchiveWriteRequestPreparation(m_scene, savePath).ArchiveRegion();
-        }
+            archive.AddFile(ArchiveConstants.PRIMS_PATH, m_serializedEntities);
 
-        public void DearchiveRegion(string loadPath)
-        {
-            new ArchiveReadRequest(m_scene, loadPath);
+            AssetsArchiver assetsArchiver = new AssetsArchiver(assets);
+            assetsArchiver.Archive(archive);
+
+            archive.WriteTar(m_savePath);
+
+            m_log.InfoFormat("[Archiver]: Wrote out OpenSimulator archive {0}", m_savePath);
         }
     }
 }
