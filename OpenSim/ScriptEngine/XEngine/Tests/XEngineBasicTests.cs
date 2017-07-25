@@ -27,119 +27,73 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Reflection;
 using System.Threading;
-using log4net;
 using Nini.Config;
 using NUnit.Framework;
 using OpenMetaverse;
 using OpenSim.Framework;
 using OpenSim.Region.CoreModules.Scripting.WorldComm;
-using OpenSim.Region.Framework.Interfaces;
 using OpenSim.Region.Framework.Scenes;
-using OpenSim.ScriptEngine.XEngine;
+using OpenSim.Region.Framework.Interfaces;
 using OpenSim.Tests.Common;
 
-namespace OpenSim.Tests.Performance
+namespace OpenSim.ScriptEngine.XEngine.Tests
 {
     /// <summary>
-    /// Script performance tests
+    /// Basic XEngine tests.
     /// </summary>
-    /// <remarks>
-    /// Don't rely on the numbers given by these tests - they will vary a lot depending on what is already cached,
-    /// how much memory is free, etc.  In some cases, later larger tests will apparently take less time than smaller
-    /// earlier tests.
-    /// </remarks>
     [TestFixture]
-    public class ScriptPerformanceTests : OpenSimTestCase
+    public class XEngineBasicTests : OpenSimTestCase
     {
         private TestScene m_scene;
         private XEngine m_xEngine;
         private AutoResetEvent m_chatEvent = new AutoResetEvent(false);
+        private OSChatMessage m_osChatMessageReceived;
 
-        private int m_expectedChatMessages;
-        private List<OSChatMessage> m_osChatMessagesReceived = new List<OSChatMessage>();
-
-        [SetUp]
+        [TestFixtureSetUp]
         public void Init()
         {
             //AppDomain.CurrentDomain.SetData("APPBASE", Environment.CurrentDirectory + "/bin");
 //            Console.WriteLine(AppDomain.CurrentDomain.BaseDirectory);
             m_xEngine = new XEngine();
 
-            // Necessary to stop serialization complaining
-            WorldCommModule wcModule = new WorldCommModule();
-
             IniConfigSource configSource = new IniConfigSource();
-
+            
             IConfig startupConfig = configSource.AddConfig("Startup");
             startupConfig.Set("DefaultScriptEngine", "XEngine");
 
             IConfig xEngineConfig = configSource.AddConfig("XEngine");
             xEngineConfig.Set("Enabled", "true");
+            xEngineConfig.Set("StartDelay", "0");
 
             // These tests will not run with AppDomainLoading = true, at least on mono.  For unknown reasons, the call
             // to AssemblyResolver.OnAssemblyResolve fails.
             xEngineConfig.Set("AppDomainLoading", "false");
 
             m_scene = new SceneHelpers().SetupScene("My Test", UUID.Random(), 1000, 1000, configSource);
-            SceneHelpers.SetupSceneModules(m_scene, configSource, m_xEngine, wcModule);
-
-            m_scene.EventManager.OnChatFromWorld += OnChatFromWorld;
+            SceneHelpers.SetupSceneModules(m_scene, configSource, m_xEngine);
             m_scene.StartScripts();
         }
 
-        [TearDown]
-        public void TearDown()
-        {
-            m_scene.Close();
-            m_scene = null;
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
-        }
-
+        /// <summary>
+        /// Test compilation and starting of a script.
+        /// </summary>
+        /// <remarks>
+        /// This is a less than ideal regression test since it involves an asynchronous operation (in this case,
+        /// compilation of the script).
+        /// </remarks>
         [Test]
-        public void TestCompileAndStart100Scripts()
+        public void TestCompileAndStartScript()
         {
             TestHelpers.InMethod();
-            log4net.Config.XmlConfigurator.Configure();
+            TestHelpers.EnableLogging();
 
-            TestCompileAndStartScripts(100);
-        }
-
-        private void TestCompileAndStartScripts(int scriptsToCreate)
-        {
             UUID userId = TestHelpers.ParseTail(0x1);
-
-            m_expectedChatMessages = scriptsToCreate;
-            int startingObjectIdTail = 0x100;
-
-            GC.Collect();
-
-            for (int idTail = startingObjectIdTail;idTail < startingObjectIdTail + scriptsToCreate; idTail++)
-            {
-                AddObjectAndScript(idTail, userId);
-            }
-
-            m_chatEvent.WaitOne(40000 + scriptsToCreate * 1000);
-
-            Assert.That(m_osChatMessagesReceived.Count, Is.EqualTo(m_expectedChatMessages));
-
-            foreach (OSChatMessage msg in m_osChatMessagesReceived)
-                Assert.That(
-                    msg.Message,
-                    Is.EqualTo("Script running"),
-                    string.Format(
-                        "Message from {0} was {1} rather than {2}", msg.SenderUUID, msg.Message, "Script running"));
-        }
-
-        private void AddObjectAndScript(int objectIdTail, UUID userId)
-        {
+//            UUID objectId = TestHelpers.ParseTail(0x100);
 //            UUID itemId = TestHelpers.ParseTail(0x3);
-            string itemName = string.Format("AddObjectAndScript() Item for object {0}", objectIdTail);
+            string itemName = "TestStartScript() Item";
 
-            SceneObjectGroup so = SceneHelpers.CreateSceneObject(1, userId, "AddObjectAndScriptPart_", objectIdTail);
+            SceneObjectGroup so = SceneHelpers.CreateSceneObject(1, userId, "TestStartScriptPart_", 0x100);
             m_scene.AddNewSceneObject(so, true);
 
             InventoryItemBase itemTemplate = new InventoryItemBase();
@@ -148,20 +102,28 @@ namespace OpenSim.Tests.Performance
             itemTemplate.Folder = so.UUID;
             itemTemplate.InvType = (int)InventoryType.LSL;
 
-            m_scene.RezNewScript(userId, itemTemplate);
+            m_scene.EventManager.OnChatFromWorld += OnChatFromWorld;
+
+            SceneObjectPart partWhereRezzed = m_scene.RezNewScript(userId, itemTemplate);
+
+            m_chatEvent.WaitOne(60000);
+
+            Assert.That(m_osChatMessageReceived, Is.Not.Null, "No chat message received in TestStartScript()");
+            Assert.That(m_osChatMessageReceived.Message, Is.EqualTo("Script running"));
+
+            bool running;
+            TaskInventoryItem scriptItem = partWhereRezzed.Inventory.GetInventoryItem(itemName);
+            Assert.That(
+                SceneObjectPartInventory.TryGetScriptInstanceRunning(m_scene, scriptItem, out running), Is.True);
+            Assert.That(running, Is.True);
         }
 
         private void OnChatFromWorld(object sender, OSChatMessage oscm)
         {
 //            Console.WriteLine("Got chat [{0}]", oscm.Message);
 
-            lock (m_osChatMessagesReceived)
-            {
-                m_osChatMessagesReceived.Add(oscm);
-
-                if (m_osChatMessagesReceived.Count == m_expectedChatMessages)
-                    m_chatEvent.Set();
-            }
+            m_osChatMessageReceived = oscm;
+            m_chatEvent.Set();
         }
     }
 }

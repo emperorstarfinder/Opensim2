@@ -34,7 +34,7 @@ using OpenMetaverse;
 using OpenSim.Framework;
 using OpenSim.Region.CoreModules.Framework.InventoryAccess;
 using OpenSim.Region.Framework.Scenes;
-using OpenSim.Region.ScriptEngine.XEngine;
+using OpenSim.ScriptEngine.XEngine;
 using OpenSim.Services.Interfaces;
 using OpenSim.Tests.Common;
 
@@ -49,7 +49,7 @@ namespace OpenSim.Region.CoreModules.Framework.InventoryAccess.Tests
             TestHelpers.InMethod();
 //            TestHelpers.EnableLogging();
 
-            XEngine xengine = new OpenSim.Region.ScriptEngine.XEngine.XEngine();
+            XEngine xengine = new OpenSim.ScriptEngine.XEngine.XEngine();
             xengine.DebugLevel = 1;
 
             IniConfigSource configSource = new IniConfigSource();

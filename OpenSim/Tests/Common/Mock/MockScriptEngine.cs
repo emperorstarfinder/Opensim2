@@ -34,8 +34,8 @@ using OpenMetaverse;
 using OpenSim.Framework;
 using OpenSim.Region.Framework.Interfaces;
 using OpenSim.Region.Framework.Scenes;
-using OpenSim.Region.ScriptEngine.Interfaces;
-using OpenSim.Region.ScriptEngine.Shared;
+using OpenSim.ScriptEngine.Interfaces;
+using OpenSim.ScriptEngine.Shared;
 
 namespace OpenSim.Tests.Common
 {

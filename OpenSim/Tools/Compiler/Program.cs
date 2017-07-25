@@ -30,7 +30,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using Microsoft.CSharp;
-using OpenSim.Region.ScriptEngine.Shared.CodeTools;
+using OpenSim.ScriptEngine.Shared.CodeTools;
 using System.CodeDom.Compiler;
 
 namespace OpenSim.Tools.LSL.Compiler
@@ -86,9 +86,9 @@ namespace OpenSim.Tools.LSL.Compiler
         private static string CreateCSCompilerScript(string compileScript)
         {
             compileScript = String.Empty +
-                "using OpenSim.Region.ScriptEngine.Shared; using System.Collections.Generic;\r\n" +
+                "using OpenSim.ScriptEngine.Shared; using System.Collections.Generic;\r\n" +
                 String.Empty + "namespace SecondLife { " +
-                String.Empty + "public class Script : OpenSim.Region.ScriptEngine.Shared.ScriptBase.ScriptBaseClass { \r\n" +
+                String.Empty + "public class Script : OpenSim.ScriptEngine.Shared.ScriptBase.ScriptBaseClass { \r\n" +
                 @"public Script() { } " +
                 compileScript +
                 "} }\r\n";
@@ -121,9 +121,9 @@ namespace OpenSim.Tools.LSL.Compiler
                 Path.GetDirectoryName(AppDomain.CurrentDomain.BaseDirectory);
 
             parameters.ReferencedAssemblies.Add(Path.Combine(rootPath,
-                    "OpenSim.Region.ScriptEngine.Shared.dll"));
+                    "OpenSim.ScriptEngine.Shared.dll"));
             parameters.ReferencedAssemblies.Add(Path.Combine(rootPath,
-                    "OpenSim.Region.ScriptEngine.Shared.Api.Runtime.dll"));
+                    "OpenSim.ScriptEngine.Shared.Api.Runtime.dll"));
 
             parameters.GenerateExecutable = false;
             parameters.OutputAssembly = OutFile;
@@ -231,19 +231,19 @@ namespace OpenSim.Tools.LSL.Compiler
         private static string ReplaceTypes(string message)
         {
             message = message.Replace(
-                "OpenSim.Region.ScriptEngine.Shared.LSL_Types.LSLString",
+                "OpenSim.ScriptEngine.Shared.LSL_Types.LSLString",
                 "string");
 
             message = message.Replace(
-                "OpenSim.Region.ScriptEngine.Shared.LSL_Types.LSLInteger",
+                "OpenSim.ScriptEngine.Shared.LSL_Types.LSLInteger",
                 "integer");
 
             message = message.Replace(
-                "OpenSim.Region.ScriptEngine.Shared.LSL_Types.LSLFloat",
+                "OpenSim.ScriptEngine.Shared.LSL_Types.LSLFloat",
                 "float");
 
             message = message.Replace(
-                "OpenSim.Region.ScriptEngine.Shared.LSL_Types.list",
+                "OpenSim.ScriptEngine.Shared.LSL_Types.list",
                 "list");
 
             return message;

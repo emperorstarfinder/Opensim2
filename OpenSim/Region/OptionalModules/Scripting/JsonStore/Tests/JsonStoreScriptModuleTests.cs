@@ -36,8 +36,8 @@ using OpenMetaverse;
 using OpenSim.Framework;
 using OpenSim.Region.CoreModules.Scripting.ScriptModuleComms;
 using OpenSim.Region.Framework.Scenes;
-using OpenSim.Region.ScriptEngine.Shared;
-using OpenSim.Region.ScriptEngine.Shared.Api;
+using OpenSim.ScriptEngine.Shared;
+using OpenSim.ScriptEngine.Shared.Api;
 using OpenSim.Services.Interfaces;
 using OpenSim.Tests.Common;
 
