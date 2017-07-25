@@ -88,9 +88,10 @@ one you set up using the "create user" command.
 
 # Bug reports
 
-In the very likely event of bugs biting you (err, your OpenSim) we
+In the likely event of bugs biting you (err, your OpenSim) we
 encourage you to see whether the problem has already been reported on
-the [OpenSim mantis system](http://opensimulator.org/mantis/main_page.php).
+my issue tracker. You can find my issue tracker at:
+ [My Issue Tracker](https://github.com/emperorstarfinder/Opensim2/issues).
 
 If your bug has already been reported, you might want to add to the
 bug description and supply additional information.
