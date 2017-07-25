@@ -31,7 +31,7 @@ using log4net;
 using Nini.Config;
 using OpenSim.Framework;
 using OpenMetaverse;
-using OpenSim.Region.PhysicsModules.SharedBase;
+using OpenSim.Physicss.SharedBase;
 
 /*
  * Steps to add a new prioritization policy:

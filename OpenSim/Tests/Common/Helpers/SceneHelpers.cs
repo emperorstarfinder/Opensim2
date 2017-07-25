@@ -36,7 +36,7 @@ using OpenSim.Framework;
 using OpenSim.Framework.Console;
 using OpenSim.Framework.Servers;
 using OpenSim.Framework.Servers.HttpServer;
-using OpenSim.Region.PhysicsModules.SharedBase;
+using OpenSim.Physicss.SharedBase;
 using OpenSim.Region.Framework;
 using OpenSim.Region.Framework.Interfaces;
 using OpenSim.Region.Framework.Scenes;
@@ -48,7 +48,7 @@ using OpenSim.Region.CoreModules.ServiceConnectorsOut.Inventory;
 using OpenSim.Region.CoreModules.ServiceConnectorsOut.Grid;
 using OpenSim.Region.CoreModules.ServiceConnectorsOut.UserAccounts;
 using OpenSim.Region.CoreModules.ServiceConnectorsOut.Presence;
-using OpenSim.Region.PhysicsModule.BasicPhysics;
+using OpenSim.Physics.BasicPhysics;
 using OpenSim.Services.Interfaces;
 using GridRegion = OpenSim.Services.Interfaces.GridRegion;
 

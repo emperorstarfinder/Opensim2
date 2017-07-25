@@ -51,7 +51,7 @@ using OpenSim.Region.Framework.Interfaces;
 using OpenSim.Region.Framework.Scenes;
 using OpenSim.Region.Framework.Scenes.Animation;
 using OpenSim.Region.Framework.Scenes.Scripting;
-using OpenSim.Region.PhysicsModules.SharedBase;
+using OpenSim.Physicss.SharedBase;
 using OpenSim.ScriptEngine.Shared;
 using OpenSim.ScriptEngine.Shared.Api.Plugins;
 using OpenSim.ScriptEngine.Shared.ScriptBase;

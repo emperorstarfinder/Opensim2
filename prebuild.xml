@@ -394,27 +394,27 @@
     </Project>
 
 
-    <Project frameworkVersion="v4_0" name="OpenSim.Region.PhysicsModules.SharedBase" path="OpenSim/Region/PhysicsModules/SharedBase" type="Library">
+    <Project frameworkVersion="v4_0" name="OpenSim.Physics.SharedBase" path="OpenSim/Physics/SharedBase" type="Library">
       <Configuration name="Debug">
         <Options>
-          <OutputPath>../../../../bin/</OutputPath>
+          <OutputPath>../../../bin/</OutputPath>
         </Options>
       </Configuration>
       <Configuration name="Release">
         <Options>
-          <OutputPath>../../../../bin/</OutputPath>
+          <OutputPath>../../../bin/</OutputPath>
         </Options>
       </Configuration>
 
-      <ReferencePath>../../../../bin/</ReferencePath>
+      <ReferencePath>../../../bin/</ReferencePath>
       <Reference name="System"/>
       <Reference name="System.Xml"/>
-      <Reference name="OpenMetaverseTypes" path="../../../../bin/"/>
+      <Reference name="OpenMetaverseTypes" path="../../../bin/"/>
       <Reference name="OpenSim.Framework"/>
       <Reference name="OpenSim.Framework.Console"/>
-      <Reference name="nunit.framework" path="../../../../bin/"/>
-      <Reference name="Nini" path="../../../../bin/"/>
-      <Reference name="log4net" path="../../../../bin/"/>
+      <Reference name="nunit.framework" path="../../../bin/"/>
+      <Reference name="Nini" path="../../../bin/"/>
+      <Reference name="log4net" path="../../../bin/"/>
 
       <Files>
         <Match pattern="*.cs" recurse="false"/>
@@ -451,7 +451,7 @@
       <Reference name="OpenSim.Framework.Serialization"/>
       <Reference name="OpenSim.Framework.Servers"/>
       <Reference name="OpenSim.Framework.Servers.HttpServer"/>
-      <Reference name="OpenSim.Region.PhysicsModules.SharedBase"/>
+      <Reference name="OpenSim.Physics.SharedBase"/>
 
       <!-- For scripting in funny languages by default -->
       <Reference name="XMLRPC" path="../../../bin/"/>
@@ -1352,7 +1352,7 @@
       <Reference name="OpenSim.Framework.Servers"/>
       <Reference name="OpenSim.Framework.Servers.HttpServer"/>
       <Reference name="OpenSim.Framework.Console"/>
-      <Reference name="OpenSim.Region.PhysicsModules.SharedBase"/>
+      <Reference name="OpenSim.Physics.SharedBase"/>
       <Reference name="OpenSim.Services.Interfaces"/>
       <Reference name="Mono.Addins" path="../../../../../bin/"/>
       <Reference name="Nini" path="../../../../../bin/"/>
@@ -1405,7 +1405,7 @@
       <Reference name="OpenSim.Framework.Servers.HttpServer"/>
       <Reference name="OpenSim.Region.ClientStack.LindenUDP"/>
       <Reference name="OpenSim.Region.Framework"/>
-      <Reference name="OpenSim.Region.PhysicsModules.SharedBase"/>
+      <Reference name="OpenSim.Physics.SharedBase"/>
       <Reference name="OpenSim.Server.Base"/>
       <Reference name="OpenSim.Server.Handlers"/>
       <Reference name="OpenSim.Services.Connectors"/>
@@ -1468,7 +1468,7 @@
       <Reference name="OpenSim.Region.CoreModules"/>
       <Reference name="OpenSim.Region.ClientStack.LindenUDP"/>
       <Reference name="OpenSim.Region.Framework"/>
-      <Reference name="OpenSim.Region.PhysicsModules.SharedBase"/>
+      <Reference name="OpenSim.Physics.SharedBase"/>
       <Reference name="OpenSim.Server.Base"/>
       <Reference name="OpenSim.Server.Handlers"/>
       <Reference name="OpenSim.Services.Connectors"/>
@@ -1519,19 +1519,19 @@
       </Files>
     </Project>
 
-    <Project frameworkVersion="v4_0" name="OpenSim.Region.PhysicsModule.ConvexDecompositionDotNet" path="OpenSim/Region/PhysicsModules/ConvexDecompositionDotNet" type="Library">
+    <Project frameworkVersion="v4_0" name="OpenSim.Physics.ConvexDecompositionDotNet" path="OpenSim/Physics/ConvexDecompositionDotNet" type="Library">
       <Configuration name="Debug">
         <Options>
-          <OutputPath>../../../../bin/</OutputPath>
+          <OutputPath>../../../bin/</OutputPath>
         </Options>
       </Configuration>
       <Configuration name="Release">
         <Options>
-          <OutputPath>../../../../bin/</OutputPath>
+          <OutputPath>../../../bin/</OutputPath>
         </Options>
       </Configuration>
 
-      <ReferencePath>../../../../bin/</ReferencePath>
+      <ReferencePath>../../../bin/</ReferencePath>
       <Reference name="System"/>
       <Reference name="System.Core"/>
       <Reference name="System.Data"/>
@@ -1544,32 +1544,32 @@
       </Files>
     </Project>
 
-    <Project frameworkVersion="v4_0" name="OpenSim.Region.PhysicsModules.Meshing" path="OpenSim/Region/PhysicsModules/Meshing" type="Library">
+    <Project frameworkVersion="v4_0" name="OpenSim.Physics.Meshing" path="OpenSim/Physics/Meshing" type="Library">
       <Configuration name="Debug">
         <Options>
-          <OutputPath>../../../../bin/</OutputPath>
+          <OutputPath>../../../bin/</OutputPath>
         </Options>
       </Configuration>
       <Configuration name="Release">
         <Options>
-          <OutputPath>../../../../bin/</OutputPath>
+          <OutputPath>../../../bin/</OutputPath>
         </Options>
       </Configuration>
 
-      <ReferencePath>../../../../bin/</ReferencePath>
+      <ReferencePath>../../../bin/</ReferencePath>
       <Reference name="System"/>
       <Reference name="System.Drawing"/>
-      <Reference name="CSJ2K" path="../../../../bin/"/>
-      <Reference name="OpenMetaverseTypes" path="../../../../bin/"/>
-      <Reference name="OpenMetaverse" path="../../../../bin/"/>
-      <Reference name="OpenMetaverse.StructuredData" path="../../../../bin/"/>
-      <Reference name="Nini" path="../../../../bin/"/>
+      <Reference name="CSJ2K" path="../../../bin/"/>
+      <Reference name="OpenMetaverseTypes" path="../../../bin/"/>
+      <Reference name="OpenMetaverse" path="../../../bin/"/>
+      <Reference name="OpenMetaverse.StructuredData" path="../../../bin/"/>
+      <Reference name="Nini" path="../../../bin/"/>
       <Reference name="OpenSim.Framework"/>
       <Reference name="OpenSim.Framework.Console"/>
-      <Reference name="OpenSim.Region.PhysicsModules.SharedBase"/>
+      <Reference name="OpenSim.Physics.SharedBase"/>
       <Reference name="OpenSim.Region.Framework"/>
-      <Reference name="Mono.Addins" path="../../../../bin/"/>
-      <Reference name="log4net" path="../../../../bin/"/>
+      <Reference name="Mono.Addins" path="../../../bin/"/>
+      <Reference name="log4net" path="../../../bin/"/>
 
       <Files>
         <Match pattern="*.cs" recurse="true"/>
@@ -1577,80 +1577,80 @@
     </Project>
 
     <!-- Physics Plug-ins -->
-    <Project frameworkVersion="v4_0" name="OpenSim.Region.PhysicsModule.BasicPhysics" path="OpenSim/Region/PhysicsModules/BasicPhysics" type="Library">
+    <Project frameworkVersion="v4_0" name="OpenSim.Physics.BasicPhysics" path="OpenSim/Physics/BasicPhysics" type="Library">
       <Configuration name="Debug">
         <Options>
-          <OutputPath>../../../../bin/</OutputPath>
+          <OutputPath>../../../bin/</OutputPath>
         </Options>
       </Configuration>
       <Configuration name="Release">
         <Options>
-          <OutputPath>../../../../bin/</OutputPath>
+          <OutputPath>../../../bin/</OutputPath>
         </Options>
       </Configuration>
 
-      <ReferencePath>../../../../bin/</ReferencePath>
+      <ReferencePath>../../../bin/</ReferencePath>
       <Reference name="System"/>
-      <Reference name="OpenMetaverseTypes" path="../../../../bin/"/>
-      <Reference name="Nini" path="../../../../bin/"/>
+      <Reference name="OpenMetaverseTypes" path="../../../bin/"/>
+      <Reference name="Nini" path="../../../bin/"/>
       <Reference name="OpenSim.Framework"/>
-      <Reference name="OpenSim.Region.PhysicsModules.SharedBase"/>
+      <Reference name="OpenSim.Physics.SharedBase"/>
       <Reference name="OpenSim.Region.Framework"/>
-      <Reference name="Mono.Addins" path="../../../../bin/"/>
+      <Reference name="Mono.Addins" path="../../../bin/"/>
       <Files>
         <Match pattern="*.cs" recurse="true"/>
       </Files>
     </Project>
 
-    <Project frameworkVersion="v4_0" name="OpenSim.Region.PhysicsModule.POS" path="OpenSim/Region/PhysicsModules/POS" type="Library">
+    <Project frameworkVersion="v4_0" name="OpenSim.Physics.POS" path="OpenSim/Physics/POS" type="Library">
       <Configuration name="Debug">
         <Options>
-          <OutputPath>../../../../bin/</OutputPath>
+          <OutputPath>../../../bin/</OutputPath>
         </Options>
       </Configuration>
       <Configuration name="Release">
         <Options>
-          <OutputPath>../../../../bin/</OutputPath>
+          <OutputPath>../../../bin/</OutputPath>
         </Options>
       </Configuration>
 
-      <ReferencePath>../../../../bin/</ReferencePath>
+      <ReferencePath>../../../bin/</ReferencePath>
       <Reference name="System"/>
-      <Reference name="OpenMetaverseTypes" path="../../../../bin/"/>
-      <Reference name="Nini" path="../../../../bin/"/>
+      <Reference name="OpenMetaverseTypes" path="../../../bin/"/>
+      <Reference name="Nini" path="../../../bin/"/>
       <Reference name="OpenSim.Framework"/>
-      <Reference name="OpenSim.Region.PhysicsModules.SharedBase"/>
+      <Reference name="OpenSim.Physics.SharedBase"/>
       <Reference name="OpenSim.Region.Framework"/>
-      <Reference name="Mono.Addins" path="../../../../bin/"/>
+      <Reference name="Mono.Addins" path="../../../bin/"/>
       <Files>
         <Match pattern="*.cs" recurse="true"/>
       </Files>
     </Project>
 
-    <Project frameworkVersion="v4_0" name="OpenSim.Region.PhysicsModule.Ode" path="OpenSim/Region/PhysicsModules/Ode" type="Library">
+    <Project frameworkVersion="v4_0" name="OpenSim.Physics.Ode" path="OpenSim/Physics/Ode" type="Library">
       <Configuration name="Debug">
         <Options>
-          <OutputPath>../../../../bin/</OutputPath>
+          <OutputPath>../../../bin/</OutputPath>
         </Options>
       </Configuration>
       <Configuration name="Release">
         <Options>
-          <OutputPath>../../../../bin/</OutputPath>
+          <OutputPath>../../../bin/</OutputPath>
         </Options>
       </Configuration>
 
-      <ReferencePath>../../../../bin/</ReferencePath>
+      <ReferencePath>../../../bin/</ReferencePath>
       <Reference name="System"/>
       <Reference name="System.Core"/>
-      <Reference name="OpenMetaverseTypes" path="../../../../bin/"/>
-      <Reference name="Nini" path="../../../../bin/"/>
+      <Reference name="OpenMetaverseTypes" path="../../../bin/"/>
+      <Reference name="Nini" path="../../../bin/"/>
       <Reference name="OpenSim.Framework"/>
       <Reference name="OpenSim.Framework.Console"/>
-      <Reference name="OpenSim.Region.PhysicsModules.SharedBase"/>
+      <Reference name="OpenSim.Physics.SharedBase"/>
       <Reference name="OpenSim.Region.Framework"/>
-      <Reference name="Mono.Addins" path="../../../../bin/"/>
-      <Reference name="Ode.NET" path="../../../../bin/"/>
-      <Reference name="log4net" path="../../../../bin/"/>
+      <Reference name="Mono.Addins" path="../../../bin/"/>
+      <Reference name="Ode.NET" path="../../../bin/"/>
+      <Reference name="log4net" path="../../../bin/"/>
 
       <Files>
         <Match pattern="*.cs" recurse="true">
@@ -1659,36 +1659,36 @@
       </Files>
     </Project>
 
-    <Project frameworkVersion="v4_0" name="OpenSim.Region.PhysicsModule.BulletS" path="OpenSim/Region/PhysicsModules/BulletS" type="Library">
+    <Project frameworkVersion="v4_0" name="OpenSim.Physics.BulletS" path="OpenSim/Physics/BulletS" type="Library">
       <Configuration name="Debug">
         <Options>
-          <OutputPath>../../../../bin/</OutputPath>
+          <OutputPath>../../../bin/</OutputPath>
           <AllowUnsafe>true</AllowUnsafe>
         </Options>
       </Configuration>
       <Configuration name="Release">
         <Options>
-          <OutputPath>../../../../bin/</OutputPath>
+          <OutputPath>../../../bin/</OutputPath>
           <AllowUnsafe>true</AllowUnsafe>
         </Options>
       </Configuration>
 
-      <ReferencePath>../../../../bin/</ReferencePath>
+      <ReferencePath>../../../bin/</ReferencePath>
       <Reference name="System"/>
       <Reference name="System.Core"/>
       <Reference name="System.Xml"/>
-      <Reference name="OpenMetaverseTypes" path="../../../../bin/"/>
-      <Reference name="Nini.dll"  path="../../../../bin/"/>
+      <Reference name="OpenMetaverseTypes" path="../../../bin/"/>
+      <Reference name="Nini.dll"  path="../../../bin/"/>
       <Reference name="OpenSim.Framework"/>
       <Reference name="OpenSim.Framework.Monitoring"/>
       <Reference name="OpenSim.Region.Framework"/>
       <Reference name="OpenSim.Framework.Console"/>
-      <Reference name="OpenSim.Region.PhysicsModules.SharedBase"/>
-      <Reference name="OpenSim.Region.PhysicsModules.Meshing" path="../../../../bin/"/>
-      <Reference name="OpenSim.Region.PhysicsModule.ConvexDecompositionDotNet"/>
-      <Reference name="Mono.Addins" path="../../../../bin/"/>
-      <Reference name="BulletXNA.dll" path="../../../../bin/"/>
-      <Reference name="log4net.dll" path="../../../../bin/"/>
+      <Reference name="OpenSim.Physics.SharedBase"/>
+      <Reference name="OpenSim.Physics.Meshing" path="../../../bin/"/>
+      <Reference name="OpenSim.Physics.ConvexDecompositionDotNet"/>
+      <Reference name="Mono.Addins" path="../../../bin/"/>
+      <Reference name="BulletXNA.dll" path="../../../bin/"/>
+      <Reference name="log4net.dll" path="../../../bin/"/>
 
       <Files>
         <Match pattern="*.cs" recurse="true">
@@ -1727,7 +1727,7 @@
       <Reference name="OpenSim.Framework.Servers.HttpServer"/>
       <Reference name="OpenSim.Region.Framework"/>
       <Reference name="OpenSim.Region.CoreModules"/>
-      <Reference name="OpenSim.Region.PhysicsModules.SharedBase"/>
+      <Reference name="OpenSim.Physics.SharedBase"/>
       <Reference name="OpenSim.Server.Base"/>
       <Reference name="OpenSim.Services.Base"/>
       <Reference name="OpenSim.Services.Interfaces"/>
@@ -2057,7 +2057,7 @@
       <Reference name="OpenSim.Framework.Monitoring"/>
       <Reference name="OpenSim.Region.Framework"/>
       <Reference name="OpenSim.Region.CoreModules"/>
-      <Reference name="OpenSim.Region.PhysicsModules.SharedBase"/>
+      <Reference name="OpenSim.Physics.SharedBase"/>
       <Reference name="OpenSim.Services.Interfaces"/>
 	  <Reference name="OpenSim.Services.Connectors"/>
       <Reference name="OpenSim.ScriptEngine.Shared"/>
@@ -2463,8 +2463,8 @@
       <Reference name="OpenSim.Region.ClientStack.LindenUDP"/>
       <Reference name="OpenSim.Region.Framework"/>
       <Reference name="OpenSim.Region.OptionalModules"/>
-      <Reference name="OpenSim.Region.PhysicsModules.SharedBase"/>
-      <Reference name="OpenSim.Region.PhysicsModule.BasicPhysics"/>
+      <Reference name="OpenSim.Physics.SharedBase"/>
+      <Reference name="OpenSim.Physics.BasicPhysics"/>
       <Reference name="OpenSim.ScriptEngine.Shared"/>
       <Reference name="OpenSim.Server.Base"/>
       <Reference name="OpenSim.Services.Interfaces"/>
@@ -2790,7 +2790,7 @@
       <Reference name="OpenSim.Region.Framework"/>
       <Reference name="OpenSim.Region.CoreModules"/>
       <Reference name="OpenSim.Region.OptionalModules"/>
-      <Reference name="OpenSim.Region.PhysicsModules.SharedBase"/>
+      <Reference name="OpenSim.Physics.SharedBase"/>
       <Reference name="OpenSim.ScriptEngine.Shared"/>
       <Reference name="OpenSim.ScriptEngine.XEngine"/>
       <Reference name="OpenSim.Services.Interfaces"/>
@@ -2868,7 +2868,7 @@
       <Reference name="OpenSim.Region.Framework"/>
       <Reference name="OpenSim.Region.CoreModules"/>
       <Reference name="OpenSim.Region.OptionalModules"/>
-      <Reference name="OpenSim.Region.PhysicsModules.SharedBase"/>
+      <Reference name="OpenSim.Physics.SharedBase"/>
       <Reference name="OpenSim.ScriptEngine.Shared"/>
       <Reference name="OpenSim.Services.AvatarService"/>
       <Reference name="OpenSim.Services.Interfaces"/>
@@ -2933,7 +2933,7 @@
       <Reference name="OpenSim.Region.Framework"/>
       <Reference name="OpenSim.Region.CoreModules"/>
       <Reference name="OpenSim.Region.OptionalModules"/>
-      <Reference name="OpenSim.Region.PhysicsModules.SharedBase"/>
+      <Reference name="OpenSim.Physics.SharedBase"/>
       <Reference name="OpenSim.Services.Interfaces"/>
 
       <!-- Unit tests -->
@@ -3093,65 +3093,65 @@
            TODO: this is kind of lame, we basically build a duplicate
            assembly but with tests added in, just because we can't resolve cross-bin-dir-refs.
       -->
-    <Project frameworkVersion="v4_0" name="OpenSim.Region.PhysicsModule.Ode.Tests" path="OpenSim/Region/PhysicsModules/Ode/Tests" type="Library">
+    <Project frameworkVersion="v4_0" name="OpenSim.Physics.Ode.Tests" path="OpenSim/Physics/Ode/Tests" type="Library">
       <Configuration name="Debug">
         <Options>
-          <OutputPath>../../../../../bin/</OutputPath>
+          <OutputPath>../../../../bin/</OutputPath>
         </Options>
       </Configuration>
       <Configuration name="Release">
         <Options>
-          <OutputPath>../../../../../bin/</OutputPath>
+          <OutputPath>../../../../bin/</OutputPath>
         </Options>
       </Configuration>
 
-      <ReferencePath>../../../../../bin/</ReferencePath>
+      <ReferencePath>../../../../bin/</ReferencePath>
       <Reference name="System"/>
       <Reference name="System.Core"/>
-      <Reference name="OpenMetaverseTypes" path="../../../../../bin/"/>
-      <Reference name="Nini" path="../../../../../bin/"/>
+      <Reference name="OpenMetaverseTypes" path="../../../../bin/"/>
+      <Reference name="Nini" path="../../../../bin/"/>
       <Reference name="OpenSim.Framework"/>
       <Reference name="OpenSim.Framework.Console"/>
-      <Reference name="OpenSim.Region.PhysicsModules.SharedBase"/>
-      <Reference name="OpenSim.Region.PhysicsModule.Ode"/>
+      <Reference name="OpenSim.Physics.SharedBase"/>
+      <Reference name="OpenSim.Physics.Ode"/>
       <Reference name="OpenSim.Region.Framework"/>
       <Reference name="OpenSim.Tests.Common"/>
-      <Reference name="Ode.NET" path="../../../../../bin/"/>
-      <Reference name="nunit.framework" path="../../../../../bin/"/>
-      <Reference name="log4net" path="../../../../../bin/"/>
+      <Reference name="Ode.NET" path="../../../../bin/"/>
+      <Reference name="nunit.framework" path="../../../../bin/"/>
+      <Reference name="log4net" path="../../../../bin/"/>
 
       <Files>
         <Match pattern="*.cs" recurse="true"/>
       </Files>
     </Project>
 
-    <Project frameworkVersion="v4_0" name="OpenSim.Region.PhysicsModule.BulletS.Tests" path="OpenSim/Region/PhysicsModules/BulletS/Tests" type="Library">
+    <Project frameworkVersion="v4_0" name="OpenSim.Physics.BulletS.Tests" path="OpenSim/Physics/BulletS/Tests" type="Library">
       <Configuration name="Debug">
         <Options>
-          <OutputPath>../../../../../bin/</OutputPath>
+          <OutputPath>../../../../bin/</OutputPath>
         </Options>
       </Configuration>
       <Configuration name="Release">
         <Options>
-          <OutputPath>../../../../../bin/</OutputPath>
+          <OutputPath>../../../../bin/</OutputPath>
         </Options>
       </Configuration>
 
-      <ReferencePath>../../../../../bin/</ReferencePath>
+      <ReferencePath>../../../../bin/</ReferencePath>
       <Reference name="System"/>
       <Reference name="System.Core"/>
       <Reference name="System.Data"/>
-      <Reference name="Nini" path="../../../../../bin/"/>
-      <Reference name="log4net" path="../../../../../bin/"/>
-      <Reference name="nunit.framework" path="../../../../../bin/"/>
-      <Reference name="OpenMetaverse" path="../../../../../bin/"/>
-      <Reference name="OpenMetaverseTypes" path="../../../../../bin/"/>
+      <Reference name="Nini" path="../../../../bin/"/>
+      <Reference name="log4net" path="../../../../bin/"/>
+      <Reference name="nunit.framework" path="../../../../bin/"/>
+      <Reference name="OpenMetaverse" path="../../../../bin/"/>
+      <Reference name="OpenMetaverseTypes" path="../../../../bin/"/>
       <Reference name="OpenSim.Framework"/>
       <Reference name="OpenSim.Tests.Common"/>
       <Reference name="OpenSim.Region.Framework"/>
-      <Reference name="OpenSim.Region.PhysicsModules.Meshing"/>
-      <Reference name="OpenSim.Region.PhysicsModules.SharedBase"/>
-      <Reference name="OpenSim.Region.PhysicsModule.BulletS"/>
+      <Reference name="OpenSim.Physics.Meshing"/>
+      <Reference name="OpenSim.Physics.SharedBase"/>
+      <Reference name="OpenSim.Physics.BulletS"/>
 
       <Files>
         <Match pattern="*.cs" recurse="false"/>
