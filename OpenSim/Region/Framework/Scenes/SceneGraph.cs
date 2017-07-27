@@ -34,7 +34,7 @@ using OpenMetaverse.Packets;
 using log4net;
 using OpenSim.Framework;
 using OpenSim.Region.Framework.Scenes.Types;
-using OpenSim.Physicss.SharedBase;
+using OpenSim.Physics.SharedBase;
 using OpenSim.Region.Framework.Interfaces;
 
 namespace OpenSim.Region.Framework.Scenes

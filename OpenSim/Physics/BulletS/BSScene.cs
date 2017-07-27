@@ -35,7 +35,7 @@ using OpenSim.Framework;
 using OpenSim.Framework.Monitoring;
 using OpenSim.Region.Framework.Scenes;
 using OpenSim.Region.Framework.Interfaces;
-using OpenSim.Physicss.SharedBase;
+using OpenSim.Physics.SharedBase;
 using Nini.Config;
 using log4net;
 using OpenMetaverse;

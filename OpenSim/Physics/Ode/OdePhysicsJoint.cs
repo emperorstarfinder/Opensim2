@@ -29,7 +29,7 @@ using System;
 using OpenMetaverse;
 using Ode.NET;
 using OpenSim.Framework;
-using OpenSim.Physicss.SharedBase;
+using OpenSim.Physics.SharedBase;
 using OpenSim.Physics.ODE;
 
 namespace OpenSim.Physics.ODE

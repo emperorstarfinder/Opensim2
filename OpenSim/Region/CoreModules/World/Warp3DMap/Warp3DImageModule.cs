@@ -41,7 +41,7 @@ using Mono.Addins;
 using OpenSim.Framework;
 using OpenSim.Region.Framework.Interfaces;
 using OpenSim.Region.Framework.Scenes;
-using OpenSim.Physicss.SharedBase;
+using OpenSim.Physics.SharedBase;
 using OpenSim.Services.Interfaces;
 
 using OpenMetaverse;

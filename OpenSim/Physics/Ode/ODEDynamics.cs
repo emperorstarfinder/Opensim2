@@ -46,7 +46,7 @@ using log4net;
 using OpenMetaverse;
 using Ode.NET;
 using OpenSim.Framework;
-using OpenSim.Physicss.SharedBase;
+using OpenSim.Physics.SharedBase;
 
 namespace OpenSim.Physics.ODE
 {

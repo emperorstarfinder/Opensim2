@@ -33,7 +33,7 @@ using OpenSim.Framework.Servers;
 using OpenSim.Region.Framework;
 using OpenSim.Region.Framework.Interfaces;
 using OpenSim.Region.Framework.Scenes;
-using OpenSim.Physicss.SharedBase;
+using OpenSim.Physics.SharedBase;
 using OpenSim.Services.Interfaces;
 
 namespace OpenSim.Tests.Common

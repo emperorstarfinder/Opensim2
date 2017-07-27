@@ -30,7 +30,7 @@ using System.Reflection;
 using OpenSim.Framework;
 using OpenSim.Region.Framework.Scenes;
 using OpenSim.Region.Framework.Interfaces;
-using OpenSim.Physicss.SharedBase;
+using OpenSim.Physics.SharedBase;
 using OpenMetaverse;
 using Nini.Config;
 using Mono.Addins;
@@ -47,7 +47,7 @@ using log4net;
  * it's always availabe and thus the default in case of configuration errors
 */
 
-namespace OpenSim.Physicss.Meshing
+namespace OpenSim.Physics.Meshing
 {
 
     [Extension(Path = "/OpenSim/RegionModules", NodeName = "RegionModule", Id = "ZeroMesher")]

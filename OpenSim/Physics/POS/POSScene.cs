@@ -31,7 +31,7 @@ using Nini.Config;
 using OpenMetaverse;
 using Mono.Addins;
 using OpenSim.Framework;
-using OpenSim.Physicss.SharedBase;
+using OpenSim.Physics.SharedBase;
 using OpenSim.Region.Framework.Scenes;
 using OpenSim.Region.Framework.Interfaces;
 

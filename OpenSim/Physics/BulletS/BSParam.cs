@@ -29,7 +29,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
 
-using OpenSim.Physicss.SharedBase;
+using OpenSim.Physics.SharedBase;
 
 using OpenMetaverse;
 using Nini.Config;

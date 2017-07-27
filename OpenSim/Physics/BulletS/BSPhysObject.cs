@@ -30,7 +30,7 @@ using System.Text;
 
 using OMV = OpenMetaverse;
 using OpenSim.Framework;
-using OpenSim.Physicss.SharedBase;
+using OpenSim.Physics.SharedBase;
 
 namespace OpenSim.Physics.BulletS
 {

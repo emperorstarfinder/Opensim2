@@ -30,8 +30,8 @@ using System.Collections.Generic;
 using System.Text;
 
 using OpenSim.Framework;
-using OpenSim.Physicss.SharedBase;
-using OpenSim.Physicss.Meshing;
+using OpenSim.Physics.SharedBase;
+using OpenSim.Physics.Meshing;
 using OpenSim.Physics.ConvexDecompositionDotNet;
 
 using OMV = OpenMetaverse;

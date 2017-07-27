@@ -32,7 +32,7 @@ using System.Xml;
 using log4net;
 using OMV = OpenMetaverse;
 using OpenSim.Framework;
-using OpenSim.Physicss.SharedBase;
+using OpenSim.Physics.SharedBase;
 using OpenSim.Physics.ConvexDecompositionDotNet;
 
 namespace OpenSim.Physics.BulletS

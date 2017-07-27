@@ -30,7 +30,7 @@ using System.Collections.Generic;
 using Nini.Config;
 using OpenMetaverse;
 using OpenSim.Framework;
-using OpenSim.Physicss.SharedBase;
+using OpenSim.Physics.SharedBase;
 
 namespace OpenSim.Physics.BasicPhysics
 {

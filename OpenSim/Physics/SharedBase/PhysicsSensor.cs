@@ -29,7 +29,7 @@ using System;
 using System.Timers;
 using OpenMetaverse;
 
-namespace OpenSim.Physicss.SharedBase
+namespace OpenSim.Physics.SharedBase
 {
     [Flags]
     public enum SenseType : uint

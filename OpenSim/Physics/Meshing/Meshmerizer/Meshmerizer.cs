@@ -33,7 +33,7 @@ using System.IO;
 using OpenSim.Framework;
 using OpenSim.Region.Framework.Scenes;
 using OpenSim.Region.Framework.Interfaces;
-using OpenSim.Physicss.SharedBase;
+using OpenSim.Physics.SharedBase;
 using OpenMetaverse;
 using OpenMetaverse.StructuredData;
 using System.Drawing;
@@ -44,7 +44,7 @@ using log4net;
 using Nini.Config;
 using Mono.Addins;
 
-namespace OpenSim.Physicss.Meshing
+namespace OpenSim.Physics.Meshing
 {
     [Extension(Path = "/OpenSim/RegionModules", NodeName = "RegionModule", Id = "Meshmerizer")]
     public class Meshmerizer : IMesher, INonSharedRegionModule

@@ -71,7 +71,7 @@ public class BSPrimLinkable : BSPrimDisplaced
         base.Destroy();
     }
 
-    public override void link(OpenSim.Physicss.SharedBase.PhysicsActor obj)
+    public override void link(OpenSim.Physics.SharedBase.PhysicsActor obj)
     {
         BSPrimLinkable parent = obj as BSPrimLinkable;
         if (parent != null)

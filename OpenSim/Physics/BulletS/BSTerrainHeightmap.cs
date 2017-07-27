@@ -30,7 +30,7 @@ using System.Text;
 
 using OpenSim.Framework;
 using OpenSim.Region.Framework;
-using OpenSim.Physicss.SharedBase;
+using OpenSim.Physics.SharedBase;
 
 using Nini.Config;
 using log4net;

@@ -27,7 +27,7 @@
 
 using System;
 
-namespace OpenSim.Physicss.SharedBase
+namespace OpenSim.Physics.SharedBase
 {
     /*public class PhysicsVector
     {
