@@ -536,8 +536,6 @@
       </Files>
     </Project>
 
-    
-
     <Project name="OpenSim.Region.Physics.Meshing" path="OpenSim/Region/Physics/Meshing" type="Library">
       <Configuration name="Debug">
         <Options>
@@ -907,7 +905,6 @@
       </Files>
     </Project>
 
-
     <Project name="OpenSim.Grid.AssetServer" path="OpenSim/Grid/AssetServer" type="Exe">
       <Configuration name="Debug">
         <Options>
@@ -1099,7 +1096,6 @@
       </Files>
     </Project>
 
-
     <Project name="OpenSim.Grid.UserServer" path="OpenSim/Grid/UserServer" type="Exe">
       <Configuration name="Debug">
         <Options>
@@ -1201,7 +1197,6 @@
         <Match pattern="*.cs" recurse="true"/>
       </Files>
     </Project>
-
 
     <Project name="OpenSim.Grid.MessagingServer" path="OpenSim/Grid/MessagingServer" type="Exe">
       <Configuration name="Debug">
@@ -1553,7 +1548,6 @@
         <Match pattern="*.cs" recurse="true"/>
       </Files>
     </Project>
-
 
     <Project name="OpenSim.Region.OptionalModules" path="OpenSim/Region/OptionalModules" type="Library">
       <Configuration name="Debug">
@@ -2100,7 +2094,6 @@
       </Configuration>
 
       <ReferencePath>../../../../bin/</ReferencePath>
-
       <Reference name="OpenMetaverseTypes.dll"/>
       <Reference name="OpenMetaverse.dll"/>
       <Reference name="System"/>
@@ -2113,9 +2106,7 @@
       </Files>
     </Project>
 	
-	
 	<!-- Client Stack Modules -->
-	
 	
     <Project name="OpenSim.Client.MXP" path="OpenSim/Client/MXP" type="Library">
       <Configuration name="Debug">
@@ -2159,14 +2150,13 @@
       </Configuration>
 
       <ReferencePath>../../../bin/</ReferencePath>
-
       <Reference name="OpenMetaverseTypes.dll"/>
       <Reference name="OpenMetaverse.dll"/>
       <Reference name="System"/>
-	  <Reference name="System.Drawing"/>
+	    <Reference name="System.Drawing"/>
       <Reference name="OpenSim.Framework"/>
-	  <Reference name="OpenSim.Framework.Servers"/>
-	  <Reference name="OpenSim.Framework.Servers.HttpServer"/>
+	    <Reference name="OpenSim.Framework.Servers"/>
+	    <Reference name="OpenSim.Framework.Servers.HttpServer"/>
       <Reference name="OpenSim.Region.Framework"/>
       <Reference name="OpenSim.Framework.Communications"/>
       <Reference name="Nini.dll" />
@@ -2189,7 +2179,6 @@
       </Configuration>
 
       <ReferencePath>../../../bin/</ReferencePath>
-
       <Reference name="OpenMetaverseTypes.dll"/>
       <Reference name="OpenMetaverse.dll"/>
       <Reference name="System"/>
@@ -2209,8 +2198,6 @@
         <Match pattern="*.cs" recurse="true"/>
       </Files>
     </Project>
-
-
 
     <!-- Data Base Modules -->
     <Project name="OpenSim.Data.MySQL" path="OpenSim/Data/MySQL" type="Library">
@@ -3666,71 +3653,10 @@
 
 
 
-<!-- FORGE MODULE INSERT -->
+<!-- MODULE INSERT -->
 
 
 <!-- /////////////////// END OF INSERTION ///////////////////////////// -->
 
   </Solution>
-
-  <!-- Prebuild tool -->
-  <Solution name="Prebuild" path="Prebuild/" >
-    <Configuration name="Debug">
-      <Options>
-        <CompilerDefines>DEBUG;TRACE</CompilerDefines>
-        <OptimizeCode>false</OptimizeCode>
-        <OutputPath>bin/Debug</OutputPath>
-        <DebugInformation>true</DebugInformation>
-        <SuppressWarnings>1595</SuppressWarnings>
-      </Options>
-    </Configuration>
-    <Configuration name="Release">
-      <Options>
-        <CompilerDefines>TRACE</CompilerDefines>
-        <OutputPath>bin/Release</OutputPath>
-        <OptimizeCode>true</OptimizeCode>
-        <DebugInformation>false</DebugInformation>
-        <SuppressWarnings>1595</SuppressWarnings>
-      </Options>
-    </Configuration>
-
-    <Project name="Prebuild" path="src/" language="C#" assemblyName="Prebuild" icon="App.ico" type="Exe" rootNamespace="Prebuild" startupObject="Prebuild.Prebuild">
-      <Configuration name="Debug">
-        <Options>
-          <CompilerDefines>DEBUG;TRACE</CompilerDefines>
-          <OptimizeCode>false</OptimizeCode>
-          <OutputPath>..\..\bin\</OutputPath>
-          <DebugInformation>true</DebugInformation>
-          <KeyFile>Prebuild.snk</KeyFile>
-          <SuppressWarnings>1595</SuppressWarnings>
-        </Options>
-      </Configuration>
-      <Configuration name="Release">
-        <Options>
-          <CompilerDefines>TRACE</CompilerDefines>
-          <OutputPath>..\..\bin\</OutputPath>
-          <OptimizeCode>true</OptimizeCode>
-          <DebugInformation>false</DebugInformation>
-          <KeyFile>Prebuild.snk</KeyFile>
-          <SuppressWarnings>1595</SuppressWarnings>
-        </Options>
-      </Configuration>
-      <ReferencePath>../../bin/</ReferencePath>
-      <Reference name="System.EnterpriseServices" />
-      <Reference name="System.Xml" />
-      <Reference name="System" />
-      <Files>
-        <Match pattern="App.ico" buildAction="EmbeddedResource"/>
-        <Match path="data" pattern="prebuild-1.7.xsd" buildAction="EmbeddedResource"/>
-        <Match pattern="*.cs" recurse="true"/>
-      </Files>
-    </Project>
-
-  </Solution>
 </Prebuild>
-
-
-
-
-
-
