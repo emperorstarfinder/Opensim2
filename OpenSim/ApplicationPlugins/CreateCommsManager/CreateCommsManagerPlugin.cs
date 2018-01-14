@@ -75,7 +75,7 @@ namespace OpenSim.ApplicationPlugins.CreateCommsManager
 
         public void Initialise()
         {
-            m_log.Info("[LOADREGIONS]: " + Name + " cannot be default-initialized!");
+            m_log.Info("[Load Regions]: " + Name + " cannot be default-initialized!");
             throw new PluginNotInitialisedException(Name);
         }
 
@@ -85,6 +85,7 @@ namespace OpenSim.ApplicationPlugins.CreateCommsManager
             m_httpServer = openSim.HttpServer;
 
             InitialiseCommsManager(openSim);
+
             if (m_commsManager != null)
             {
                 m_openSim.ApplicationRegistry.RegisterInterface<IUserService>(m_commsManager.UserService);
@@ -143,6 +144,7 @@ namespace OpenSim.ApplicationPlugins.CreateCommsManager
                 // We are in grid mode
                 InitialiseHGGridServices(libraryRootFolder);
             }
+
             HGCommands.HGServices = HGServices;
         }
 
@@ -161,7 +163,7 @@ namespace OpenSim.ApplicationPlugins.CreateCommsManager
         }
 
         /// <summary>
-        /// Initialises the backend services for standalone mode, and registers some http handlers
+        ///     Initialises the backend services for standalone mode, and registers some http handlers
         /// </summary>
         /// <param name="libraryRootFolder"></param>
         protected virtual void InitialiseStandaloneServices(LibraryRootFolder libraryRootFolder)
@@ -176,20 +178,18 @@ namespace OpenSim.ApplicationPlugins.CreateCommsManager
 
         protected virtual void InitialiseGridServices(LibraryRootFolder libraryRootFolder)
         {
-            m_commsManager
-                = new CommunicationsOGS1(m_openSim.NetServersInfo, m_httpServer, m_openSim.AssetCache, libraryRootFolder);
+            m_commsManager = new CommunicationsOGS1(m_openSim.NetServersInfo, m_httpServer, m_openSim.AssetCache, libraryRootFolder);
 
             m_httpServer.AddStreamHandler(new OpenSim.SimStatusHandler());
             m_httpServer.AddStreamHandler(new OpenSim.XSimStatusHandler(m_openSim));
+
             if (m_openSim.userStatsURI != String.Empty )
                 m_httpServer.AddStreamHandler(new OpenSim.UXSimStatusHandler(m_openSim));
         }
 
         protected virtual void InitialiseHGStandaloneServices(LibraryRootFolder libraryRootFolder)
         {    
-            HGGridServicesStandalone gridService 
-                = new HGGridServicesStandalone(
-                    m_openSim.NetServersInfo, m_httpServer, m_openSim.AssetCache, m_openSim.SceneManager);                         
+            HGGridServicesStandalone gridService = new HGGridServicesStandalone(m_openSim.NetServersInfo, m_httpServer, m_openSim.AssetCache, m_openSim.SceneManager);                         
 
             m_commsManager 
                 = new HGCommunicationsStandalone(
@@ -204,15 +204,13 @@ namespace OpenSim.ApplicationPlugins.CreateCommsManager
 
         protected virtual void InitialiseHGGridServices(LibraryRootFolder libraryRootFolder)
         {
-            m_commsManager 
-                = new HGCommunicationsGridMode(
-                    m_openSim.NetServersInfo, m_httpServer, 
-                    m_openSim.AssetCache, m_openSim.SceneManager, libraryRootFolder);
+            m_commsManager = new HGCommunicationsGridMode(m_openSim.NetServersInfo, m_httpServer, m_openSim.AssetCache, m_openSim.SceneManager, libraryRootFolder);
 
             HGServices = ((HGCommunicationsGridMode) m_commsManager).HGServices;
 
             m_httpServer.AddStreamHandler(new OpenSim.SimStatusHandler());
             m_httpServer.AddStreamHandler(new OpenSim.XSimStatusHandler(m_openSim));
+
             if (m_openSim.userStatsURI != String.Empty )
                 m_httpServer.AddStreamHandler(new OpenSim.UXSimStatusHandler(m_openSim));
         }
@@ -222,8 +220,7 @@ namespace OpenSim.ApplicationPlugins.CreateCommsManager
             // provide grid info
             m_gridInfoService = new GridInfoService(m_openSim.ConfigSource.Source);
             m_httpServer.AddXmlRPCHandler("get_grid_info", m_gridInfoService.XmlRpcGridInfoMethod);
-            m_httpServer.AddStreamHandler(
-                 new RestStreamHandler("GET", "/get_grid_info", m_gridInfoService.RestGetGridInfoMethod));
+            m_httpServer.AddStreamHandler(new RestStreamHandler("GET", "/get_grid_info", m_gridInfoService.RestGetGridInfoMethod));
         }
     }
 }

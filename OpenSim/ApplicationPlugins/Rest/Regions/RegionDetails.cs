@@ -32,7 +32,7 @@ using OpenSim.Framework;
 
 namespace OpenSim.ApplicationPlugins.Rest.Regions
 {
-    [XmlRoot(ElementName="region", IsNullable = false)]
+    [XmlRoot(ElementName = "region", IsNullable = false)]
     public class RegionDetails
     {
         public string region_name;
@@ -56,10 +56,12 @@ namespace OpenSim.ApplicationPlugins.Rest.Regions
             region_id = regInfo.RegionID.ToString();
             region_x = regInfo.RegionLocX;
             region_y = regInfo.RegionLocY;
+
             if (regInfo.EstateSettings.EstateOwner != UUID.Zero)
                 region_owner_id = regInfo.EstateSettings.EstateOwner.ToString();
             else
                 region_owner_id = regInfo.MasterAvatarAssignedUUID.ToString();
+
             region_http_port = regInfo.HttpPort;
             region_server_uri = regInfo.ServerURI;
             region_external_hostname = regInfo.ExternalHostName;
@@ -68,8 +70,7 @@ namespace OpenSim.ApplicationPlugins.Rest.Regions
             region_port = (uint)uri.Port;
 
             if (!String.IsNullOrEmpty(regInfo.MasterAvatarFirstName))
-                region_owner = String.Format("{0} {1}", regInfo.MasterAvatarFirstName,
-                                             regInfo.MasterAvatarLastName);
+                region_owner = String.Format("{0} {1}", regInfo.MasterAvatarFirstName, regInfo.MasterAvatarLastName);
         }
 
         public string this[string idx]
@@ -78,26 +79,26 @@ namespace OpenSim.ApplicationPlugins.Rest.Regions
             {
                 switch (idx.ToLower())
                 {
-                case "name":
-                    return region_name;
-                case "id":
-                    return region_id;
-                case "location":
-                    return String.Format("<x>{0}</x><y>{1}</y>", region_x, region_y);
-                case "owner":
-                    return region_owner;
-                case "owner_id":
-                    return region_owner_id;
-                case "http_port":
-                    return region_http_port.ToString();
-                case "server_uri":
-                    return region_server_uri;
-                case "external_hostname":
-                case "hostname":
-                    return region_external_hostname;
+                    case "name":
+                        return region_name;
+                    case "id":
+                        return region_id;
+                    case "location":
+                        return String.Format("<x>{0}</x><y>{1}</y>", region_x, region_y);
+                    case "owner":
+                        return region_owner;
+                    case "owner_id":
+                        return region_owner_id;
+                    case "http_port":
+                        return region_http_port.ToString();
+                    case "server_uri":
+                        return region_server_uri;
+                    case "external_hostname":
+                    case "hostname":
+                        return region_external_hostname;
 
-                default:
-                    return null;
+                    default:
+                        return null;
                 }
             }
         }

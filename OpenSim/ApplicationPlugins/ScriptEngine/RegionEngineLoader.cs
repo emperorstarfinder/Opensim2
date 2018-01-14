@@ -56,12 +56,14 @@ namespace OpenSim.ApplicationPlugins.ScriptEngine
             {
                 if (ConfigSource.Configs["SECS"] == null)
                     ConfigSource.AddConfig("SECS");
+
                 ScriptConfigSource = ConfigSource.Configs["SECS"];
 
                 // Is SECS enabled?
                 if (ScriptConfigSource.GetBoolean("Enabled", false))
                 {
                     LoadEngine();
+
                     if (scriptEngine != null)
                         scriptEngine.Initialise(scene, source);
                 }
@@ -93,6 +95,7 @@ namespace OpenSim.ApplicationPlugins.ScriptEngine
         private void LoadEngine()
         {
             m_log.DebugFormat("[{0}] Loading region script engine engine \"{1}\".", Name, tempScriptEngineName);
+
             try
             {
                 lock (ComponentFactory.scriptEngines)
@@ -103,9 +106,7 @@ namespace OpenSim.ApplicationPlugins.ScriptEngine
                     }
                     else
                     {
-                        scriptEngine =
-                            Activator.CreateInstance(ComponentFactory.scriptEngines[tempScriptEngineName]) as
-                            IScriptEngine;
+                        scriptEngine = Activator.CreateInstance(ComponentFactory.scriptEngines[tempScriptEngineName]) as IScriptEngine;
                     }
                 }
             }
@@ -114,6 +115,5 @@ namespace OpenSim.ApplicationPlugins.ScriptEngine
                 m_log.ErrorFormat("[{0}] Internal error loading region script engine \"{1}\": {2}", Name, tempScriptEngineName, ex.ToString());
             }
         }
-
     }
 }

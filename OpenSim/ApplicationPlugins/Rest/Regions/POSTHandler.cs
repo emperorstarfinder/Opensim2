@@ -39,13 +39,8 @@ namespace OpenSim.ApplicationPlugins.Rest.Regions
     {
         #region POST methods
 
-        public string PostHandler(string request, string path, string param,
-                                  OSHttpRequest httpRequest, OSHttpResponse httpResponse)
+        public string PostHandler(string request, string path, string param, OSHttpRequest httpRequest, OSHttpResponse httpResponse)
         {
-            // foreach (string h in httpRequest.Headers.AllKeys)
-            //     foreach (string v in httpRequest.Headers.GetValues(h))
-            //         m_log.DebugFormat("{0} IsGod: {1} -> {2}", MsgID, h, v);
-
             MsgID = RequestID;
             m_log.DebugFormat("{0} POST path {1} param {2}", MsgID, path, param);
 
@@ -53,11 +48,11 @@ namespace OpenSim.ApplicationPlugins.Rest.Regions
             {
                 // param empty: new region post
                 if (!IsGod(httpRequest))
-                    // XXX: this needs to be turned into a FailureUnauthorized(...)
-                    return Failure(httpResponse, OSHttpStatusCode.ClientErrorUnauthorized,
-                                   "GET", "you are not god");
+                    // this needs to be turned into a FailureUnauthorized(...)
+                    return Failure(httpResponse, OSHttpStatusCode.ClientErrorUnauthorized, "GET", "you are not god");
 
-                if (String.IsNullOrEmpty(param)) return CreateRegion(httpRequest, httpResponse);
+                if (String.IsNullOrEmpty(param))
+                    return CreateRegion(httpRequest, httpResponse);
 
                 // Parse region ID and other parameters
                 param = param.TrimEnd(new char[] {'/'});
@@ -65,13 +60,15 @@ namespace OpenSim.ApplicationPlugins.Rest.Regions
                 UUID regionID = (UUID) comps[0];
 
                 m_log.DebugFormat("{0} POST region UUID {1}", MsgID, regionID.ToString());
-                if (UUID.Zero == regionID) throw new Exception("missing region ID");
+
+                if (UUID.Zero == regionID)
+                    throw new Exception("missing region ID");
 
                 Scene scene = null;
                 App.SceneManager.TryGetScene(regionID, out scene);
+
                 if (null == scene)
-                    return Failure(httpResponse, OSHttpStatusCode.ClientErrorNotFound,
-                                   "POST", "cannot find region {0}", regionID.ToString());
+                    return Failure(httpResponse, OSHttpStatusCode.ClientErrorNotFound, "POST", "cannot find region {0}", regionID.ToString());
 
                 if (2 == comps.Length)
                 {
@@ -83,8 +80,7 @@ namespace OpenSim.ApplicationPlugins.Rest.Regions
                     }
                 }
 
-                return Failure(httpResponse, OSHttpStatusCode.ClientErrorNotFound,
-                               "POST", "url {0} not supported", param);
+                return Failure(httpResponse, OSHttpStatusCode.ClientErrorNotFound, "POST", "url {0} not supported", param);
             }
             catch (Exception e)
             {
@@ -95,12 +91,14 @@ namespace OpenSim.ApplicationPlugins.Rest.Regions
         public string CreateRegion(OSHttpRequest request, OSHttpResponse response)
         {
             XmlWriter.WriteStartElement(String.Empty, "regions", String.Empty);
+
             foreach (Scene s in App.SceneManager.Scenes)
             {
                 XmlWriter.WriteStartElement(String.Empty, "uuid", String.Empty);
                 XmlWriter.WriteString(s.RegionInfo.RegionID.ToString());
                 XmlWriter.WriteEndElement();
             }
+
             XmlWriter.WriteEndElement();
 
             return XmlWriterResult;
@@ -109,6 +107,7 @@ namespace OpenSim.ApplicationPlugins.Rest.Regions
         public string LoadPrims(string requestBody, OSHttpRequest request, OSHttpResponse response, Scene scene)
         {
             IRegionSerialiserModule serialiser = scene.RequestModuleInterface<IRegionSerialiserModule>();
+
             if (serialiser != null)
                 serialiser.LoadPrimsFromXml2(scene, new StringReader(requestBody), true);
 

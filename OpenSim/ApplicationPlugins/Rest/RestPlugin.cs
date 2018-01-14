@@ -43,19 +43,15 @@ namespace OpenSim.ApplicationPlugins.Rest
     {
         #region properties
 
-        protected static readonly ILog m_log =
-            LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+        protected static readonly ILog m_log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         private IConfig _config; // Configuration source: Rest Plugins
         private IConfig _pluginConfig; // Configuration source: Plugin specific
         private OpenSimBase _app; // The 'server'
         private BaseHttpServer _httpd; // The server's RPC interface
         private string _prefix; // URL prefix below
-        // which all REST URLs
-        // are living
         private StringWriter _sw = null;
         private RestXmlWriter _xw = null;
-
         private string _godkey;
         private int _reqk;
 
@@ -63,7 +59,7 @@ namespace OpenSim.ApplicationPlugins.Rest
         private static string  _threadRequestID = String.Empty;
 
         /// <summary>
-        /// Return an ever increasing request ID for logging
+        ///     Return an ever increasing request ID for logging
         /// </summary>
         protected string RequestID
         {
@@ -72,7 +68,7 @@ namespace OpenSim.ApplicationPlugins.Rest
         }
 
         /// <summary>
-        /// Thread-constant message IDs for logging.
+        ///     Thread-constant message IDs for logging.
         /// </summary>
         protected string MsgID
         {
@@ -81,7 +77,7 @@ namespace OpenSim.ApplicationPlugins.Rest
         }
 
         /// <summary>
-        /// Returns true if Rest Plugins are enabled.
+        ///     Returns true if Rest Plugins are enabled.
         /// </summary>
         public bool PluginsAreEnabled
         {
@@ -89,18 +85,15 @@ namespace OpenSim.ApplicationPlugins.Rest
         }
 
         /// <summary>
-        /// Returns true if specific Rest Plugin is enabled.
+        ///     Returns true if specific Rest Plugin is enabled.
         /// </summary>
         public bool IsEnabled
         {
-            get
-            {
-                return (null != _pluginConfig) && _pluginConfig.GetBoolean("enabled", false);
-            }
+            get { return (null != _pluginConfig) && _pluginConfig.GetBoolean("enabled", false); }
         }
 
         /// <summary>
-        /// OpenSimMain application
+        ///     OpenSimMain application
         /// </summary>
         public OpenSimBase App
         {
@@ -108,7 +101,7 @@ namespace OpenSim.ApplicationPlugins.Rest
         }
 
         /// <summary>
-        /// RPC server
+        ///     RPC server
         /// </summary>
         public BaseHttpServer HttpServer
         {
@@ -116,7 +109,7 @@ namespace OpenSim.ApplicationPlugins.Rest
         }
 
         /// <summary>
-        /// URL prefix to use for all REST handlers
+        ///     URL prefix to use for all REST handlers
         /// </summary>
         public string Prefix
         {
@@ -124,7 +117,7 @@ namespace OpenSim.ApplicationPlugins.Rest
         }
 
         /// <summary>
-        /// Access to GOD password string
+        ///     Access to GOD password string
         /// </summary>
         protected string GodKey
         {
@@ -132,7 +125,7 @@ namespace OpenSim.ApplicationPlugins.Rest
         }
 
         /// <summary>
-        /// Configuration of the plugin
+        ///     Configuration of the plugin
         /// </summary>
         public IConfig Config
         {
@@ -140,12 +133,12 @@ namespace OpenSim.ApplicationPlugins.Rest
         }
 
         /// <summary>
-        /// Name of the plugin
+        ///     Name of the plugin
         /// </summary>
         public abstract string Name { get; }
 
         /// <summary>
-        /// Return the config section name
+        ///     Return the config section name
         /// </summary>
         public abstract string ConfigName { get; }
 
@@ -159,6 +152,7 @@ namespace OpenSim.ApplicationPlugins.Rest
                     _xw = new RestXmlWriter(_sw);
                     _xw.Formatting = Formatting.Indented;
                 }
+
                 return _xw;
             }
         }
@@ -189,13 +183,13 @@ namespace OpenSim.ApplicationPlugins.Rest
 
         public void Initialise()
         {
-            m_log.Info("[RESTPLUGIN]: " + Name + " cannot be default-initialized!");
+            m_log.Info("[Rest Plugin]: " + Name + " cannot be default-initialized!");
             throw new PluginNotInitialisedException(Name);
         }
 
         /// <summary>
-        /// This method is called by OpenSimMain immediately after loading the
-        /// plugin and after basic server setup,  but before running any server commands.
+        ///     This method is called by OpenSimMain immediately after loading the
+        ///     plugin and after basic server setup,  but before running any server commands.
         /// </summary>
         /// <remarks>
         /// Note that entries MUST be added to the active configuration files before
@@ -261,7 +255,7 @@ namespace OpenSim.ApplicationPlugins.Rest
         private Dictionary<string, IHttpAgentHandler> _agents = new Dictionary<string, IHttpAgentHandler>();
 
         /// <summary>
-        /// Add a REST stream handler to the underlying HTTP server.
+        ///     Add a REST stream handler to the underlying HTTP server.
         /// </summary>
         /// <param name="httpMethod">GET/PUT/POST/DELETE or
         /// similar</param>
@@ -269,7 +263,8 @@ namespace OpenSim.ApplicationPlugins.Rest
         /// <param name="method">RestMethod handler doing the actual work</param>
         public virtual void AddRestStreamHandler(string httpMethod, string path, RestMethod method)
         {
-            if (!IsEnabled) return;
+            if (!IsEnabled)
+                return;
 
             if (!path.StartsWith(_prefix))
             {
@@ -284,8 +279,8 @@ namespace OpenSim.ApplicationPlugins.Rest
         }
 
         /// <summary>
-        /// Add a powerful Agent handler to the underlying HTTP
-        /// server.
+        ///     Add a powerful Agent handler to the underlying HTTP
+        ///     server.
         /// </summary>
         /// <param name="agentName">name of agent handler</param>
         /// <param name="handler">agent handler method</param>
@@ -295,14 +290,16 @@ namespace OpenSim.ApplicationPlugins.Rest
         /// </returns>
         public bool AddAgentHandler(string agentName, IHttpAgentHandler handler)
         {
-            if (!IsEnabled) return false;
+            if (!IsEnabled)
+                return false;
+
             _agents.Add(agentName, handler);
             return _httpd.AddAgentHandler(agentName, handler);
         }
 
         /// <summary>
-        /// Remove a powerful Agent handler from the underlying HTTP
-        /// server.
+        ///     Remove a powerful Agent handler from the underlying HTTP
+        ///     server.
         /// </summary>
         /// <param name="agentName">name of agent handler</param>
         /// <param name="handler">agent handler method</param>
@@ -312,44 +309,49 @@ namespace OpenSim.ApplicationPlugins.Rest
         /// </returns>
         public bool RemoveAgentHandler(string agentName, IHttpAgentHandler handler)
         {
-            if (!IsEnabled) return false;
+            if (!IsEnabled)
+                return false;
+
             if (_agents[agentName] == handler)
             {
                 _agents.Remove(agentName);
                 return _httpd.RemoveAgentHandler(agentName, handler);
             }
+
             return false;
         }
 
         /// <summary>
-        /// Check whether the HTTP request came from god; that is, is
-        /// the god_key as configured in the config section supplied
-        /// via X-OpenSim-Godkey?
+        ///     Check whether the HTTP request came from god; that is, is
+        ///     the god_key as configured in the config section supplied
+        ///     via X-OpenSim-Godkey?
         /// </summary>
         /// <param name="request">HTTP request header</param>
         /// <returns>true when the HTTP request came from god.</returns>
         protected bool IsGod(OSHttpRequest request)
         {
             string[] keys = request.Headers.GetValues("X-OpenSim-Godkey");
-            if (null == keys) return false;
+
+            if (null == keys)
+                return false;
 
             // we take the last key supplied
             return keys[keys.Length - 1] == _godkey;
         }
 
         /// <summary>
-        /// Checks wether the X-OpenSim-Password value provided in the
-        /// HTTP header is indeed the password on file for the avatar
-        /// specified by the UUID
+        ///     Checks wether the X-OpenSim-Password value provided in the
+        ///     HTTP header is indeed the password on file for the avatar
+        ///     specified by the UUID
         /// </summary>
         protected bool IsVerifiedUser(OSHttpRequest request, UUID uuid)
         {
-            // XXX under construction
+            // under construction
             return false;
         }
 
         /// <summary>
-        /// Clean up and remove all handlers that were added earlier.
+        ///     Clean up and remove all handlers that were added earlier.
         /// </summary>
         public virtual void Close()
         {
@@ -357,11 +359,14 @@ namespace OpenSim.ApplicationPlugins.Rest
             {
                 _httpd.RemoveStreamHandler(h.HttpMethod, h.Path);
             }
+
             _handlers = null;
+
             foreach (KeyValuePair<string, IHttpAgentHandler> h in _agents)
             {
                 _httpd.RemoveAgentHandler(h.Key, h.Value);
             }
+
             _agents = null;
         }
 
@@ -371,14 +376,13 @@ namespace OpenSim.ApplicationPlugins.Rest
         }
 
         /// <summary>
-        /// Return a failure message.
+        ///     Return a failure message.
         /// </summary>
         /// <param name="method">origin of the failure message</param>
         /// <param name="message">failure message</param>
         /// <remarks>This should probably set a return code as
         /// well. (?)</remarks>
-        protected string Failure(OSHttpResponse response, OSHttpStatusCode status,
-                                 string method, string format, params string[] msg)
+        protected string Failure(OSHttpResponse response, OSHttpStatusCode status, string method, string format, params string[] msg)
         {
             string m = String.Format(format, msg);
 
@@ -390,14 +394,13 @@ namespace OpenSim.ApplicationPlugins.Rest
         }
 
         /// <summary>
-        /// Return a failure message.
+        ///     Return a failure message.
         /// </summary>
         /// <param name="method">origin of the failure message</param>
         /// <param name="e">exception causing the failure message</param>
         /// <remarks>This should probably set a return code as
         /// well. (?)</remarks>
-        public string Failure(OSHttpResponse response, OSHttpStatusCode status,
-                              string method, Exception e)
+        public string Failure(OSHttpResponse response, OSHttpStatusCode status, string method, Exception e)
         {
             string m = String.Format("exception occurred: {0}", e.Message);
 

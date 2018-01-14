@@ -23,17 +23,16 @@
 * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-* 
 */
 
 namespace OpenSim.ApplicationPlugins.Rest.Inventory
 {
 
     /// <summary>
-    /// This interface represents the boundary between the general purpose
-    /// REST plugin handling, and the functionally specific handlers. The
-    /// handler knows only to initialzie and terminate all such handlers 
-    /// that it finds.
+    ///     This interface represents the boundary between the general purpose
+    ///     REST plugin handling, and the functionally specific handlers. The
+    ///     handler knows only to initialzie and terminate all such handlers 
+    ///     that it finds.
     /// </summary>
 
     internal interface ITest
@@ -42,5 +41,4 @@ namespace OpenSim.ApplicationPlugins.Rest.Inventory
         void Execute(RequestData rdata);
         void Close();
     }
-
 }

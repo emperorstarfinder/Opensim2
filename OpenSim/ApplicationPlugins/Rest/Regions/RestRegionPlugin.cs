@@ -41,6 +41,7 @@ namespace OpenSim.ApplicationPlugins.Rest.Regions
         }
 
         #region overriding properties
+
         public override string Name
         {
             get { return "REGION"; }
@@ -50,12 +51,14 @@ namespace OpenSim.ApplicationPlugins.Rest.Regions
         {
             get { return "RestRegionPlugin"; }
         }
+        
         #endregion overriding properties
 
         #region overriding methods
+   
         /// <summary>
-        /// This method is called by OpenSimMain immediately after loading the
-        /// plugin and after basic server setup,  but before running any server commands.
+        ///     This method is called by OpenSimMain immediately after loading the
+        ///     plugin and after basic server setup,  but before running any server commands.
         /// </summary>
         /// <remarks>
         /// Note that entries MUST be added to the active configuration files before
@@ -66,11 +69,13 @@ namespace OpenSim.ApplicationPlugins.Rest.Regions
             try
             {
                 base.Initialise(openSim);
+
                 if (!IsEnabled)
                 {
                     m_log.WarnFormat("{0} Rest Plugins are disabled", MsgID);
                     return;
                 }
+
                 m_log.InfoFormat("{0} REST region plugin enabled", MsgID);
 
                 // add REST method handlers
@@ -88,6 +93,7 @@ namespace OpenSim.ApplicationPlugins.Rest.Regions
         public override void Close()
         {
         }
+
         #endregion overriding methods
     }
 }

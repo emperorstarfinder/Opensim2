@@ -36,12 +36,11 @@ namespace OpenSim.ApplicationPlugins.Rest.Inventory
 {
     public class RestAssetServices : IRest
     {
-        private bool    enabled = false;
-        private string  qPrefix = "assets";
+        private bool enabled = false;
+        private string qPrefix = "assets";
 
         // A simple constructor is used to handle any once-only
         // initialization of working classes.
-
         public RestAssetServices()
         {
             Rest.Log.InfoFormat("{0} Asset services initializing", MsgId);
@@ -49,7 +48,6 @@ namespace OpenSim.ApplicationPlugins.Rest.Inventory
 
             // If the handler specifies a relative path for its domain
             // then we must add the standard absolute prefix, e.g. /admin
-
             if (!qPrefix.StartsWith(Rest.UrlPathSeparator))
             {
                 Rest.Log.InfoFormat("{0} Prefixing domain name ({1})", MsgId, qPrefix);
@@ -58,11 +56,9 @@ namespace OpenSim.ApplicationPlugins.Rest.Inventory
             }
 
             // Register interface using the fully-qualified prefix
-
             Rest.Plugin.AddPathHandler(DoAsset, qPrefix, Allocate);
 
             // Activate if all went OK
-
             enabled = true;
 
             Rest.Log.InfoFormat("{0} Asset services initialization complete", MsgId);
@@ -70,7 +66,6 @@ namespace OpenSim.ApplicationPlugins.Rest.Inventory
 
         // Post-construction, pre-enabled initialization opportunity
         // Not currently exploited.
-
         public void Initialize()
         {
         }
@@ -78,7 +73,6 @@ namespace OpenSim.ApplicationPlugins.Rest.Inventory
         // Called by the plug-in to halt REST processing. Local processing is
         // disabled, and control blocks until all current processing has
         // completed. No new processing will be started
-
         public void Close()
         {
             enabled = false;
@@ -86,7 +80,6 @@ namespace OpenSim.ApplicationPlugins.Rest.Inventory
         }
 
         // Properties
-
         internal string MsgId
         {
             get { return Rest.MsgId; }
@@ -96,16 +89,16 @@ namespace OpenSim.ApplicationPlugins.Rest.Inventory
 
         private RequestData Allocate(OSHttpRequest request, OSHttpResponse response, string prefix)
         {
-            return (RequestData) new AssetRequestData(request, response, prefix);
+            return (RequestData)new AssetRequestData(request, response, prefix);
         }
 
         // Asset Handler
-
         private void DoAsset(RequestData rparm)
         {
-            if (!enabled) return;
+            if (!enabled)
+                return;
 
-            AssetRequestData rdata = (AssetRequestData) rparm;
+            AssetRequestData rdata = (AssetRequestData)rparm;
 
             Rest.Log.DebugFormat("{0} REST Asset handler ({1}) ENTRY", MsgId, qPrefix);
 
@@ -122,7 +115,6 @@ namespace OpenSim.ApplicationPlugins.Rest.Inventory
             // would be enforced for all in-bound requests.
             // Instead we look at the headers ourselves and
             // handle authentication directly.
-
             try
             {
                 if (!rdata.IsAuthenticated)
@@ -135,41 +127,38 @@ namespace OpenSim.ApplicationPlugins.Rest.Inventory
                 if (e.statusCode == Rest.HttpStatusCodeNotAuthorized)
                 {
                     Rest.Log.WarnFormat("{0} User not authenticated", MsgId);
-                    Rest.Log.DebugFormat("{0} Authorization header: {1}", MsgId,
-                                         rdata.request.Headers.Get("Authorization"));
+                    Rest.Log.DebugFormat("{0} Authorization header: {1}", MsgId, rdata.request.Headers.Get("Authorization"));
                 }
                 else
                 {
                     Rest.Log.ErrorFormat("{0} User authentication failed", MsgId);
-                    Rest.Log.DebugFormat("{0} Authorization header: {1}", MsgId,
-                                         rdata.request.Headers.Get("Authorization"));
+                    Rest.Log.DebugFormat("{0} Authorization header: {1}", MsgId, rdata.request.Headers.Get("Authorization"));
                 }
+
                 throw (e);
             }
 
             // Remove the prefix and what's left are the parameters. If we don't have
             // the parameters we need, fail the request. Parameters do NOT include
             // any supplied query values.
-
             if (rdata.Parameters.Length > 0)
             {
                 switch (rdata.method)
                 {
-                case "get" :
-                    DoGet(rdata);
-                    break;
-                case "put" :
-                    DoPut(rdata);
-                    break;
-                case "post" :
-                    DoPost(rdata);
-                    break;
-                case "delete" :
-                default :
-                    Rest.Log.WarnFormat("{0} Asset: Method not supported: {1}",
-                                        MsgId, rdata.method);
-                    rdata.Fail(Rest.HttpStatusCodeBadRequest,String.Format("method <{0}> not supported", rdata.method));
-                    break;
+                    case "get":
+                        DoGet(rdata);
+                        break;
+                    case "put":
+                        DoPut(rdata);
+                        break;
+                    case "post":
+                        DoPost(rdata);
+                        break;
+                    case "delete":
+                    default:
+                        Rest.Log.WarnFormat("{0} Asset: Method not supported: {1}", MsgId, rdata.method);
+                        rdata.Fail(Rest.HttpStatusCodeBadRequest, String.Format("method <{0}> not supported", rdata.method));
+                        break;
                 }
             }
             else
@@ -184,10 +173,9 @@ namespace OpenSim.ApplicationPlugins.Rest.Inventory
         #endregion Interface
 
         /// <summary>
-        /// The only parameter we recognize is a UUID.If an asset with this identification is
-        /// found, it's content, base-64 encoded, is returned to the client.
+        ///     The only parameter we recognize is a UUID.If an asset with this identification is
+        ///     found, it's content, base-64 encoded, is returned to the client.
         /// </summary>
-
         private void DoGet(AssetRequestData rdata)
         {
             bool istexture = false;
@@ -205,7 +193,7 @@ namespace OpenSim.ApplicationPlugins.Rest.Inventory
 
                     rdata.initXmlWriter();
 
-                    rdata.writer.WriteStartElement(String.Empty,"Asset",String.Empty);
+                    rdata.writer.WriteStartElement(String.Empty, "Asset", String.Empty);
 
                     rdata.writer.WriteAttributeString("id", asset.ID);
                     rdata.writer.WriteAttributeString("name", asset.Name);
@@ -214,10 +202,9 @@ namespace OpenSim.ApplicationPlugins.Rest.Inventory
                     rdata.writer.WriteAttributeString("local", asset.Local.ToString());
                     rdata.writer.WriteAttributeString("temporary", asset.Temporary.ToString());
 
-                    rdata.writer.WriteBase64(asset.Data,0,asset.Data.Length);
+                    rdata.writer.WriteBase64(asset.Data, 0, asset.Data.Length);
 
                     rdata.writer.WriteFullEndElement();
-
                 }
                 else
                 {
@@ -228,18 +215,17 @@ namespace OpenSim.ApplicationPlugins.Rest.Inventory
 
             rdata.Complete();
             rdata.Respond(String.Format("Asset <{0}> : Normal completion", rdata.method));
-
         }
 
         /// <summary>
-        /// UPDATE existing item, if it exists. URI identifies the item in question.
-        /// The only parameter we recognize is a UUID. The enclosed asset data (base-64 encoded)
-        /// is decoded and stored in the database, identified by the supplied UUID.
+        ///     UPDATE existing item, if it exists. URI identifies the item in question.
+        ///     The only parameter we recognize is a UUID. The enclosed asset data (base-64 encoded)
+        ///     is decoded and stored in the database, identified by the supplied UUID.
         /// </summary>
         private void DoPut(AssetRequestData rdata)
         {
             bool modified = false;
-            bool created  = false;
+            bool created = false;
 
             AssetBase asset = null;
 
@@ -254,32 +240,30 @@ namespace OpenSim.ApplicationPlugins.Rest.Inventory
                 if (!xml.ReadToFollowing("Asset"))
                 {
                     Rest.Log.DebugFormat("{0} Invalid request data: <{1}>", MsgId, rdata.path);
-                    rdata.Fail(Rest.HttpStatusCodeBadRequest,"invalid request data");
+                    rdata.Fail(Rest.HttpStatusCodeBadRequest, "invalid request data");
                 }
 
                 UUID uuid = new UUID(rdata.Parameters[0]);
                 asset = Rest.AssetServices.GetAsset(uuid, false);
 
                 modified = (asset != null);
-                created  = !modified;
+                created = !modified;
 
-                asset             = new AssetBase();
-                asset.FullID      = uuid;
-                asset.Name        = xml.GetAttribute("name");
+                asset = new AssetBase();
+                asset.FullID = uuid;
+                asset.Name = xml.GetAttribute("name");
                 asset.Description = xml.GetAttribute("desc");
-                asset.Type        = SByte.Parse(xml.GetAttribute("type"));
-                asset.Local       = Int32.Parse(xml.GetAttribute("local")) != 0;
-                asset.Temporary   = Int32.Parse(xml.GetAttribute("temporary")) != 0;
-                asset.Data        = Convert.FromBase64String(xml.ReadElementContentAsString("Asset", ""));
+                asset.Type = SByte.Parse(xml.GetAttribute("type"));
+                asset.Local = Int32.Parse(xml.GetAttribute("local")) != 0;
+                asset.Temporary = Int32.Parse(xml.GetAttribute("temporary")) != 0;
+                asset.Data = Convert.FromBase64String(xml.ReadElementContentAsString("Asset", ""));
 
                 if (asset.ID != rdata.Parameters[0])
                 {
-                    Rest.Log.WarnFormat("{0} URI and payload disagree on UUID U:{1} vs P:{2}",
-                                        MsgId, rdata.Parameters[0], asset.ID);
+                    Rest.Log.WarnFormat("{0} URI and payload disagree on UUID U:{1} vs P:{2}", MsgId, rdata.Parameters[0], asset.ID);
                 }
 
                 Rest.AssetServices.AddAsset(asset);
-
             }
             else
             {
@@ -306,19 +290,16 @@ namespace OpenSim.ApplicationPlugins.Rest.Inventory
             }
 
             rdata.Respond(String.Format("Asset {0} : Normal completion", rdata.method));
-
         }
 
         /// <summary>
-        /// CREATE new item, replace if it exists. URI identifies the context for the item in question.
-        /// No parameters are required for POST, just thepayload.
+        ///     CREATE new item, replace if it exists. URI identifies the context for the item in question.
+        ///     No parameters are required for POST, just thepayload.
         /// </summary>
-
         private void DoPost(AssetRequestData rdata)
         {
-
             bool modified = false;
-            bool created  = false;
+            bool created = false;
 
             Rest.Log.DebugFormat("{0} REST Asset handler, Method = <{1}> ENTRY", MsgId, rdata.method);
 
@@ -334,23 +315,23 @@ namespace OpenSim.ApplicationPlugins.Rest.Inventory
             if (!xml.ReadToFollowing("Asset"))
             {
                 Rest.Log.DebugFormat("{0} Invalid request data: <{1}>", MsgId, rdata.path);
-                rdata.Fail(Rest.HttpStatusCodeBadRequest,"invalid request data");
+                rdata.Fail(Rest.HttpStatusCodeBadRequest, "invalid request data");
             }
 
             UUID uuid = new UUID(xml.GetAttribute("id"));
             AssetBase asset = Rest.AssetServices.GetAsset(uuid, false);
 
             modified = (asset != null);
-            created  = !modified;
+            created = !modified;
 
-            asset             = new AssetBase();
-            asset.FullID      = uuid;
-            asset.Name        = xml.GetAttribute("name");
+            asset = new AssetBase();
+            asset.FullID = uuid;
+            asset.Name = xml.GetAttribute("name");
             asset.Description = xml.GetAttribute("desc");
-            asset.Type        = SByte.Parse(xml.GetAttribute("type"));
-            asset.Local       = Int32.Parse(xml.GetAttribute("local")) != 0;
-            asset.Temporary   = Int32.Parse(xml.GetAttribute("temporary")) != 0;
-            asset.Data        = Convert.FromBase64String(xml.ReadElementContentAsString("Asset", ""));
+            asset.Type = SByte.Parse(xml.GetAttribute("type"));
+            asset.Local = Int32.Parse(xml.GetAttribute("local")) != 0;
+            asset.Temporary = Int32.Parse(xml.GetAttribute("temporary")) != 0;
+            asset.Data = Convert.FromBase64String(xml.ReadElementContentAsString("Asset", ""));
 
             Rest.AssetServices.AddAsset(asset);
 
@@ -373,17 +354,14 @@ namespace OpenSim.ApplicationPlugins.Rest.Inventory
             }
 
             rdata.Respond(String.Format("Asset {0} : Normal completion", rdata.method));
-
         }
 
         /// <summary>
-        /// Asset processing has no special data area requirements.
+        ///     Asset processing has no special data area requirements.
         /// </summary>
-
         internal class AssetRequestData : RequestData
         {
-            internal AssetRequestData(OSHttpRequest request, OSHttpResponse response, string prefix)
-                : base(request, response, prefix)
+            internal AssetRequestData(OSHttpRequest request, OSHttpResponse response, string prefix) : base(request, response, prefix)
             {
             }
         }

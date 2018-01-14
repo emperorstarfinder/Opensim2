@@ -41,10 +41,9 @@ namespace OpenSim.ApplicationPlugins.Rest.Inventory.Tests
         private static readonly int PARM_MOVE_Y      = 4;
         private static readonly int PARM_MOVE_Z      = 5;
 
-        private bool    enabled = false;
+        private bool enabled = false;
 
         // No constructor code is required.
-
         public Remote()
         {
             Rest.Log.InfoFormat("{0} Remote services constructor", MsgId);
@@ -52,7 +51,6 @@ namespace OpenSim.ApplicationPlugins.Rest.Inventory.Tests
 
         // Post-construction, pre-enabled initialization opportunity
         // Not currently exploited.
-
         public void Initialize()
         {
             enabled = true;
@@ -62,7 +60,6 @@ namespace OpenSim.ApplicationPlugins.Rest.Inventory.Tests
         // Called by the plug-in to halt REST processing. Local processing is
         // disabled, and control blocks until all current processing has
         // completed. No new processing will be started
-
         public void Close()
         {
             enabled = false;
@@ -70,7 +67,6 @@ namespace OpenSim.ApplicationPlugins.Rest.Inventory.Tests
         }
 
         // Properties
-
         internal string MsgId
         {
             get { return Rest.MsgId; }
@@ -80,13 +76,12 @@ namespace OpenSim.ApplicationPlugins.Rest.Inventory.Tests
         // Key information of interest here is the Parameters array, each
         // entry represents an element of the URI, with element zero being
         // the
-
         public void Execute(RequestData rdata)
         {
-            if (!enabled) return;
+            if (!enabled)
+                return;
 
             // If we can't relate to what's there, leave it for others.
-
             if (rdata.Parameters.Length == 0 || rdata.Parameters[PARM_TESTID] != "remote")
                 return;
 
@@ -95,7 +90,6 @@ namespace OpenSim.ApplicationPlugins.Rest.Inventory.Tests
             // Remove the prefix and what's left are the parameters. If we don't have
             // the parameters we need, fail the request. Parameters do NOT include
             // any supplied query values.
-
             if (rdata.Parameters.Length > 1)
             {
                 switch (rdata.Parameters[PARM_COMMAND].ToLower())
@@ -131,22 +125,18 @@ namespace OpenSim.ApplicationPlugins.Rest.Inventory.Tests
 
                 if (names.Length != 2)
                 {
-                    rdata.Fail(Rest.HttpStatusCodeBadRequest,
-                        String.Format("invalid avatar name: <{0}>",rdata.Parameters[PARM_MOVE_AVATAR]));
+                    rdata.Fail(Rest.HttpStatusCodeBadRequest, String.Format("invalid avatar name: <{0}>",rdata.Parameters[PARM_MOVE_AVATAR]));
                 }
 
-                Rest.Log.WarnFormat("{0} '{1}' command received for {2} {3}",
-                            MsgId, rdata.Parameters[0], names[0], names[1]);
+                Rest.Log.WarnFormat("{0} '{1}' command received for {2} {3}", MsgId, rdata.Parameters[0], names[0], names[1]);
 
                 // The first parameter should be an avatar name, look for the
                 // avatar in the known regions first.
-
                 foreach (Scene cs in Rest.main.SceneManager.Scenes)
                 {
                      foreach (ScenePresence presence in cs.GetAvatars())
                     {
-                        if (presence.Firstname == names[0] &&
-                           presence.Lastname  == names[1])
+                        if (presence.Firstname == names[0] && presence.Lastname  == names[1])
                         {
                            scene = cs;
                            avatar = presence;
@@ -157,8 +147,7 @@ namespace OpenSim.ApplicationPlugins.Rest.Inventory.Tests
 
                 if (avatar != null)
                 {
-                    Rest.Log.DebugFormat("{0} Move : Avatar {1} located in region {2}",
-                                MsgId, rdata.Parameters[PARM_MOVE_AVATAR], scene.RegionInfo.RegionName);
+                    Rest.Log.DebugFormat("{0} Move : Avatar {1} located in region {2}", MsgId, rdata.Parameters[PARM_MOVE_AVATAR], scene.RegionInfo.RegionName);
 
                     try
                     {
@@ -170,20 +159,16 @@ namespace OpenSim.ApplicationPlugins.Rest.Inventory.Tests
                     }
                     catch (Exception e)
                     {
-                        rdata.Fail(Rest.HttpStatusCodeBadRequest,
-                                   String.Format("invalid parameters: {0}", e.Message));
+                        rdata.Fail(Rest.HttpStatusCodeBadRequest, String.Format("invalid parameters: {0}", e.Message));
                     }
-
                 }
                 else
                 {
-                    rdata.Fail(Rest.HttpStatusCodeBadRequest,
-                            String.Format("avatar {0} not present", rdata.Parameters[PARM_MOVE_AVATAR]));
+                    rdata.Fail(Rest.HttpStatusCodeBadRequest, String.Format("avatar {0} not present", rdata.Parameters[PARM_MOVE_AVATAR]));
                 }
 
                 rdata.Complete();
                 rdata.Respond("OK");
-
             }
             else
             {

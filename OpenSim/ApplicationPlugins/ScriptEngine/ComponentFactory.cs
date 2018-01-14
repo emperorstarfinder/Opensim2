@@ -50,17 +50,16 @@ namespace OpenSim.ApplicationPlugins.ScriptEngine
         }
 
         /// <summary>
-        /// Load components from directory
+        ///     Load components from directory
         /// </summary>
         /// <param name="directory"></param>
         internal static void Load(string directory, string filter)
         {
             // We may want to change how this functions as currently it required unique class names for each component
-
             foreach (string file in Directory.GetFiles(directory, filter))
             {
-                //m_log.DebugFormat("[ScriptEngine]: Loading: [{0}].", file);
                 Assembly componentAssembly = null;
+
                 try
                 {
                     componentAssembly = Assembly.LoadFrom(file);
@@ -69,7 +68,7 @@ namespace OpenSim.ApplicationPlugins.ScriptEngine
                 {
                     m_log.ErrorFormat("[{0}] Error loading: \"{1}\".", Name, file);
                 }
-                
+
                 if (componentAssembly != null)
                 {
                     try
@@ -77,24 +76,24 @@ namespace OpenSim.ApplicationPlugins.ScriptEngine
                         // Go through all types in the assembly
                         foreach (Type componentType in componentAssembly.GetTypes())
                         {
-                            if (componentType.IsPublic
-                                && !componentType.IsAbstract)
+                            if (componentType.IsPublic && !componentType.IsAbstract)
                             {
-                                //if (componentType.IsSubclassOf(typeof(ComponentBase)))
                                 if (componentType.GetInterface(nameIScriptEngineComponent) != null)
                                 {
                                     // We have found an type which is derived from ProdiverBase, add it to provider list
                                     m_log.InfoFormat("[{0}] Adding component: {1}", Name, componentType.Name);
+
                                     lock (providers)
                                     {
                                         providers.Add(componentType.Name, componentType);
                                     }
                                 }
-                                //if (componentType.IsSubclassOf(typeof(ScriptEngineBase)))
+
                                 if (componentType.GetInterface(nameIScriptEngine) != null)
                                 {
                                     // We have found an type which is derived from RegionScriptEngineBase, add it to engine list
                                     m_log.InfoFormat("[{0}] Adding script engine: {1}", Name, componentType.Name);
+
                                     lock (scriptEngines)
                                     {
                                         scriptEngines.Add(componentType.Name, componentType);
@@ -108,6 +107,7 @@ namespace OpenSim.ApplicationPlugins.ScriptEngine
                     {
                         m_log.ErrorFormat("[{0}] Could not load component \"{1}\": {2}", Name, componentAssembly.FullName, re.ToString());
                         int c = 0;
+
                         foreach (Exception e in re.LoaderExceptions)
                         {
                             c++;
@@ -123,13 +123,14 @@ namespace OpenSim.ApplicationPlugins.ScriptEngine
             lock (providers)
             {
                 if (!providers.ContainsKey(name))
-                throw new Exception("ScriptEngine requested component named \"" + name +
-                                    "\" that does not exist.");
+                    throw new Exception("ScriptEngine requested component named \"" + name + "\" that does not exist.");
+
                 return Activator.CreateInstance(providers[name], args) as IScriptEngineComponent;
             }
         }
 
         private readonly static string nameIScriptEngineRegionComponent = typeof(IScriptEngineRegionComponent).Name; // keep interface name in managed code
+
         public static IScriptEngineComponent GetComponentInstance(RegionInfoStructure info, string name, params Object[] args)
         {
             IScriptEngineComponent c = GetComponentInstance(name, args);
@@ -140,6 +141,5 @@ namespace OpenSim.ApplicationPlugins.ScriptEngine
 
             return c;
         }
-
     }
 }

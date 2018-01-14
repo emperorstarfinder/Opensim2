@@ -28,11 +28,11 @@
 namespace OpenSim.ApplicationPlugins.Rest.Inventory
 {
     /// <summary>
-    /// This interface represents the boundary between the general purpose
-    /// REST plugin handling, and the functionally specific handlers. The
-    /// handler knows only to initialize and terminate all such handlers 
-    /// that it finds. Implementing this interface identifies the class as
-    /// a REST handler implementation.
+    ///     This interface represents the boundary between the general purpose
+    ///     REST plugin handling, and the functionally specific handlers. The
+    ///     handler knows only to initialize and terminate all such handlers 
+    ///     that it finds. Implementing this interface identifies the class as
+    ///     a REST handler implementation.
     /// </summary>
 
     internal interface IRest

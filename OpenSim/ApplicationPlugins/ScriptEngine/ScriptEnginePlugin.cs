@@ -30,14 +30,12 @@ using log4net;
 namespace OpenSim.ApplicationPlugins.ScriptEngine
 {
     /// <summary>
-    /// Loads all Script Engine Components
+    ///     Loads all Script Engine Components
     /// </summary>
     public class ScriptEnginePlugin : IApplicationPlugin
     {
         internal static readonly ILog m_log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
         internal OpenSimBase m_OpenSim;
-
-
 
         public ScriptEnginePlugin()
         {
@@ -57,20 +55,18 @@ namespace OpenSim.ApplicationPlugins.ScriptEngine
 
         public void Initialise(OpenSimBase openSim)
         {
-
             // Our objective: Load component .dll's
             m_OpenSim = openSim;
-            //m_OpenSim.Shutdown();
         }
 
         public void PostInitialise()
         {
         }
 
-
         #region IApplicationPlugin stuff
+
         /// <summary>
-        /// Returns the plugin version
+        ///     Returns the plugin version
         /// </summary>
         /// <returns>Plugin version in MAJOR.MINOR.REVISION.BUILD format</returns>
         public string Version
@@ -79,7 +75,7 @@ namespace OpenSim.ApplicationPlugins.ScriptEngine
         }
 
         /// <summary>
-        /// Returns the plugin name
+        ///     Returns the plugin name
         /// </summary>
         /// <returns>Plugin name, eg MySQL User Provider</returns>
         public string Name
@@ -88,19 +84,18 @@ namespace OpenSim.ApplicationPlugins.ScriptEngine
         }
 
         /// <summary>
-        /// Default-initialises the plugin
+        ///     Default-initialises the plugin
         /// </summary>
         public void Initialise() { }
 
-        ///<summary>
-        ///Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
-        ///</summary>
+        /// <summary>
+        ///     Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// </summary>
         ///<filterpriority>2</filterpriority>
         public void Dispose()
         {
-            //throw new NotImplementedException();
         }
-        #endregion
 
+        #endregion
     }
 }

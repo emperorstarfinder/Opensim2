@@ -39,24 +39,16 @@ namespace OpenSim.ApplicationPlugins.Rest.Regions
     public partial class RestRegionPlugin : RestPlugin
     {
         #region GET methods
-        public string GetRegionInfoHandler(string request, string path, string param,
-                                           OSHttpRequest httpRequest, OSHttpResponse httpResponse)
-        {
-            // foreach (string h in httpRequest.Headers.AllKeys)
-            //     foreach (string v in httpRequest.Headers.GetValues(h))
-            //         m_log.DebugFormat("{0} IsGod: {1} -> {2}", MsgID, h, v);
 
+        public string GetRegionInfoHandler(string request, string path, string param, OSHttpRequest httpRequest, OSHttpResponse httpResponse)
+        {
             MsgID = RequestID;
             m_log.DebugFormat("{0} GET path {1} param {2}", MsgID, path, param);
 
             try
             {
                 // param empty: regions list
-                // if (String.IsNullOrEmpty(param)) 
                 return GetRegionInfoHandlerRegions(httpResponse);
-                    
-                // // param not empty: specific region
-                // return GetRegionInfoHandlerRegion(httpResponse, param);
             }
             catch (Exception e)
             {
@@ -76,6 +68,7 @@ namespace OpenSim.ApplicationPlugins.Rest.Regions
 
                 // regions info: max number of regions
                 XmlWriter.WriteStartAttribute(String.Empty, "max", String.Empty);
+
                 if (App.ConfigSource.Source.Configs["RemoteAdmin"] != null)
                 {
                     XmlWriter.WriteValue(App.ConfigSource.Source.Configs["RemoteAdmin"].GetInt("region_limit", -1));
@@ -84,6 +77,7 @@ namespace OpenSim.ApplicationPlugins.Rest.Regions
                 {
                     XmlWriter.WriteValue(-1);
                 }
+
                 XmlWriter.WriteEndAttribute();
                 
                 // regions info: region
@@ -135,10 +129,12 @@ namespace OpenSim.ApplicationPlugins.Rest.Regions
                     XmlWriter.WriteEndElement();
                 }
             }
+
             XmlWriter.WriteEndElement();
 
             return XmlWriterResult;
         }
+
         #endregion GET methods
     }
 }

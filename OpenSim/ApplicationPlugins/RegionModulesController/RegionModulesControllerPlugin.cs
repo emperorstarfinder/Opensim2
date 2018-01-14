@@ -49,17 +49,19 @@ namespace OpenSim.ApplicationPlugins.RegionModulesController
 
         private List<ISharedRegionModule> m_sharedInstances = new List<ISharedRegionModule>();
 
-#region IApplicationPlugin implementation
+        #region IApplicationPlugin implementation
 
-        public void Initialise (OpenSimBase openSim)
+        public void Initialise(OpenSimBase openSim)
         {
-            m_log.DebugFormat("[REGIONMODULES]: Initializing...");
+            m_log.DebugFormat("[Region Modules]: Initializing...");
             m_openSim = openSim;
             openSim.ApplicationRegistry.RegisterInterface<IRegionModulesController>(this);
 
             string id = AddinManager.CurrentAddin.Id;
             int pos = id.LastIndexOf(".");
-            if (pos == -1) m_name = id;
+
+            if (pos == -1)
+                m_name = id;
             else m_name = id.Substring(pos + 1);
 
             //ExtensionNodeList list = AddinManager.GetExtensionNodes("/OpenSim/RegionModules");
@@ -69,16 +71,16 @@ namespace OpenSim.ApplicationPlugins.RegionModulesController
                 // TODO why does node.Type.isSubclassOf(typeof(ISharedRegionModule)) not work?
                 if (node.Type.GetInterface(typeof(ISharedRegionModule).ToString()) != null)
                 {
-                    m_log.DebugFormat("[REGIONMODULES]: Found shared region module {0}, class {1}", node.Id, node.Type);
+                    m_log.DebugFormat("[Region Modules]: Found shared region module {0}, class {1}", node.Id, node.Type);
                     m_sharedModules.Add(node.Type);
                 }
                 else if (node.Type.GetInterface(typeof(INonSharedRegionModule).ToString()) != null)
                 {
-                    m_log.DebugFormat("[REGIONMODULES]: Found non-shared region module {0}, class {1}", node.Id, node.Type);
+                    m_log.DebugFormat("[Region Modules]: Found non-shared region module {0}, class {1}", node.Id, node.Type);
                     m_nonSharedModules.Add(node.Type);
                 }
                 else
-                    m_log.DebugFormat("[REGIONMODULES]: Found unknown type of module {0}, class {1}", node.Id, node.Type);
+                    m_log.DebugFormat("[Region Modules]: Found unknown type of module {0}, class {1}", node.Id, node.Type);
             }
 
             // now we've got all the region-module classes loaded, create one instance of every ISharedRegionModule,
@@ -97,24 +99,24 @@ namespace OpenSim.ApplicationPlugins.RegionModulesController
             }
         }
 
-        public void PostInitialise ()
+        public void PostInitialise()
         {
         }
 
-#endregion
+        #endregion
 
-#region IPlugin implementation
+        #region IPlugin implementation
 
-        public void Initialise ()
+        public void Initialise()
         {
             throw new System.NotImplementedException();
         }
 
-#endregion
+        #endregion
 
-#region IDisposable implementation
+        #region IDisposable implementation
 
-        public void Dispose ()
+        public void Dispose()
         {
             // we expect that all regions have been removed already
             while (m_sharedInstances.Count > 0)
@@ -122,47 +124,40 @@ namespace OpenSim.ApplicationPlugins.RegionModulesController
                 m_sharedInstances[0].Close();
                 m_sharedInstances.RemoveAt(0);
             }
+
             m_sharedModules.Clear();
             m_nonSharedModules.Clear();
         }
 
-#endregion
-
+        #endregion
 
         public string Version
         {
-            get
-            {
-                return AddinManager.CurrentAddin.Version;
-            }
+            get { return AddinManager.CurrentAddin.Version; }
         }
 
         public string Name
         {
-            get
-            {
-                return m_name;
-            }
+            get { return m_name; }
         }
 
-#region IRegionModulesController implementation
+        #region IRegionModulesController implementation
 
-        public void AddRegionToModules (Scene scene)
+        public void AddRegionToModules(Scene scene)
         {
             foreach (ISharedRegionModule module in m_sharedInstances)
             {
-                m_log.DebugFormat("[REGIONMODULE]: Adding scene {0} to shared module {1}",
-                                  scene.RegionInfo.RegionName, module.Name);
+                m_log.DebugFormat("[Region Module]: Adding scene {0} to shared module {1}", scene.RegionInfo.RegionName, module.Name);
                 module.AddRegion(scene);
                 scene.AddRegionModule(module.Name, module);
             }
 
             List<INonSharedRegionModule> list = new List<INonSharedRegionModule>();
+
             foreach (Type type in m_nonSharedModules)
             {
                 INonSharedRegionModule module = (INonSharedRegionModule)Activator.CreateInstance(type);
-                m_log.DebugFormat("[REGIONMODULE]: Adding scene {0} to non-shared module {1}",
-                                  scene.RegionInfo.RegionName, module.Name);
+                m_log.DebugFormat("[Region Module]: Adding scene {0} to non-shared module {1}", scene.RegionInfo.RegionName, module.Name);
                 module.Initialise(m_openSim.ConfigSource.Source);
                 list.Add(module);
             }
@@ -173,16 +168,17 @@ namespace OpenSim.ApplicationPlugins.RegionModulesController
                 scene.AddRegionModule(module.Name, module);
             }
 
-            // This is needed for all module types. Modules will register
-            // Interfaces with scene in AddScene, and will also need a means
-            // to access interfaces registered by other modules. Without
-            // this extra method, a module attempting to use another modules's
-            // interface would be successful only depending on load order,
-            // which can't be depended upon, or modules would need to resort
-            // to ugly kludges to attempt to request interfaces when needed
-            // and unneccessary caching logic repeated in all modules.
-            // The extra function stub is just that much cleaner
-            //
+            /// <summary>
+            ///     This is needed for all module types. Modules will register
+            ///     Interfaces with scene in AddScene, and will also need a means
+            ///     to access interfaces registered by other modules. Without
+            ///     this extra method, a module attempting to use another modules's
+            ///     interface would be successful only depending on load order,
+            ///     which can't be depended upon, or modules would need to resort
+            ///     to ugly kludges to attempt to request interfaces when needed
+            ///     and unneccessary caching logic repeated in all modules.
+            ///     The extra function stub is just that much cleaner
+            /// </summary>
             foreach (ISharedRegionModule module in m_sharedInstances)
             {
                 module.RegionLoaded(scene);
@@ -194,23 +190,25 @@ namespace OpenSim.ApplicationPlugins.RegionModulesController
             }
         }
 
-        public void RemoveRegionFromModules (Scene scene)
+        public void RemoveRegionFromModules(Scene scene)
         {
             foreach (IRegionModuleBase module in scene.RegionModules.Values)
             {
-                m_log.DebugFormat("[REGIONMODULE]: Removing scene {0} from module {1}",
-                                  scene.RegionInfo.RegionName, module.Name);
+                m_log.DebugFormat("[Region Module]: Removing scene {0} from module {1}", scene.RegionInfo.RegionName, module.Name);
+
                 module.RemoveRegion(scene);
+
                 if (module is INonSharedRegionModule)
                 {
                     // as we were the only user, this instance has to die
                     module.Close();
                 }
             }
+
             scene.RegionModules.Clear();
         }
 
-#endregion
+        #endregion
 
     }
 }
