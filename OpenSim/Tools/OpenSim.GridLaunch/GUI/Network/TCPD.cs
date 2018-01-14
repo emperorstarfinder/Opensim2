@@ -24,6 +24,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -46,7 +47,6 @@ namespace OpenSim.GridLaunch.GUI.Network
         private Thread listenThread;
         private Thread clientThread;
 
-
         private List<string> Apps = new List<string>();
         internal string currentApp = "";
         private bool quitTyped = false;
@@ -57,22 +57,26 @@ namespace OpenSim.GridLaunch.GUI.Network
             Program.AppRemoved += Program_AppRemoved;
             Program.AppConsoleOutput += Program_AppConsoleOutput;
             Program.Command.CommandLine += Command_CommandLine;
-
         }
 
         ~TCPD()
         {
             Dispose();
         }
+
         private bool isDisposed = false;
-        ///<summary>
-        ///Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
-        ///</summary>
-        ///<filterpriority>2</filterpriority>
+     
+        /// <summary>
+        ///     Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// </summary>
+        /// <filterpriority>2</filterpriority>
         public void Dispose()
         {
             if (isDisposed)
+            {
                 return;
+            }
+
             isDisposed = true;
             tcpd_Stop();
         }
@@ -89,13 +93,15 @@ namespace OpenSim.GridLaunch.GUI.Network
             tcpd_Stop();
         }
 
-
         #region GridLaunch Events
+
         private void Command_CommandLine(string application, string command, string arguments)
         {
             // If command is a number then someone might be trying to change console: /1, /2, etc.
             int currentAppNum = 0;
+
             if (int.TryParse(command, out currentAppNum))
+            {
                 if (currentAppNum <= Apps.Count)
                 {
                     currentApp = Apps[currentAppNum - 1];
@@ -103,35 +109,44 @@ namespace OpenSim.GridLaunch.GUI.Network
                 }
                 else
                     TCPWriteToAll("Unable to change to app number: " + currentAppNum + Environment.NewLine);
+            }
 
             // Has user typed quit?
             if (command.ToLower() == "quit")
+            {
                 quitTyped = true;
+            }
 
             // Has user typed /list?
             if (command.ToLower() == "list")
             {
                 TCPWriteToAll("/0    Log console");
+
                 for (int i = 1; i <= Apps.Count; i++)
                 {
                     TCPWriteToAll(string.Format("/{0}    {1}", i, Apps[i - 1]));
                 }
             }
-
         }
 
         void Program_AppCreated(string App)
         {
             TCPWriteToAll("Started: " + App);
+
             if (!Apps.Contains(App))
+            {
                 Apps.Add(App);
+            }
         }
 
         void Program_AppRemoved(string App)
         {
             TCPWriteToAll("Stopped: " + App);
+
             if (Apps.Contains(App))
+            {
                 Apps.Remove(App);
+            }
         }
         
         private void Program_AppConsoleOutput(string App, string Text)
@@ -152,24 +167,23 @@ namespace OpenSim.GridLaunch.GUI.Network
             {
                 Thread.Sleep(500);
             }
-
-            //clientThread = new Thread(new ThreadStart(ProcessClients));
-            //clientThread.Name = "TCPClientThread";
-            //clientThread.IsBackground = true;
-            ////clientThread.Start();
-
         }
+
         private void tcpd_Stop()
         {
             StopThread(listenThread);
             StopThread(clientThread);
         }
+
         private void ListenForClients()
         {
             int Port = 0;
             int.TryParse(Program.Settings["TCPPort"], out Port);
+
             if (Port < 1)
+            {
                 Port = defaultPort;
+            }
 
             m_log.Info("Starting TCP Server on port " + Port);
             this.tcpListener = new TcpListener(IPAddress.Any, Port);
@@ -186,6 +200,7 @@ namespace OpenSim.GridLaunch.GUI.Network
                 {
                     Clients.Add(client);
                 }
+
                 System.Threading.Thread.Sleep(500);
             }
         }
@@ -198,7 +213,10 @@ namespace OpenSim.GridLaunch.GUI.Network
                 try
                 {
                     if (t.IsAlive)
+                    {
                         t.Abort();
+                    }
+
                     t.Join(2000);
                     t = null;
                 }
@@ -213,6 +231,7 @@ namespace OpenSim.GridLaunch.GUI.Network
         {
             TCPWriteToAll(text);
         }
+
         private void TCPWriteToAll(string text)
         {
             foreach (Client c in new ArrayList(Clients))
@@ -226,6 +245,5 @@ namespace OpenSim.GridLaunch.GUI.Network
                 }
             }
         }
-
     }
 }

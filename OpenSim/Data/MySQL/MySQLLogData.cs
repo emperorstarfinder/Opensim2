@@ -33,26 +33,26 @@ using OpenSim.Framework;
 namespace OpenSim.Data.MySQL
 {
     /// <summary>
-    /// An interface to the log database for MySQL
+    ///     An interface to the log database for MySQL
     /// </summary>
     internal class MySQLLogData : ILogDataPlugin
     {
         private static readonly ILog m_log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         /// <summary>
-        /// The database manager
+        ///     The database manager
         /// </summary>
         public MySQLManager database;
 
         public void Initialise()
         {
-            m_log.Info("[MySQLLogData]: " + Name + " cannot be default-initialized!");
+            m_log.Info("[MySQL Log Data]: " + Name + " cannot be default-initialized!");
             throw new PluginNotInitialisedException (Name);
         }
 
         /// <summary>
-        /// Artificial constructor called when the plugin is loaded
-        /// Uses the obsolete mysql_connection.ini if connect string is empty.
+        ///     Artificial constructor called when the plugin is loaded
+        ///     Uses the obsolete mysql_connection.ini if connect string is empty.
         /// </summary>
         /// <param name="connect">connect string</param>
         public void Initialise(string connect)
@@ -73,8 +73,7 @@ namespace OpenSim.Data.MySQL
                 string settingPooling = GridDataMySqlFile.ParseFileReadValue("pooling");
                 string settingPort = GridDataMySqlFile.ParseFileReadValue("port");
 
-                database = new MySQLManager(settingHostname, settingDatabase, settingUsername, settingPassword,
-                                            settingPooling, settingPort);
+                database = new MySQLManager(settingHostname, settingDatabase, settingUsername, settingPassword, settingPooling, settingPort);
             }
 
             // This actually does the roll forward assembly stuff
@@ -86,10 +85,10 @@ namespace OpenSim.Data.MySQL
             TestTables(m);
 
             m.Update();
-
         }
 
-        /// <summary></summary>
+        /// <summary>
+        /// </summary>
         /// <param name="m"></param>
         private void TestTables(Migration m)
         {
@@ -111,7 +110,7 @@ namespace OpenSim.Data.MySQL
         }
 
         /// <summary>
-        /// Saves a log item to the database
+        ///     Saves a log item to the database
         /// </summary>
         /// <param name="serverDaemon">The daemon triggering the event</param>
         /// <param name="target">The target of the action (region / agent UUID, etc)</param>
@@ -119,8 +118,7 @@ namespace OpenSim.Data.MySQL
         /// <param name="arguments">The arguments passed to the method</param>
         /// <param name="priority">How critical is this?</param>
         /// <param name="logMessage">The message to log</param>
-        public void saveLog(string serverDaemon, string target, string methodCall, string arguments, int priority,
-                            string logMessage)
+        public void saveLog(string serverDaemon, string target, string methodCall, string arguments, int priority, string logMessage)
         {
             try
             {
@@ -133,7 +131,7 @@ namespace OpenSim.Data.MySQL
         }
 
         /// <summary>
-        /// Returns the name of this DB provider
+        ///     Returns the name of this DB provider
         /// </summary>
         /// <returns>A string containing the DB provider name</returns>
         public string Name
@@ -142,7 +140,7 @@ namespace OpenSim.Data.MySQL
         }
 
         /// <summary>
-        /// Closes the database provider
+        ///     Closes the database provider
         /// </summary>
         /// <remarks>do nothing</remarks>
         public void Dispose()
@@ -151,10 +149,10 @@ namespace OpenSim.Data.MySQL
         }
 
         /// <summary>
-        /// Returns the version of this DB provider
+        ///     Returns the version of this DB provider
         /// </summary>
         /// <returns>A string containing the provider version</returns>
-        public string Version
+        public static string Version
         {
             get { return "0.1"; }
         }
