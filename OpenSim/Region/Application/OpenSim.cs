@@ -1,29 +1,29 @@
-/*
- * Copyright (c) Contributors, http://opensimulator.org/
- * See CONTRIBUTORS.TXT for a full list of copyright holders.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *     * Redistributions of source code must retain the above copyright
- *       notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above copyright
- *       notice, this list of conditions and the following disclaimer in the
- *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the OpenSim Project nor the
- *       names of its contributors may be used to endorse or promote products
- *       derived from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE DEVELOPERS ``AS IS'' AND ANY
- * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE CONTRIBUTORS BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+/// <license>
+///     Copyright (c) Contributors, http://opensimulator.org/
+///     See CONTRIBUTORS.TXT for a full list of copyright holders.
+/// 
+///     Redistribution and use in source and binary forms, with or without
+///     modification, are permitted provided that the following conditions are met:
+///         * Redistributions of source code must retain the above copyright
+///         notice, this list of conditions and the following disclaimer.
+///         * Redistributions in binary form must reproduce the above copyright
+///         notice, this list of conditions and the following disclaimer in the
+///         documentation and/or other materials provided with the distribution.
+///         * Neither the name of the OpenSim Project nor the
+///         names of its contributors may be used to endorse or promote products
+///         derived from this software without specific prior written permission.
+/// 
+///     THIS SOFTWARE IS PROVIDED BY THE DEVELOPERS ``AS IS'' AND ANY
+///     EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+///     WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+///     DISCLAIMED. IN NO EVENT SHALL THE CONTRIBUTORS BE LIABLE FOR ANY
+///     DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+///     (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+///     LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+///     ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+///     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+///     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+/// </license>
 
 using System;
 using System.Collections;
@@ -43,7 +43,7 @@ using OpenSim.Region.Framework.Scenes;
 namespace OpenSim
 {
     /// <summary>
-    /// Interactive OpenSim region server
+    ///     Interactive OpenSim region server
     /// </summary>
     public class OpenSim : OpenSimBase
     {
@@ -74,40 +74,44 @@ namespace OpenSim
                 m_gui = startupConfig.GetBoolean("gui", false);
 
                 m_timedScript = startupConfig.GetString("timer_Script", "disabled");
+
                 if (m_logFileAppender != null)
                 {
                     if (m_logFileAppender is log4net.Appender.FileAppender)
                     {
-                        log4net.Appender.FileAppender appender =
-                                (log4net.Appender.FileAppender)m_logFileAppender;
+                        log4net.Appender.FileAppender appender = (log4net.Appender.FileAppender)m_logFileAppender;
                         string fileName = startupConfig.GetString("LogFile", String.Empty);
+
                         if (fileName != String.Empty)
+                        {
                             appender.File = fileName;
-                        m_log.InfoFormat("[LOGGING] Logging started to file {0}", appender.File);
+                        }
+
+                        m_log.InfoFormat("[Logging]: Logging started to file {0}", appender.File);
                     }
                 }
             }
         }
 
         /// <summary>
-        /// Performs initialisation of the scene, such as loading configuration from disk.
+        ///     Performs initialisation of the scene, such as loading configuration from disk.
         /// </summary>
         protected override void StartupSpecific()
         {
             m_log.Info("====================================================================");
-            m_log.Info("========================= STARTING OPENSIM =========================");
+            m_log.Info("====================== STARTING OpenSimulator ======================");
             m_log.Info("====================================================================");
-            m_log.InfoFormat("[OPENSIM MAIN]: Running in {0} mode",
-                             (ConfigurationSettings.Standalone ? "sandbox" : "grid"));
-            //m_log.InfoFormat("[OPENSIM MAIN]: GC Is Server GC: {0}", GCSettings.IsServerGC.ToString());
-            // http://msdn.microsoft.com/en-us/library/bb384202.aspx
-            //GCSettings.LatencyMode = GCLatencyMode.Batch;
-            //m_log.InfoFormat("[OPENSIM MAIN]: GC Latency Mode: {0}", GCSettings.LatencyMode.ToString());
+            m_log.InfoFormat("[OpenSim Main]: Running in {0} mode", (ConfigurationSettings.Standalone ? "sandbox" : "grid"));
 
             if (m_gui) // Driven by external GUI
+            {
                 m_console = new CommandConsole("Region");
+            }
             else
+            {
                 m_console = new LocalConsole("Region");
+            }
+
             MainConsole.Instance = m_console;
 
             RegisterConsoleCommands();
@@ -117,7 +121,7 @@ namespace OpenSim
             //Run Startup Commands
             if (String.IsNullOrEmpty(m_startupCommandsFile))
             {
-                m_log.Info("[STARTUP]: No startup command script specified. Moving on...");
+                m_log.Info("[Startup]: No startup command script specified. Moving on...");
             }
             else
             {
@@ -137,10 +141,13 @@ namespace OpenSim
 
             // For now, start at the 'root' level by default
             if (m_sceneManager.Scenes.Count == 1) // If there is only one region, select it
-                ChangeSelectedRegion("region",
-                                     new string[] {"change", "region", m_sceneManager.Scenes[0].RegionInfo.RegionName});
+            {
+                ChangeSelectedRegion("region", new string[] { "change", "region", m_sceneManager.Scenes[0].RegionInfo.RegionName });
+            }
             else
-                ChangeSelectedRegion("region", new string[] {"change", "region", "root"});
+            {
+                ChangeSelectedRegion("region", new string[] { "change", "region", "root" });
+            }
         }
 
         private void RegisterConsoleCommands()
@@ -311,13 +318,14 @@ namespace OpenSim
 
             m_console.Commands.AddCommand("hypergrid", false, "link-mapping", "link-mapping [<x> <y>] <cr>",
                                           "Set local coordinate to map HG regions to", RunCommand);
+
             m_console.Commands.AddCommand("hypergrid", false, "link-region",
                                           "link-region <Xloc> <Yloc> <HostName>:<HttpPort>[:<RemoteRegionName>] <cr>",
                                           "Link a hypergrid region", RunCommand);
+
             m_console.Commands.AddCommand("hypergrid", false, "unlink-region",
                                           "unlink-region <local name> or <HostName>:<HttpPort> <cr>",
                                           "Unlink a hypergrid region", RunCommand);
-
         }
 
         public override void ShutdownSpecific()
@@ -326,6 +334,7 @@ namespace OpenSim
             {
                 RunCommandScript(m_shutdownCommandsFile);
             }
+
             base.ShutdownSpecific();
         }
 
@@ -342,11 +351,16 @@ namespace OpenSim
         private void KickUserCommand(string module, string[] cmdparams)
         {
             if (cmdparams.Length < 4)
+            {
                 return;
+            }
 
             string alert = null;
+
             if (cmdparams.Length > 4)
+            {
                 alert = String.Format("\n{0}\n", String.Join(" ", cmdparams, 4, cmdparams.Length - 4));
+            }
 
             IList agents = m_sceneManager.GetCurrentSceneAvatars();
 
@@ -354,36 +368,37 @@ namespace OpenSim
             {
                 RegionInfo regionInfo = m_sceneManager.GetRegionInfo(presence.RegionHandle);
 
-                if (presence.Firstname.ToLower().Contains(cmdparams[2].ToLower()) &&
-                    presence.Lastname.ToLower().Contains(cmdparams[3].ToLower()))
+                if (presence.Firstname.ToLower().Contains(cmdparams[2].ToLower()) && presence.Lastname.ToLower().Contains(cmdparams[3].ToLower()))
                 {
-                    m_console.Notice(
-                        String.Format(
-                            "Kicking user: {0,-16}{1,-16}{2,-37} in region: {3,-16}",
-                            presence.Firstname, presence.Lastname, presence.UUID, regionInfo.RegionName));
+                    m_console.Notice(String.Format("Kicking user: {0,-16}{1,-16}{2,-37} in region: {3,-16}", presence.Firstname, presence.Lastname, presence.UUID, regionInfo.RegionName));
 
                     // kick client...
                     if (alert != null)
+                    {
                         presence.ControllingClient.Kick(alert);
-                    else 
+                    }
+                    else
+                    {
                         presence.ControllingClient.Kick("\nThe OpenSim manager kicked you out.\n");
+                    }
 
-                    // ...and close on our side
+                    // and close on our side
                     presence.Scene.IncomingCloseAgent(presence.UUID);
                 }
             }
+
             m_console.Notice("");
         }
 
         /// <summary>
-        /// Run an optional startup list of commands
+        ///     Run an optional startup list of commands
         /// </summary>
         /// <param name="fileName"></param>
         private void RunCommandScript(string fileName)
         {
             if (File.Exists(fileName))
             {
-                m_log.Info("[COMMANDFILE]: Running " + fileName);
+                m_log.Info("[Command File]: Running " + fileName);
 
                 StreamReader readFile = File.OpenText(fileName);
                 string currentCommand;
@@ -391,7 +406,7 @@ namespace OpenSim
                 {
                     if (currentCommand != String.Empty)
                     {
-                        m_log.Info("[COMMANDFILE]: Running '" + currentCommand + "'");
+                        m_log.Info("[Command File]: Running '" + currentCommand + "'");
                         m_console.RunCommand(currentCommand);
                     }
                 }
@@ -404,6 +419,7 @@ namespace OpenSim
             {
                 StreamReader readFile = File.OpenText(fileName);
                 string currentLine;
+
                 while ((currentLine = readFile.ReadLine()) != null)
                 {
                     m_log.Info("[!]" + currentLine);
@@ -444,9 +460,12 @@ namespace OpenSim
 
             string regionsDir = ConfigSource.Source.Configs["Startup"].GetString("regionload_regionsdir", "Regions").Trim();
             string regionFile = String.Format("{0}/{1}", regionsDir, cmd[3]);
+
             // Allow absolute and relative specifiers
             if (cmd[3].StartsWith("/") || cmd[3].StartsWith("\\") || cmd[3].StartsWith(".."))
+            {
                 regionFile = cmd[3];
+            }
 
             IScene scene;
             CreateRegion(new RegionInfo(cmd[2], regionFile, false, ConfigSource.Source), true, out scene);
@@ -465,10 +484,13 @@ namespace OpenSim
         private void HandleLoginStatus(string module, string[] cmd)
         {
             if (m_commsManager.GridService.RegionLoginsEnabled == false)
-
-                m_log.Info("[ Login ]  Login are disabled ");
+            {
+                m_log.Info("[Login]: Login are disabled");
+            }
             else
-                m_log.Info("[ Login ]  Login are enabled");
+            {
+                m_log.Info("[Login]: Login are enabled");
+            }
         }
 
         private void HandleConfig(string module, string[] cmd)
@@ -490,20 +512,17 @@ namespace OpenSim
                         }
                         else
                         {
-                            // IConfig c = DefaultConfig().Configs[cmdparams[1]];
-                            // if (c == null)
-                            //     c = DefaultConfig().AddConfig(cmdparams[1]);
                             IConfig c;
                             IConfigSource source = new IniConfigSource();
                             c = source.AddConfig(cmdparams[1]);
+
                             if (c != null)
                             {
                                 string _value = String.Join(" ", cmdparams, 3, cmdparams.Length - 3);
                                 c.Set(cmdparams[2], _value);
                                 m_config.Source.Merge(source);
 
-                                m_console.Error(n, n + " " + n + " " + cmdparams[1] + " " + cmdparams[2] + " " +
-                                                   _value);
+                                m_console.Error(n, n + " " + n + " " + cmdparams[1] + " " + cmdparams[2] + " " + _value);
                             }
                         }
                         break;
@@ -517,6 +536,7 @@ namespace OpenSim
                         else
                         {
                             IConfig c = m_config.Source.Configs[cmdparams[1]]; // DefaultConfig().Configs[cmdparams[1]];
+
                             if (c == null)
                             {
                                 m_console.Notice(n, "Section \"" + cmdparams[1] + "\" does not exist.");
@@ -524,8 +544,7 @@ namespace OpenSim
                             }
                             else
                             {
-                                m_console.Notice(n + " GET " + cmdparams[1] + " " + cmdparams[2] + ": " +
-                                                 c.GetString(cmdparams[2]));
+                                m_console.Notice(n + " GET " + cmdparams[1] + " " + cmdparams[2] + ": " + c.GetString(cmdparams[2]));
                             }
                         }
 
@@ -583,15 +602,18 @@ namespace OpenSim
         }
 
         /// <summary>
-        /// Runs commands issued by the server console from the operator
+        ///     Runs commands issued by the server console from the operator
         /// </summary>
         /// <param name="command">The first argument of the parameter (the command)</param>
         /// <param name="cmdparams">Additional arguments passed to the command</param>
         public void RunCommand(string module, string[] cmdparams)
         {
             List<string> args = new List<string>(cmdparams);
+
             if (args.Count < 1)
+            {
                 return;
+            }
 
             string command = args[0];
             args.RemoveAt(0);
@@ -615,20 +637,30 @@ namespace OpenSim
                     string regRemoveName = CombineParams(cmdparams, 0);
 
                     Scene removeScene;
+
                     if (m_sceneManager.TryGetScene(regRemoveName, out removeScene))
+                    {
                         RemoveRegion(removeScene, false);
+                    }
                     else
+                    {
                         m_console.Error("no region with that name");
+                    }
                     break;
 
                 case "delete-region":
                     string regDeleteName = CombineParams(cmdparams, 0);
 
                     Scene killScene;
+
                     if (m_sceneManager.TryGetScene(regDeleteName, out killScene))
+                    {
                         RemoveRegion(killScene, true);
+                    }
                     else
+                    {
                         m_console.Error("no region with that name");
+                    }
                     break;
 
                 case "restart":
@@ -662,7 +694,7 @@ namespace OpenSim
         }
 
         /// <summary>
-        /// Change the currently selected region.  The selected region is that operated upon by single region commands.
+        ///     Change the currently selected region.  The selected region is that operated upon by single region commands.
         /// </summary>
         /// <param name="cmdParams"></param>
         protected void ChangeSelectedRegion(string module, string[] cmdparams)
@@ -672,7 +704,9 @@ namespace OpenSim
                 string newRegionName = CombineParams(cmdparams, 2);
 
                 if (!m_sceneManager.TrySetCurrentScene(newRegionName))
+                {
                     m_console.Error("Couldn't select region " + newRegionName);
+                }
             }
             else
             {
@@ -686,7 +720,7 @@ namespace OpenSim
         }
 
         /// <summary>
-        /// Execute switch for some of the create commands
+        ///     Execute switch for some of the create commands
         /// </summary>
         /// <param name="args"></param>
         private void HandleCreateUser(string module, string[] cmd)
@@ -702,7 +736,7 @@ namespace OpenSim
         }
 
         /// <summary>
-        /// Execute switch for some of the reset commands
+        ///     Execute switch for some of the reset commands
         /// </summary>
         /// <param name="args"></param>
         protected void HandleResetUserPassword(string module, string[] cmd)
@@ -718,13 +752,15 @@ namespace OpenSim
         }
 
         /// <summary>
-        /// Turn on some debugging values for OpenSim.
+        ///     Turn on some debugging values for OpenSim.
         /// </summary>
         /// <param name="args"></param>
         protected void Debug(string module, string[] args)
         {
             if (args.Length == 1)
+            {
                 return;
+            }
 
             switch (args[1])
             {
@@ -732,6 +768,7 @@ namespace OpenSim
                     if (args.Length > 2)
                     {
                         int newDebug;
+
                         if (int.TryParse(args[2], out newDebug))
                         {
                             m_sceneManager.SetDebugPacketLevelOnCurrentScene(newDebug);
@@ -740,6 +777,7 @@ namespace OpenSim
                         {
                             m_console.Error("packet debug should be 0..255");
                         }
+
                         m_console.Notice("New packet debug: " + newDebug.ToString());
                     }
 
@@ -759,11 +797,7 @@ namespace OpenSim
                             bool physicsOn = !Convert.ToBoolean(args[4]);
                             m_sceneManager.CurrentScene.SetSceneCoreDebug(scriptingOn, collisionsOn, physicsOn);
 
-                            m_console.Notice(
-                                "CONSOLE",
-                                String.Format(
-                                    "Set debug scene scripting = {0}, collisions = {1}, physics = {2}",
-                                    !scriptingOn, !collisionsOn, !physicsOn));
+                            m_console.Notice("CONSOLE", String.Format("Set debug scene scripting = {0}, collisions = {1}, physics = {2}", !scriptingOn, !collisionsOn, !physicsOn));
                         }
                     }
                     else
@@ -796,6 +830,7 @@ namespace OpenSim
 
                 case "users":
                     IList agents;
+
                     if (showParams.Length > 1 && showParams[1] == "full")
                     {
                         agents = m_sceneManager.GetCurrentScenePresences();
@@ -807,9 +842,7 @@ namespace OpenSim
 
                     m_console.Notice(String.Format("\nAgents connected: {0}\n", agents.Count));
 
-                    m_console.Notice(
-                        String.Format("{0,-16}{1,-16}{2,-37}{3,-11}{4,-16}", "Firstname", "Lastname",
-                                      "Agent ID", "Root/Child", "Region"));
+                    m_console.Notice(String.Format("{0,-16}{1,-16}{2,-37}{3,-11}{4,-16}", "Firstname", "Lastname", "Agent ID", "Root/Child", "Region"));
 
                     foreach (ScenePresence presence in agents)
                     {
@@ -840,6 +873,7 @@ namespace OpenSim
 
                 case "modules":
                     m_console.Notice("The currently loaded shared modules are:");
+
                     foreach (IRegionModule module in m_moduleLoader.GetLoadedSharedModules)
                     {
                         m_console.Notice("Shared Module: " + module.Name);
@@ -847,14 +881,12 @@ namespace OpenSim
                     break;
 
                 case "regions":
-                    m_sceneManager.ForEachScene(
-                        delegate(Scene scene)
-                            {
-                                m_console.Notice("Region Name: " + scene.RegionInfo.RegionName + " , Region XLoc: " +
-                                                 scene.RegionInfo.RegionLocX + " , Region YLoc: " +
-                                                 scene.RegionInfo.RegionLocY + " , Region Port: " +
-                                                 scene.RegionInfo.InternalEndPoint.Port.ToString());
-                            });
+                    m_sceneManager.ForEachScene(delegate(Scene scene)
+                    {
+                        m_console.Notice("Region Name: " + scene.RegionInfo.RegionName + " , Region XLoc: " +
+                            scene.RegionInfo.RegionLocX + " , Region YLoc: " + scene.RegionInfo.RegionLocY + " , Region Port: " +
+                            scene.RegionInfo.InternalEndPoint.Port.ToString());
+                    });
                     break;
 
                 case "queues":
@@ -862,10 +894,10 @@ namespace OpenSim
                     break;
 
                 case "ratings":
-                    m_sceneManager.ForEachScene(
-                    delegate(Scene scene)
+                    m_sceneManager.ForEachScene(delegate(Scene scene)
                     {
                         string rating = "";
+
                         if (scene.RegionInfo.RegionSettings.Maturity == 1)
                         {
                             rating = "MATURE";
@@ -878,8 +910,8 @@ namespace OpenSim
                         {
                             rating = "PG";
                         }
-                        m_console.Notice("Region Name: " + scene.RegionInfo.RegionName + " , Region Rating: " +
-                                         rating);
+
+                        m_console.Notice("Region Name: " + scene.RegionInfo.RegionName + " , Region Rating: " + rating);
                     });
                     break;
             }
@@ -890,39 +922,28 @@ namespace OpenSim
             string report = String.Empty;
 
             m_sceneManager.ForEachScene(delegate(Scene scene)
-                                            {
-                                                scene.ForEachClient(delegate(IClientAPI client)
-                                                                        {
-                                                                            if (client is IStatsCollector)
-                                                                            {
-                                                                                report = report + client.FirstName +
-                                                                                         " " + client.LastName + "\n";
+            {
+                scene.ForEachClient(delegate(IClientAPI client)
+                {
+                    if (client is IStatsCollector)
+                    {
+                        report = report + client.FirstName + " " + client.LastName + "\n";
 
-                                                                                IStatsCollector stats =
-                                                                                    (IStatsCollector) client;
+                        IStatsCollector stats = (IStatsCollector) client;
 
-                                                                                report = report + string.Format("{0,7} {1,7} {2,7} {3,7} {4,7} {5,7} {6,7} {7,7} {8,7} {9,7}\n",
-                                                                                             "Send",
-                                                                                             "In",
-                                                                                             "Out",
-                                                                                             "Resend",
-                                                                                             "Land",
-                                                                                             "Wind",
-                                                                                             "Cloud",
-                                                                                             "Task",
-                                                                                             "Texture",
-                                                                                             "Asset");
-                                                                                report = report + stats.Report() +
-                                                                                         "\n\n";
-                                                                            }
-                                                                        });
-                                            });
+                        report = report + string.Format("{0,7} {1,7} {2,7} {3,7} {4,7} {5,7} {6,7} {7,7} {8,7} {9,7}\n",
+                            "Send", "In", "Out", "Resend", "Land", "Wind", "Cloud", "Task", "Texture", "Asset");
+
+                        report = report + stats.Report() + "\n\n";
+                    }
+                });
+            });
 
             return report;
         }
 
         /// <summary>
-        /// Create a new user
+        ///     Create a new user
         /// </summary>
         /// <param name="cmdparams">string array with parameters: firstname, lastname, password, locationX, locationY, email</param>
         protected void CreateUser(string[] cmdparams)
@@ -935,28 +956,58 @@ namespace OpenSim
             uint regY = 1000;
 
             if (cmdparams.Length < 3)
+            {
                 firstName = MainConsole.Instance.CmdPrompt("First name", "Default");
-            else firstName = cmdparams[2];
+            }
+            else
+            {
+                firstName = cmdparams[2];
+            }
 
             if (cmdparams.Length < 4)
+            {
                 lastName = MainConsole.Instance.CmdPrompt("Last name", "User");
-            else lastName = cmdparams[3];
+            }
+            else
+            {
+                lastName = cmdparams[3];
+            }
 
             if (cmdparams.Length < 5)
+            {
                 password = MainConsole.Instance.PasswdPrompt("Password");
-            else password = cmdparams[4];
+            }
+            else
+            {
+                password = cmdparams[4];
+            }
 
             if (cmdparams.Length < 6)
+            {
                 regX = Convert.ToUInt32(MainConsole.Instance.CmdPrompt("Start Region X", regX.ToString()));
-            else regX = Convert.ToUInt32(cmdparams[5]);
+            }
+            else
+            {
+                regX = Convert.ToUInt32(cmdparams[5]);
+            }
 
             if (cmdparams.Length < 7)
+            {
                 regY = Convert.ToUInt32(MainConsole.Instance.CmdPrompt("Start Region Y", regY.ToString()));
-            else regY = Convert.ToUInt32(cmdparams[6]);
+            }
+            else
+            {
+                regY = Convert.ToUInt32(cmdparams[6]);
+            }
 
             if (cmdparams.Length < 8)
+            {
                 email = MainConsole.Instance.CmdPrompt("Email", "");
-            else email = cmdparams[7];
+            }
+            else
+            {
+                email = cmdparams[7];
+            }
 
             if (null == m_commsManager.UserProfileCacheService.GetUserDetails(firstName, lastName))
             {
@@ -964,12 +1015,12 @@ namespace OpenSim
             }
             else
             {
-                m_log.ErrorFormat("[CONSOLE]: A user with the name {0} {1} already exists!", firstName, lastName);
+                m_log.ErrorFormat("[Console]: A user with the name {0} {1} already exists!", firstName, lastName);
             }
         }
 
         /// <summary>
-        /// Reset a user password.
+        ///     Reset a user password.
         /// </summary>
         /// <param name="cmdparams"></param>
         private void ResetUserPassword(string[] cmdparams)
@@ -979,16 +1030,31 @@ namespace OpenSim
             string newPassword;
 
             if (cmdparams.Length < 4)
+            {
                 firstName = MainConsole.Instance.CmdPrompt("First name");
-            else firstName = cmdparams[3];
+            }
+            else
+            {
+                firstName = cmdparams[3];
+            }
 
             if (cmdparams.Length < 5)
+            {
                 lastName = MainConsole.Instance.CmdPrompt("Last name");
-            else lastName = cmdparams[4];
+            }
+            else
+            {
+                lastName = cmdparams[4];
+            }
 
             if (cmdparams.Length < 6)
+            {
                 newPassword = MainConsole.Instance.PasswdPrompt("New password");
-            else newPassword = cmdparams[5];
+            }
+            else
+            {
+                newPassword = cmdparams[5];
+            }
 
             m_commsManager.UserAdminService.ResetUserPassword(firstName, lastName, newPassword);
         }
@@ -1007,7 +1073,7 @@ namespace OpenSim
 
         protected void SaveXml(string module, string[] cmdparams)
         {
-            m_log.Error("[CONSOLE]: PLEASE NOTE, save-xml is DEPRECATED and may be REMOVED soon.  If you are using this and there is some reason you can't use save-xml2, please file a mantis detailing the reason.");
+            m_log.Error("[Console]: PLEASE NOTE, save-xml is DEPRECATED and may be REMOVED soon.  If you are using this and there is some reason you can't use save-xml2, please file a mantis detailing the reason.");
 
             if (cmdparams.Length > 0)
             {
@@ -1021,33 +1087,39 @@ namespace OpenSim
 
         protected void LoadXml(string module, string[] cmdparams)
         {
-            m_log.Error("[CONSOLE]: PLEASE NOTE, load-xml is DEPRECATED and may be REMOVED soon.  If you are using this and there is some reason you can't use load-xml2, please file a mantis detailing the reason.");
+            m_log.Error("[Console]: PLEASE NOTE, load-xml is DEPRECATED and may be REMOVED soon.  If you are using this and there is some reason you can't use load-xml2, please file a mantis detailing the reason.");
 
             Vector3 loadOffset = new Vector3(0, 0, 0);
+
             if (cmdparams.Length > 2)
             {
                 bool generateNewIDS = false;
+
                 if (cmdparams.Length > 3)
                 {
                     if (cmdparams[3] == "-newUID")
                     {
                         generateNewIDS = true;
                     }
+
                     if (cmdparams.Length > 4)
                     {
                         loadOffset.X = (float) Convert.ToDecimal(cmdparams[4]);
+
                         if (cmdparams.Length > 5)
                         {
                             loadOffset.Y = (float) Convert.ToDecimal(cmdparams[5]);
                         }
+
                         if (cmdparams.Length > 6)
                         {
                             loadOffset.Z = (float) Convert.ToDecimal(cmdparams[6]);
                         }
-                        m_console.Error("loadOffsets <X,Y,Z> = <" + loadOffset.X + "," + loadOffset.Y + "," +
-                                        loadOffset.Z + ">");
+
+                        m_console.Error("loadOffsets <X,Y,Z> = <" + loadOffset.X + "," + loadOffset.Y + "," + loadOffset.Z + ">");
                     }
                 }
+
                 m_sceneManager.LoadCurrentSceneFromXml(cmdparams[0], generateNewIDS, loadOffset);
             }
             else
@@ -1056,6 +1128,7 @@ namespace OpenSim
                 {
                     m_sceneManager.LoadCurrentSceneFromXml(DEFAULT_PRIM_BACKUP_FILENAME, false, loadOffset);
                 }
+
                 catch (FileNotFoundException)
                 {
                     m_console.Error("Default xml not found. Usage: load-xml <filename>");
@@ -1083,6 +1156,7 @@ namespace OpenSim
                 {
                     m_sceneManager.LoadCurrentSceneFromXml2(cmdparams[2]);
                 }
+
                 catch (FileNotFoundException)
                 {
                     m_console.Error("Specified xml not found. Usage: load xml2 <filename>");
@@ -1094,6 +1168,7 @@ namespace OpenSim
                 {
                     m_sceneManager.LoadCurrentSceneFromXml2(DEFAULT_PRIM_BACKUP_FILENAME);
                 }
+
                 catch (FileNotFoundException)
                 {
                     m_console.Error("Default xml not found. Usage: load xml2 <filename>");
@@ -1102,7 +1177,7 @@ namespace OpenSim
         }
 
         /// <summary>
-        /// Load a whole region from an opensim archive.
+        ///     Load a whole region from an opensim archive.
         /// </summary>
         /// <param name="cmdparams"></param>
         protected void LoadOar(string module, string[] cmdparams)
@@ -1113,6 +1188,7 @@ namespace OpenSim
                 {
                     m_sceneManager.LoadArchiveToCurrentScene(cmdparams[2]);
                 }
+
                 catch (FileNotFoundException)
                 {
                     m_console.Error("Specified oar not found. Usage: load oar <filename>");
@@ -1124,6 +1200,7 @@ namespace OpenSim
                 {
                     m_sceneManager.LoadArchiveToCurrentScene(DEFAULT_OAR_BACKUP_FILENAME);
                 }
+
                 catch (FileNotFoundException)
                 {
                     m_console.Error("Default oar not found. Usage: load oar <filename>");
@@ -1132,7 +1209,7 @@ namespace OpenSim
         }
 
         /// <summary>
-        /// Save a region to a file, including all the assets needed to restore it.
+        ///     Save a region to a file, including all the assets needed to restore it.
         /// </summary>
         /// <param name="cmdparams"></param>
         protected void SaveOar(string module, string[] cmdparams)
@@ -1150,10 +1227,12 @@ namespace OpenSim
         private static string CombineParams(string[] commandParams, int pos)
         {
             string result = String.Empty;
+
             for (int i = pos; i < commandParams.Length; i++)
             {
                 result += commandParams[i] + " ";
             }
+
             result = result.TrimEnd(' ');
             return result;
         }
