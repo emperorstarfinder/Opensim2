@@ -1,29 +1,30 @@
-/*
- * Copyright (c) Contributors, http://opensimulator.org/
- * See CONTRIBUTORS.TXT for a full list of copyright holders.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *     * Redistributions of source code must retain the above copyright
- *       notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above copyright
- *       notice, this list of conditions and the following disclaimer in the
- *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the OpenSim Project nor the
- *       names of its contributors may be used to endorse or promote products
- *       derived from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE DEVELOPERS ``AS IS'' AND ANY
- * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE CONTRIBUTORS BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+/// <license>
+///     Copyright (c) Contributors, http://opensimulator.org/
+///     See CONTRIBUTORS.TXT for a full list of copyright holders.
+/// 
+///     Redistribution and use in source and binary forms, with or without
+///     modification, are permitted provided that the following conditions are met:
+///         * Redistributions of source code must retain the above copyright
+///         notice, this list of conditions and the following disclaimer.
+///         * Redistributions in binary form must reproduce the above copyright
+///         notice, this list of conditions and the following disclaimer in the
+///         documentation and/or other materials provided with the distribution.
+///         * Neither the name of the OpenSim Project nor the
+///         names of its contributors may be used to endorse or promote products
+///         derived from this software without specific prior written permission.
+/// 
+///     THIS SOFTWARE IS PROVIDED BY THE DEVELOPERS ``AS IS'' AND ANY
+///     EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+///     WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+///     DISCLAIMED. IN NO EVENT SHALL THE CONTRIBUTORS BE LIABLE FOR ANY
+///     DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+///     (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+///     LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+///     ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+///     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+///     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+/// </license>
+
 using System;
 using System.Collections;
 using System.Diagnostics;
@@ -41,10 +42,6 @@ namespace OpenSim.GridLaunch
         private static readonly int shutdownWaitSeconds = 10;
 
         private static readonly ILog m_log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
-
-        //private StreamWriter Input { get { return process.StandardInput; } }
-        //private StreamReader Output { get { return process.StandardOutput; } }
-        //private StreamReader Error { get { return process.StandardError; } }
 
         private StreamWriter Input { get; set; }
         private StreamReader Output { get; set; }
@@ -66,11 +63,14 @@ namespace OpenSim.GridLaunch
         }
 
         #region Dispose of unmanaged resources
+
         ~AppExecutor()
         {
             Dispose();
         }
+
         private bool isDisposed = false;
+
         public void Dispose()
         {
             if (!isDisposed)
@@ -79,13 +79,18 @@ namespace OpenSim.GridLaunch
                 Stop();
             }
         }
+
         #endregion
 
         #region Start / Stop process
+
         public void Start()
         {
             if (isDisposed)
+            {
                 throw new ApplicationException("Attempt to start process in Disposed instance of AppExecutor.");
+            }
+        
             // Stop before starting
             Stop();
 
@@ -104,7 +109,6 @@ namespace OpenSim.GridLaunch
                 process.StartInfo.ErrorDialog = false;
                 process.EnableRaisingEvents = true;
 
-
                 // Redirect all standard input/output/errors
                 process.StartInfo.RedirectStandardInput = true;
                 process.StartInfo.RedirectStandardOutput = true;
@@ -119,10 +123,6 @@ namespace OpenSim.GridLaunch
 
                 // Start data copying
                 timer_Start();
-
-                // We will flush manually
-                //Input.AutoFlush = false;
-
             }
         }
 
@@ -130,12 +130,14 @@ namespace OpenSim.GridLaunch
         {
             // Shut down process
             // We will ignore some exceptions here, against good programming practice... :)
-
             lock (processLock)
             {
                 // Running?
                 if (!isRunning)
+                {
                     return;
+                }
+
                 isRunning = false;
 
                 timer_Stop();
@@ -150,10 +152,12 @@ namespace OpenSim.GridLaunch
                         _writeLine("");
                         _writeLine("exit");
                         _writeLine("quit");
+                 
                         // Wait for process to exit
                         process.WaitForExit(1000 * shutdownWaitSeconds);
                     }
                 }
+
                 catch (Exception ex)
                 {
                     m_log.ErrorFormat("Exeption asking \"{0}\" to shut down: {1}", file, ex.ToString());
@@ -163,7 +167,9 @@ namespace OpenSim.GridLaunch
                 {
                     // Forcefully kill it
                     if (process.HasExited != true)
+                    {
                         process.Kill();
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -181,9 +187,6 @@ namespace OpenSim.GridLaunch
                 }
 
                 // Dispose of stream and process object
-                //SafeDisposeOf(Input);
-                //SafeDisposeOf(Output);
-                //SafeDisposeOf(Error);
                 Program.SafeDisposeOf(process);
             }
 
@@ -193,6 +196,7 @@ namespace OpenSim.GridLaunch
         #endregion
 
         #region Write to stdInput
+
         public void Write(string Text)
         {
             // Lock so process won't shut down while we write, and that we won't write while proc is shutting down
@@ -201,6 +205,7 @@ namespace OpenSim.GridLaunch
                 _write(Text);
             }
         }
+
         public void _write(string Text)
         {
             if (Input != null)
@@ -214,9 +219,9 @@ namespace OpenSim.GridLaunch
                 {
                     m_log.ErrorFormat("Exeption sending text \"{0}\" to \"{1}\": {2}", file, Text, ex.ToString());
                 }
-
             }
         }
+
         public void WriteLine(string Text)
         {
             // Lock so process won't shut down while we write, and that we won't write while proc is shutting down
@@ -225,6 +230,7 @@ namespace OpenSim.GridLaunch
                 _writeLine(Text);
             }
         }
+
         public void _writeLine(string Text)
         {
             if (Input != null)
@@ -241,7 +247,7 @@ namespace OpenSim.GridLaunch
                 }
             }
         }
+        
         #endregion
-
     }
 }

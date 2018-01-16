@@ -1,29 +1,29 @@
-/*
- * Copyright (c) Contributors, http://opensimulator.org/
- * See CONTRIBUTORS.TXT for a full list of copyright holders.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *     * Redistributions of source code must retain the above copyright
- *       notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above copyright
- *       notice, this list of conditions and the following disclaimer in the
- *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the OpenSim Project nor the
- *       names of its contributors may be used to endorse or promote products
- *       derived from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE DEVELOPERS ``AS IS'' AND ANY
- * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE CONTRIBUTORS BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+/// <license>
+///     Copyright (c) Contributors, http://opensimulator.org/
+///     See CONTRIBUTORS.TXT for a full list of copyright holders.
+/// 
+///     Redistribution and use in source and binary forms, with or without
+///     modification, are permitted provided that the following conditions are met:
+///         * Redistributions of source code must retain the above copyright
+///         notice, this list of conditions and the following disclaimer.
+///         * Redistributions in binary form must reproduce the above copyright
+///         notice, this list of conditions and the following disclaimer in the
+///         documentation and/or other materials provided with the distribution.
+///         * Neither the name of the OpenSim Project nor the
+///         names of its contributors may be used to endorse or promote products
+///         derived from this software without specific prior written permission.
+/// 
+///     THIS SOFTWARE IS PROVIDED BY THE DEVELOPERS ``AS IS'' AND ANY
+///     EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+///     WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+///     DISCLAIMED. IN NO EVENT SHALL THE CONTRIBUTORS BE LIABLE FOR ANY
+///     DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+///     (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+///     LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+///     ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+///     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+///     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+/// </license>
 
 using System;
 using System.Collections.Generic;
@@ -34,7 +34,7 @@ using OpenMetaverse;
 using Nini.Config;
 using OpenSim.Framework;
 using OpenSim.Framework.Console;
-using Timer=System.Timers.Timer;
+using Timer = ystem.Timers.Timer;
 
 namespace pCampBot
 {
@@ -54,13 +54,13 @@ namespace pCampBot
         protected Timer m_action; // Action Timer
         protected List<uint> objectIDs = new List<uint>();
 
-
         protected Random somthing = new Random(Environment.TickCount);// We do stuff randomly here
 
         //New instance of a SecondLife client
         public GridClient client = new GridClient();
 
         protected string[] talkarray;
+
         /// <summary>
         ///
         /// </summary>
@@ -74,17 +74,14 @@ namespace pCampBot
 
         //We do our actions here.  This is where one would
         //add additional steps and/or things the bot should do
-
         void m_action_Elapsed(object sender, ElapsedEventArgs e)
         {
             while (true)
             {
-                //client.Appearance.ForceRebakeAvatarTextures();
-                //client.Appearance.SetPreviousAppearance();
-
                 int walkorrun = somthing.Next(4); // Randomize between walking and running. The greater this number,
                                                   // the greater the bot's chances to walk instead of run.
                 client.Self.Jump(false);
+
                 if (walkorrun == 0)
                 {
                     client.Self.Movement.AlwaysRun = true;
@@ -98,29 +95,24 @@ namespace pCampBot
                 Vector3 newpos = new Vector3(somthing.Next(255), somthing.Next(255), somthing.Next(255));
                 client.Self.Movement.TurnToward(newpos);
 
-                /*
-                // Why does it need to keep setting it true? Changing to just let it walk =)
-                for (int i = 0; i < 2000; i++)
-                {
-                    client.Self.Movement.AtPos = true;
-                    Thread.Sleep(somthing.Next(25, 75)); // Makes sure the bots keep walking for this time.
-                }
-                */
                 client.Self.Movement.AtPos = true;
                 Thread.Sleep(somthing.Next(3000,13000));
                 client.Self.Movement.AtPos = false;
                 client.Self.Jump(true);
 
                 string randomf = talkarray[somthing.Next(talkarray.Length)];
+
                 if (talkarray.Length > 1 && randomf.Length > 1)
+                {
                     client.Self.Chat(randomf, 0, ChatType.Normal);
+                }
 
                 Thread.Sleep(somthing.Next(1000, 10000));
             }
         }
 
         /// <summary>
-        /// Read the Nini config and initialize
+        ///     Read the Nini config and initialize
         /// </summary>
         public void readconfig()
         {
@@ -131,7 +123,7 @@ namespace pCampBot
         }
 
         /// <summary>
-        /// Tells LibSecondLife to logout and disconnect.  Raises the disconnect events once it finishes.
+        ///     Tells LibSecondLife to logout and disconnect.  Raises the disconnect events once it finishes.
         /// </summary>
         public void shutdown()
         {
@@ -139,7 +131,7 @@ namespace pCampBot
         }
 
         /// <summary>
-        /// This is the bot startup loop.
+        ///     This is the bot startup loop.
         /// </summary>
         public void startup()
         {
@@ -163,6 +155,7 @@ namespace pCampBot
             client.Network.OnDisconnected += new NetworkManager.DisconnectedCallback(this.Network_OnDisconnected);
             client.Objects.OnNewPrim += Objects_NewPrim;
             client.Assets.OnImageReceived += Asset_TextureCallback;
+
             if (client.Network.Login(firstname, lastname, password, "pCampBot", "Your name"))
             {
                 if (OnConnected != null)
@@ -179,6 +172,7 @@ namespace pCampBot
             else
             {
                 MainConsole.Instance.Error(firstname + " " + lastname, "Can't login: " + client.Network.LoginMessage);
+
                 if (OnDisconnected != null)
                 {
                     OnDisconnected(this, EventType.DISCONNECTED);
@@ -216,6 +210,7 @@ namespace pCampBot
                     {
                         client.Assets.RequestImage(prim.Textures.DefaultTexture.TextureID, ImageType.Normal);
                     }
+
                     for (int i = 0; i < prim.Textures.FaceTextures.Length; i++ )
                     {
                         if (prim.Textures.FaceTextures[i] != null)
@@ -224,17 +219,17 @@ namespace pCampBot
                             {
                                 client.Assets.RequestImage(prim.Textures.FaceTextures[i].TextureID, ImageType.Normal);
                             }
-
                         }
                     }
                 }
+
                 if (prim.Sculpt.SculptTexture != UUID.Zero)
                 {
                     client.Assets.RequestImage(prim.Sculpt.SculptTexture, ImageType.Normal);
                 }
             }
-
         }
+
         public void Asset_TextureCallback(ImageDownload image, AssetTexture asset)
         {
         }
@@ -244,6 +239,7 @@ namespace pCampBot
             string allexcuses = "";
 
             string file = Path.Combine(Util.configDir(), "pCampBotSentences.txt");
+
             if (File.Exists(file))
             {
                 StreamReader csr = File.OpenText(file);

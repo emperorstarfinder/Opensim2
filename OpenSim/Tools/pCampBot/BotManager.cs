@@ -1,47 +1,47 @@
-/*
- * Copyright (c) Contributors, http://opensimulator.org/
- * See CONTRIBUTORS.TXT for a full list of copyright holders.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *     * Redistributions of source code must retain the above copyright
- *       notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above copyright
- *       notice, this list of conditions and the following disclaimer in the
- *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the OpenSim Project nor the
- *       names of its contributors may be used to endorse or promote products
- *       derived from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE DEVELOPERS ``AS IS'' AND ANY
- * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE CONTRIBUTORS BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+/// <license>
+///     Copyright (c) Contributors, http://opensimulator.org/
+///     See CONTRIBUTORS.TXT for a full list of copyright holders.
+/// 
+///     Redistribution and use in source and binary forms, with or without
+///     modification, are permitted provided that the following conditions are met:
+///         * Redistributions of source code must retain the above copyright
+///         notice, this list of conditions and the following disclaimer.
+///         * Redistributions in binary form must reproduce the above copyright
+///         notice, this list of conditions and the following disclaimer in the
+///         documentation and/or other materials provided with the distribution.
+///         * Neither the name of the OpenSim Project nor the
+///         names of its contributors may be used to endorse or promote products
+///         derived from this software without specific prior written permission.
+/// 
+///     THIS SOFTWARE IS PROVIDED BY THE DEVELOPERS ``AS IS'' AND ANY
+///     EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+///     WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+///     DISCLAIMED. IN NO EVENT SHALL THE CONTRIBUTORS BE LIABLE FOR ANY
+///     DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+///     (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+///     LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+///     ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+///     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+///     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+/// </license>
 
 using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Threading;
-using OpenMetaverse;
 using log4net;
 using log4net.Appender;
 using log4net.Core;
 using log4net.Repository;
 using Nini.Config;
+using OpenMetaverse;
 using OpenSim.Framework;
 using OpenSim.Framework.Console;
 
 namespace pCampBot
 {
     /// <summary>
-    /// Thread/Bot manager for the application
+    ///     Thread/Bot manager for the application
     /// </summary>
     public class BotManager
     {
@@ -56,7 +56,7 @@ namespace pCampBot
         protected IConfig Previous_config;
 
         /// <summary>
-        /// Constructor Creates MainConsole.Instance to take commands and provide the place to write data
+        ///     Constructor Creates MainConsole.Instance to take commands and provide the place to write data
         /// </summary>
         public BotManager()
         {
@@ -64,7 +64,6 @@ namespace pCampBot
             MainConsole.Instance = m_console;
 
             // Make log4net see the console
-            //
             ILoggerRepository repository = LogManager.GetRepository();
             IAppender[] appenders = repository.GetAppenders();
             OpenSimAppender consoleAppender = null;
@@ -96,7 +95,7 @@ namespace pCampBot
         }
 
         /// <summary>
-        /// Startup number of bots specified in the starting arguments
+        ///     Startup number of bots specified in the starting arguments
         /// </summary>
         /// <param name="botcount">How many bots to start up</param>
         /// <param name="cs">The configuration for the bots to use</param>
@@ -104,6 +103,7 @@ namespace pCampBot
         {
             Previous_config = cs;
             m_td = new Thread[botcount];
+
             for (int i = 0; i < botcount; i++)
             {
                 startupBot(i, cs);
@@ -111,19 +111,22 @@ namespace pCampBot
         }
 
         /// <summary>
-        /// Add additional bots (and threads) to our bot pool
+        ///     Add additional bots (and threads) to our bot pool
         /// </summary>
         /// <param name="botcount">How Many of them to add</param>
         public void addbots(int botcount)
         {
             int len = m_td.Length;
             Thread[] m_td2 = new Thread[len + botcount];
+
             for (int i = 0; i < len; i++)
             {
                 m_td2[i] = m_td[i];
             }
+
             m_td = m_td2;
             int newlen = len + botcount;
+
             for (int i = len; i < newlen; i++)
             {
                 startupBot(i, Previous_config);
@@ -131,7 +134,7 @@ namespace pCampBot
         }
 
         /// <summary>
-        /// This starts up the bot and stores the thread for the bot in the thread array
+        ///     This starts up the bot and stores the thread for the bot in the thread array
         /// </summary>
         /// <param name="pos">The position in the thread array to stick the bot's thread</param>
         /// <param name="cs">Configuration of the bot</param>
@@ -141,8 +144,16 @@ namespace pCampBot
 
             pb.OnConnected += handlebotEvent;
             pb.OnDisconnected += handlebotEvent;
-            if (cs.GetString("firstname", "random") == "random") pb.firstname = CreateRandomName();
-            if (cs.GetString("lastname", "random") == "random") pb.lastname = CreateRandomName();
+
+            if (cs.GetString("firstname", "random") == "random")
+            {
+                pb.firstname = CreateRandomName();
+            }
+
+            if (cs.GetString("lastname", "random") == "random")
+            {
+                pb.lastname = CreateRandomName();
+            }
 
             m_td[pos] = new Thread(pb.startup);
             m_td[pos].Name = "CampBot_" + pos;
@@ -153,7 +164,7 @@ namespace pCampBot
         }
 
         /// <summary>
-        /// Creates a random name for the bot
+        ///     Creates a random name for the bot
         /// </summary>
         /// <returns></returns>
         private string CreateRandomName()
@@ -165,11 +176,12 @@ namespace pCampBot
             {
                 returnstring += chars.Substring(somthing.Next(chars.Length),1);
             }
+
             return returnstring;
         }
 
         /// <summary>
-        /// High level connnected/disconnected events so we can keep track of our threads by proxy
+        ///     High level connnected/disconnected events so we can keep track of our threads by proxy
         /// </summary>
         /// <param name="callbot"></param>
         /// <param name="eventt"></param>
@@ -185,14 +197,17 @@ namespace pCampBot
                     m_log.Info("[ " + callbot.firstname + " " + callbot.lastname + "]: Disconnected");
                     m_td[m_lBot.IndexOf(callbot)].Abort();
                     numbots--;
-                    if (numbots >1)
+
+                    if (numbots > 1)
+                    {
                         Environment.Exit(0);
+                    }
                     break;
             }
         }
 
         /// <summary>
-        /// Shutting down all bots
+        ///     Shutting down all bots
         /// </summary>
         public void doBotShutdown()
         {
@@ -203,7 +218,7 @@ namespace pCampBot
         }
 
         /// <summary>
-        /// Standard CreateConsole routine
+        ///     Standard CreateConsole routine
         /// </summary>
         /// <returns></returns>
         protected CommandConsole CreateConsole()
@@ -217,14 +232,6 @@ namespace pCampBot
             doBotShutdown();
         }
 
-        /*
-        private void HandleQuit(string module, string[] cmd)
-        {
-            m_console.Warn("DANGER", "This should only be used to quit the program if you've already used the shutdown command and the program hasn't quit");
-            Environment.Exit(0);
-        }
-        */
-
         private void HandleAddBots(string module, string[] cmd)
         {
             int newbots = 0;
@@ -233,8 +240,11 @@ namespace pCampBot
             {
                 Int32.TryParse(cmd[2], out newbots);
             }
+
             if (newbots > 0)
+            {
                 addbots(newbots);
+            }
         }
     }
 }

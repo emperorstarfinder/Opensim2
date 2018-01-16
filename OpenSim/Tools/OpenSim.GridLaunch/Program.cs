@@ -1,29 +1,29 @@
-/*
- * Copyright (c) Contributors, http://opensimulator.org/
- * See CONTRIBUTORS.TXT for a full list of copyright holders.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *     * Redistributions of source code must retain the above copyright
- *       notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above copyright
- *       notice, this list of conditions and the following disclaimer in the
- *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the OpenSim Project nor the
- *       names of its contributors may be used to endorse or promote products
- *       derived from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE DEVELOPERS ``AS IS'' AND ANY
- * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE CONTRIBUTORS BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+/// <license>
+///     Copyright (c) Contributors, http://opensimulator.org/
+///     See CONTRIBUTORS.TXT for a full list of copyright holders.
+/// 
+///     Redistribution and use in source and binary forms, with or without
+///     modification, are permitted provided that the following conditions are met:
+///         * Redistributions of source code must retain the above copyright
+///         notice, this list of conditions and the following disclaimer.
+///         * Redistributions in binary form must reproduce the above copyright
+///         notice, this list of conditions and the following disclaimer in the
+///         documentation and/or other materials provided with the distribution.
+///         * Neither the name of the OpenSim Project nor the
+///         names of its contributors may be used to endorse or promote products
+///         derived from this software without specific prior written permission.
+/// 
+///     THIS SOFTWARE IS PROVIDED BY THE DEVELOPERS ``AS IS'' AND ANY
+///     EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+///     WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+///     DISCLAIMED. IN NO EVENT SHALL THE CONTRIBUTORS BE LIABLE FOR ANY
+///     DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+///     (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+///     LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+///     ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+///     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+///     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+/// </license>
 
 using System;
 using System.Collections;
@@ -43,10 +43,6 @@ namespace OpenSim.GridLaunch
         public static readonly string ConfigFile = "OpenSim.GridLaunch.ini";
         internal static Dictionary<string, AppExecutor> AppList = new Dictionary<string, AppExecutor>();
         private static readonly int delayBetweenExecuteSeconds = 10;
-        //private static readonly int consoleReadIntervalMilliseconds = 50;
-        ////private static readonly Timer readTimer = new Timer(readConsole, null, Timeout.Infinite, Timeout.Infinite);
-        //private static Thread timerThread;
-        //private static object timerThreadLock = new object();
         private static IGUI GUIModule;
         private static string GUIModuleName = "";
         public static readonly CommandProcessor Command = new CommandProcessor();
@@ -66,20 +62,25 @@ namespace OpenSim.GridLaunch
         internal static void FireAppConsoleOutput(string App, string Text)
         {
             if (AppConsoleOutput != null)
+            {
                 AppConsoleOutput(App, Text);
+            }
         }
+
         internal static void FireAppConsoleError(string App, string Text)
         {
             if (AppConsoleError != null)
+            {
                 AppConsoleError(App, Text);
+            }
         }
         
-
         private static readonly object startStopLock = new object();
 
         public static string Name { get { return "OpenSim Grid executor"; } }
 
         #region Start/Shutdown
+
         static void Main(string[] args)
         {
             log4net.Config.XmlConfigurator.Configure();
@@ -90,6 +91,7 @@ namespace OpenSim.GridLaunch
 
             // Read settings
             Settings.LoadConfig(ConfigFile);
+        
             // Command line arguments override settings
             Settings.ParseCommandArguments(args);
 
@@ -104,7 +106,6 @@ namespace OpenSim.GridLaunch
 
             // GUI module returned, we are done
             Shutdown();
-
         }
 
         private static void StartGUIModule()
@@ -132,8 +133,8 @@ namespace OpenSim.GridLaunch
                     GUIModule = new GUI.Console.Console();
                     break;
             }
-            m_log.Info("GUI type: " + GUIModuleName);
 
+            m_log.Info("GUI type: " + GUIModuleName);
         }
 
         internal static void Shutdown()
@@ -155,45 +156,49 @@ namespace OpenSim.GridLaunch
         internal static void SafeDisposeOf(object obj)
         {
             IDisposable o = obj as IDisposable;
+
             try
             {
                 if (o != null)
+                {
                     o.Dispose();
+                }
             }
+
             catch { }
         }
+
         #endregion
 
         #region Start / Stop applications
+
         private static void startProcesses(Object stateInfo)
         {
             // Stop before starting
             stopProcesses();
 
-            // Start console read timer
-            //timer_Start();
-
-                // Start the applications
-                foreach (string file in new ArrayList(Settings.Components.Keys))
+            // Start the applications
+            foreach (string file in new ArrayList(Settings.Components.Keys))
+            {
+                // Is this file marked for startup?
+                if (Settings.Components[file])
                 {
-                    // Is this file marked for startup?
-                    if (Settings.Components[file])
+                    AppExecutor app = new AppExecutor(file);
+                    app.Start();
+                    AppList.Add(file, app);
+
+                    if (AppCreated != null)
                     {
-                        AppExecutor app = new AppExecutor(file);
-                        app.Start();
-                        AppList.Add(file, app);
-                        if (AppCreated != null)
-                            AppCreated(app.File);
-                        System.Threading.Thread.Sleep(1000*delayBetweenExecuteSeconds);
+                        AppCreated(app.File);
                     }
+
+                    System.Threading.Thread.Sleep(1000*delayBetweenExecuteSeconds);
                 }
+            }
         }
 
         private static void stopProcesses()
         {
-            // Stop timer
-            //timer_Stop();
-
             // Lock so we don't collide with any timer still executing on AppList
             lock (AppList)
             {
@@ -212,24 +217,30 @@ namespace OpenSim.GridLaunch
                     finally
                     {
                         if (AppRemoved != null)
+                        {
                             AppRemoved(app.File);
+                        }
+
                         app.Dispose();
                     }
-
                 }
+
                 AppList.Clear();
             }
         }
+
         #endregion
 
-       public static void Write(string App, string Text)
+        public static void Write(string App, string Text)
         {
             // Check if it is a commands
             bool isCommand = Command.Process(App, Text);
 
             // Write to stdInput of app
             if (!isCommand && AppList.ContainsKey(App))
+            {
                 AppList[App].Write(Text);
+            }
         }
 
         public static void WriteLine(string App, string Text)
@@ -239,7 +250,9 @@ namespace OpenSim.GridLaunch
 
             // Write to stdInput of app
             if (!isCommand && AppList.ContainsKey(App))
+            {
                 AppList[App].WriteLine(Text);
+            }
         }
     }
 }
