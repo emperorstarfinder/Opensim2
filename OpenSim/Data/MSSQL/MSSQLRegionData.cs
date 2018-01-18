@@ -1,29 +1,29 @@
-/*
- * Copyright (c) Contributors, http://opensimulator.org/
- * See CONTRIBUTORS.TXT for a full list of copyright holders.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *     * Redistributions of source code must retain the above copyright
- *       notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above copyright
- *       notice, this list of conditions and the following disclaimer in the
- *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the OpenSim Project nor the
- *       names of its contributors may be used to endorse or promote products
- *       derived from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE DEVELOPERS ``AS IS'' AND ANY
- * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE CONTRIBUTORS BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+/// <license>
+///     Copyright (c) Contributors, http://opensimulator.org/
+///     See CONTRIBUTORS.TXT for a full list of copyright holders.
+/// 
+///     Redistribution and use in source and binary forms, with or without
+///     modification, are permitted provided that the following conditions are met:
+///         * Redistributions of source code must retain the above copyright
+///         notice, this list of conditions and the following disclaimer.
+///         * Redistributions in binary form must reproduce the above copyright
+///         notice, this list of conditions and the following disclaimer in the
+///         documentation and/or other materials provided with the distribution.
+///         * Neither the name of the OpenSim Project nor the
+///         names of its contributors may be used to endorse or promote products
+///         derived from this software without specific prior written permission.
+/// 
+///     THIS SOFTWARE IS PROVIDED BY THE DEVELOPERS ``AS IS'' AND ANY
+///     EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+///     WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+///     DISCLAIMED. IN NO EVENT SHALL THE CONTRIBUTORS BE LIABLE FOR ANY
+///     DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+///     (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+///     LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+///     ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+///     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+///     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+/// </license>
 
 using System;
 using System.Collections.Generic;
@@ -41,22 +41,21 @@ using OpenSim.Region.Framework.Scenes;
 namespace OpenSim.Data.MSSQL
 {
     /// <summary>
-    /// A MSSQL Interface for the Region Server.
+    ///     A MSSQL Interface for the Region Server.
     /// </summary>
     public class MSSQLRegionDataStore : IRegionDataStore
     {
         private const string _migrationStore = "RegionStore";
 
-        // private static FileSystemDataStore Instance = new FileSystemDataStore();
         private static readonly ILog _Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         /// <summary>
-        /// The database manager
+        ///     The database manager
         /// </summary>
         private MSSQLManager _Database;
       
         /// <summary>
-        /// Initialises the region datastore
+        ///     Initialises the region datastore
         /// </summary>
         /// <param name="connectionString">The connection string.</param>
         public void Initialise(string connectionString)
@@ -77,19 +76,19 @@ namespace OpenSim.Data.MSSQL
                 _Database = new MSSQLManager(settingDataSource, settingInitialCatalog, settingPersistSecurityInfo, settingUserId, settingPassword);
             }
 
-            //Migration settings
+            // Migration settings
             _Database.CheckMigration(_migrationStore);
         }
 
         /// <summary>
-        /// Dispose the database
+        ///     Dispose the database
         /// </summary>
         public void Dispose() { }
 
         #region SceneObjectGroup region for loading and Store of the scene.
 
         /// <summary>
-        /// Loads the objects present in the region.
+        ///     Loads the objects present in the region.
         /// </summary>
         /// <param name="regionUUID">The region UUID.</param>
         /// <returns></returns>
@@ -100,7 +99,6 @@ namespace OpenSim.Data.MSSQL
             List<SceneObjectPart> sceneObjectParts = new List<SceneObjectPart>();
             List<SceneObjectGroup> sceneObjectGroups = new List<SceneObjectGroup>();
             SceneObjectGroup grp = null;
-
 
             string query = "SELECT *, " +
                            "sort = CASE WHEN prims.UUID = prims.SceneGroupID THEN 0 ELSE 1 END " +
@@ -118,11 +116,16 @@ namespace OpenSim.Data.MSSQL
                     while (reader.Read())
                     {
                         SceneObjectPart sceneObjectPart = BuildPrim(reader);
+
                         if (reader["Shape"] is DBNull)
+                        {
                             sceneObjectPart.Shape = PrimitiveBaseShape.Default;
+                        }
                         else
+                        {
                             sceneObjectPart.Shape = BuildShape(reader);
-                        
+                        }
+
                         sceneObjectParts.Add(sceneObjectPart);
 
                         UUID groupID = new UUID((Guid)reader["SceneGroupID"]);
@@ -130,7 +133,9 @@ namespace OpenSim.Data.MSSQL
                         if (groupID != lastGroupID) // New SOG
                         {
                             if (grp != null)
+                            {
                                 sceneObjectGroups.Add(grp);
+                            }
 
                             lastGroupID = groupID;
                             
@@ -159,16 +164,20 @@ namespace OpenSim.Data.MSSQL
                             grp.AddPart(sceneObjectPart);
 
                             if (link != 0)
+                            {
                                 sceneObjectPart.LinkNum = link;
+                            }
                         }
                     }
                 }
             }
 
             if (grp != null)
+            {
                 sceneObjectGroups.Add(grp);
+            }
 
-            //Load the inventory off all sceneobjects within the region
+            // Load the inventory off all sceneobjects within the region
             LoadItems(sceneObjectParts);
 
             _Log.DebugFormat("[REGION DB]: Loaded {0} objects using {1} prims", sceneObjectGroups.Count, sceneObjectParts.Count);
@@ -177,7 +186,7 @@ namespace OpenSim.Data.MSSQL
         }
 
         /// <summary>
-        /// Load in the prim's persisted inventory.
+        ///     Load in the prim's persisted inventory.
         /// </summary>
         /// <param name="allPrims">all prims on a region</param>
         private void LoadItems(List<SceneObjectPart> allPrims)
@@ -207,6 +216,7 @@ namespace OpenSim.Data.MSSQL
                             TaskInventoryItem item = BuildItem(reader);
 
                             item.ParentID = objectPart.UUID; // Values in database are
+                
                             // often wrong
                             inventory.Add(item);
                         }
@@ -218,7 +228,7 @@ namespace OpenSim.Data.MSSQL
         }
 
         /// <summary>
-        /// Stores all object's details apart from inventory
+        ///     Stores all object's details apart from inventory
         /// </summary>
         /// <param name="obj"></param>
         /// <param name="regionUUID"></param>
@@ -234,14 +244,16 @@ namespace OpenSim.Data.MSSQL
                 {
                     foreach (SceneObjectPart sceneObjectPart in obj.Children.Values)
                     {
-                        //Update prim
+                        // Update prim
                         using (SqlCommand sqlCommand = conn.CreateCommand())
                         {
                             sqlCommand.Transaction = transaction;
+
                             try
                             {
                                 StoreSceneObjectPrim(sceneObjectPart, sqlCommand, obj.UUID, regionUUID);
                             }
+
                             catch (SqlException sqlEx)
                             {
                                 _Log.ErrorFormat("[REGION DB]: Store SceneObjectPrim SQL error: {0} at line {1}", sqlEx.Message, sqlEx.LineNumber);
@@ -249,14 +261,16 @@ namespace OpenSim.Data.MSSQL
                             }
                         }
 
-                        //Update primshapes
+                        // Update primshapes
                         using (SqlCommand sqlCommand = conn.CreateCommand())
                         {
                             sqlCommand.Transaction = transaction;
+
                             try
                             {
                                 StoreSceneObjectPrimShapes(sceneObjectPart, sqlCommand, obj.UUID, regionUUID);
                             }
+
                             catch (SqlException sqlEx)
                             {
                                 _Log.ErrorFormat("[REGION DB]: Store SceneObjectPrimShapes SQL error: {0} at line {1}", sqlEx.Message, sqlEx.LineNumber);
@@ -267,26 +281,27 @@ namespace OpenSim.Data.MSSQL
 
                     transaction.Commit();
                 }
+
                 catch (Exception ex)
                 {
                     _Log.ErrorFormat("[REGION DB]: Store SceneObjectGroup error: {0}, Rolling back...", ex.Message);
+
                     try
                     {
                         transaction.Rollback();
                     }
+
                     catch (Exception ex2)
                     {
-                        //Show error
+                        // Show error
                         _Log.InfoFormat("[REGION DB]: Rollback of SceneObjectGroup store transaction failed with error: {0}", ex2.Message);
-
                     }
                 }
             }
-
         }
 
         /// <summary>
-        /// Stores the prim of the sceneobjectpart.
+        ///     Stores the prim of the sceneobjectpart.
         /// </summary>
         /// <param name="sceneObjectPart">The sceneobjectpart or prim.</param>
         /// <param name="sqlCommand">The SQL command with the transaction.</param>
@@ -294,8 +309,8 @@ namespace OpenSim.Data.MSSQL
         /// <param name="regionUUID">The region UUID.</param>
         private void StoreSceneObjectPrim(SceneObjectPart sceneObjectPart, SqlCommand sqlCommand, UUID sceneGroupID, UUID regionUUID)
         {
-            //Big query to update or insert a new prim.
-            //Note for SQL Server 2008 this could be simplified
+            // Big query to update or insert a new prim.
+            // Note for SQL Server 2008 this could be simplified
             string queryPrims = @"
 IF EXISTS (SELECT UUID FROM prims WHERE UUID = @UUID)
     BEGIN
@@ -347,17 +362,18 @@ ELSE
             )
     END";
 
-            //Set commandtext.
+            // Set commandtext.
             sqlCommand.CommandText = queryPrims;
-            //Add parameters
+            
+            // Add parameters
             sqlCommand.Parameters.AddRange(CreatePrimParameters(sceneObjectPart, sceneGroupID, regionUUID));
 
-            //Execute the query. If it fails then error is trapped in calling function
+            // Execute the query. If it fails then error is trapped in calling function
             sqlCommand.ExecuteNonQuery();
         }
 
         /// <summary>
-        /// Stores the scene object prim shapes.
+        ///     Stores the scene object prim shapes.
         /// </summary>
         /// <param name="sceneObjectPart">The sceneobjectpart containing prim shape.</param>
         /// <param name="sqlCommand">The SQL command with the transaction.</param>
@@ -365,8 +381,8 @@ ELSE
         /// <param name="regionUUID">The region UUID.</param>
         private void StoreSceneObjectPrimShapes(SceneObjectPart sceneObjectPart, SqlCommand sqlCommand, UUID sceneGroupID, UUID regionUUID)
         {
-            //Big query to or insert or update primshapes
-            //Note for SQL Server 2008 this can be simplified
+            // Big query to or insert or update primshapes
+            // Note for SQL Server 2008 this can be simplified
             string queryPrimShapes = @"
 IF EXISTS (SELECT UUID FROM primshapes WHERE UUID = @UUID)
     BEGIN
@@ -393,20 +409,19 @@ ELSE
             )
     END";
 
-            //Set commandtext.
+            // Set commandtext.
             sqlCommand.CommandText = queryPrimShapes;
 
-            //Add parameters
+            // Add parameters
             sqlCommand.Parameters.AddRange(CreatePrimShapeParameters(sceneObjectPart, sceneGroupID, regionUUID));
 
-            //Execute the query. If it fails then error is trapped in calling function
+            // Execute the query. If it fails then error is trapped in calling function
             sqlCommand.ExecuteNonQuery();
-
         }
 
         /// <summary>
-        /// Removes a object from the database.
-        /// Meaning removing it from tables Prims, PrimShapes and PrimItems
+        ///     Removes a object from the database.
+        ///     Meaning removing it from tables Prims, PrimShapes and PrimItems
         /// </summary>
         /// <param name="objectID">id of scenegroup</param>
         /// <param name="regionUUID">regionUUID (is this used anyway</param>
@@ -414,14 +429,14 @@ ELSE
         {
             _Log.InfoFormat("[MSSQL]: Removing obj: {0} from region: {1}", objectID, regionUUID);
 
-            //Remove from prims and primsitem table
+            // Remove from prims and primsitem table
             string sqlPrims = "DELETE FROM PRIMS WHERE SceneGroupID = @objectID";
             string sqlPrimItems = "DELETE FROM PRIMITEMS WHERE primID in (SELECT UUID FROM PRIMS WHERE SceneGroupID = @objectID)";
             string sqlPrimShapes = "DELETE FROM PRIMSHAPES WHERE uuid in (SELECT UUID FROM PRIMS WHERE SceneGroupID = @objectID)";
 
             lock (_Database)
             {
-                //Using the non transaction mode.
+                // Using the non transaction mode.
                 using (AutoClosingSqlCommand cmd = _Database.Query(sqlPrimShapes))
                 {
                     cmd.Parameters.Add(_Database.CreateParameter("objectID", objectID));
@@ -437,20 +452,18 @@ ELSE
         }
 
         /// <summary>
-        /// Store the inventory of a prim. Warning deletes everything first and then adds all again.
+        ///     Store the inventory of a prim. Warning deletes everything first and then adds all again.
         /// </summary>
         /// <param name="primID"></param>
         /// <param name="items"></param>
         public void StorePrimInventory(UUID primID, ICollection<TaskInventoryItem> items)
         {
-            //_Log.InfoFormat("[REGION DB: Persisting Prim Inventory with prim ID {0}", primID);
-
-            //Statement from MySQL section!
+            // Statement from MySQL section!
             // For now, we're just going to crudely remove all the previous inventory items
             // no matter whether they have changed or not, and replace them with the current set.
 
-            //Delete everything from PrimID
-            //TODO add index on PrimID in DB, if not already exist
+            // Delete everything from PrimID
+            // TODO add index on PrimID in DB, if not already exist
             using (AutoClosingSqlCommand cmd = _Database.Query("DELETE PRIMITEMS WHERE primID = @primID"))
             {
                 cmd.Parameters.Add(_Database.CreateParameter("@primID", primID));
@@ -479,7 +492,7 @@ ELSE
         #endregion
 
         /// <summary>
-        /// Loads the terrain map.
+        ///     Loads the terrain map.
         /// </summary>
         /// <param name="regionID">regionID.</param>
         /// <returns></returns>
@@ -492,16 +505,17 @@ ELSE
 
             using (AutoClosingSqlCommand cmd = _Database.Query(sql))
             {
-                // MySqlParameter param = new MySqlParameter();
                 cmd.Parameters.Add(_Database.CreateParameter("@RegionUUID", regionID));
 
                 using (SqlDataReader reader = cmd.ExecuteReader())
                 {
                     int rev;
+
                     if (reader.Read())
                     {
                         MemoryStream str = new MemoryStream((byte[])reader["Heightfield"]);
                         BinaryReader br = new BinaryReader(str);
+
                         for (int x = 0; x < 256; x++)
                         {
                             for (int y = 0; y < 256; y++)
@@ -509,6 +523,7 @@ ELSE
                                 terrain[x, y] = br.ReadDouble();
                             }
                         }
+
                         rev = (int)reader["Revision"];
                     }
                     else
@@ -516,6 +531,7 @@ ELSE
                         _Log.Info("[REGION DB]: No terrain found for region");
                         return null;
                     }
+
                     _Log.Info("[REGION DB]: Loaded terrain revision r" + rev);
                 }
             }
@@ -524,7 +540,7 @@ ELSE
         }
 
         /// <summary>
-        /// Stores the terrain map to DB.
+        ///     Stores the terrain map to DB.
         /// </summary>
         /// <param name="terrain">terrain map data.</param>
         /// <param name="regionID">regionID.</param>
@@ -534,6 +550,7 @@ ELSE
 
             //Delete old terrain map
             string sql = "delete from terrain where RegionUUID=@RegionUUID";
+
             using (AutoClosingSqlCommand cmd = _Database.Query(sql))
             {
                 cmd.Parameters.Add(_Database.CreateParameter("@RegionUUID", regionID));
@@ -554,7 +571,7 @@ ELSE
         }
 
         /// <summary>
-        /// Loads all the land objects of a region.
+        ///     Loads all the land objects of a region.
         /// </summary>
         /// <param name="regionUUID">The region UUID.</param>
         /// <returns></returns>
@@ -582,9 +599,11 @@ ELSE
             foreach (LandData landData in landDataForRegion)
             {
                 sql = "select * from landaccesslist where LandUUID = @LandUUID";
+
                 using (AutoClosingSqlCommand cmdAccessList = _Database.Query(sql))
                 {
                     cmdAccessList.Parameters.Add(_Database.CreateParameter("@LandUUID", landData.GlobalID));
+
                     using (SqlDataReader readerAccessList = cmdAccessList.ExecuteReader())
                     {
                         while (readerAccessList.Read())
@@ -600,7 +619,7 @@ ELSE
         }
 
         /// <summary>
-        /// Stores land object with landaccess list.
+        ///     Stores land object with landaccess list.
         /// </summary>
         /// <param name="parcel">parcel data.</param>
         public void StoreLandObject(ILandObject parcel)
@@ -639,7 +658,7 @@ VALUES
         }
 
         /// <summary>
-        /// Removes a land object from DB.
+        ///     Removes a land object from DB.
         /// </summary>
         /// <param name="globalID">UUID of landobject</param>
         public void RemoveLandObject(UUID globalID)
@@ -658,7 +677,7 @@ VALUES
         }
 
         /// <summary>
-        /// Loads the settings of a region.
+        ///     Loads the settings of a region.
         /// </summary>
         /// <param name="regionUUID">The region UUID.</param>
         /// <returns></returns>
@@ -666,9 +685,11 @@ VALUES
         {
             string sql = "select * from regionsettings where regionUUID = @regionUUID";
             RegionSettings regionSettings;
+
             using (AutoClosingSqlCommand cmd = _Database.Query(sql))
             {
                 cmd.Parameters.Add(_Database.CreateParameter("@regionUUID", regionUUID));
+
                 using (SqlDataReader reader = cmd.ExecuteReader())
                 {
                     if (reader.Read())
@@ -693,13 +714,14 @@ VALUES
         }
 
         /// <summary>
-        /// Store region settings, need to check if the check is really necesary. If we can make something for creating new region.
+        ///     Store region settings, need to check if the check is really necesary. If we can make something for creating new region.
         /// </summary>
         /// <param name="regionSettings">region settings.</param>
         public void StoreRegionSettings(RegionSettings regionSettings)
         {
             //Little check if regionUUID already exist in DB
             string regionUUID;
+
             using (AutoClosingSqlCommand cmd = _Database.Query("SELECT regionUUID FROM regionsettings WHERE regionUUID = @regionUUID"))
             {
                 cmd.Parameters.Add(_Database.CreateParameter("@regionUUID", regionSettings.RegionUUID));
@@ -742,7 +764,7 @@ VALUES
         #region Private Methods
 
         /// <summary>
-        /// Serializes the terrain data for storage in DB.
+        ///     Serializes the terrain data for storage in DB.
         /// </summary>
         /// <param name="val">terrain data</param>
         /// <returns></returns>
@@ -753,20 +775,25 @@ VALUES
 
             // TODO: COMPATIBILITY - Add byte-order conversions
             for (int x = 0; x < 256; x++)
+            {
                 for (int y = 0; y < 256; y++)
                 {
                     double height = val[x, y];
+
                     if (height == 0.0)
+                    {
                         height = double.Epsilon;
+                    }
 
                     bw.Write(height);
                 }
+            }
 
             return str.ToArray();
         }
 
         /// <summary>
-        /// Stores new regionsettings.
+        ///     Stores new regionsettings.
         /// </summary>
         /// <param name="regionSettings">The region settings.</param>
         private void StoreNewRegionSettings(RegionSettings regionSettings)
@@ -794,7 +821,7 @@ VALUES
         #region Private DataRecord conversion methods
 
         /// <summary>
-        /// Builds the region settings from a datarecod.
+        ///     Builds the region settings from a datarecod.
         /// </summary>
         /// <param name="row">datarecord with regionsettings.</param>
         /// <returns></returns>
@@ -847,7 +874,7 @@ VALUES
         }
 
         /// <summary>
-        /// Builds the land data from a datarecord.
+        ///     Builds the land data from a datarecord.
         /// </summary>
         /// <param name="row">datarecord with land data</param>
         /// <returns></returns>
@@ -868,12 +895,14 @@ VALUES
             newData.Area = Convert.ToInt32(row["Area"]);
             newData.AuctionID = Convert.ToUInt32(row["AuctionID"]); //Unemplemented
             newData.Category = (Parcel.ParcelCategory)Convert.ToInt32(row["Category"]);
+            
             //Enum libsecondlife.Parcel.ParcelCategory
             newData.ClaimDate = Convert.ToInt32(row["ClaimDate"]);
             newData.ClaimPrice = Convert.ToInt32(row["ClaimPrice"]);
             newData.GroupID = new UUID((Guid)row["GroupUUID"]);
             newData.SalePrice = Convert.ToInt32(row["SalePrice"]);
             newData.Status = (Parcel.ParcelStatus)Convert.ToInt32(row["LandStatus"]);
+            
             //Enum. libsecondlife.Parcel.ParcelStatus
             newData.Flags = Convert.ToUInt32(row["LandFlags"]);
             newData.LandingType = Convert.ToByte(row["LandingType"]);
@@ -884,14 +913,6 @@ VALUES
             newData.PassHours = Convert.ToSingle(row["PassHours"]);
             newData.PassPrice = Convert.ToInt32(row["PassPrice"]);
 
-//            UUID authedbuyer;
-//            UUID snapshotID;
-//
-//            if (UUID.TryParse((string)row["AuthBuyerID"], out authedbuyer))
-//                newData.AuthBuyerID = authedbuyer;
-//
-//            if (UUID.TryParse((string)row["SnapshotUUID"], out snapshotID))
-//                newData.SnapshotID = snapshotID;
             newData.AuthBuyerID = new UUID((Guid) row["AuthBuyerID"]);
             newData.SnapshotID = new UUID((Guid)row["SnapshotUUID"]);
 
@@ -900,13 +921,10 @@ VALUES
 
             try
             {
-                newData.UserLocation =
-                    new Vector3(Convert.ToSingle(row["UserLocationX"]), Convert.ToSingle(row["UserLocationY"]),
-                                  Convert.ToSingle(row["UserLocationZ"]));
-                newData.UserLookAt =
-                    new Vector3(Convert.ToSingle(row["UserLookAtX"]), Convert.ToSingle(row["UserLookAtY"]),
-                                  Convert.ToSingle(row["UserLookAtZ"]));
+                newData.UserLocation = new Vector3(Convert.ToSingle(row["UserLocationX"]), Convert.ToSingle(row["UserLocationY"]), Convert.ToSingle(row["UserLocationZ"]));
+                newData.UserLookAt = new Vector3(Convert.ToSingle(row["UserLookAtX"]), Convert.ToSingle(row["UserLookAtY"]), Convert.ToSingle(row["UserLookAtZ"]));
             }
+
             catch (InvalidCastException)
             {
                 newData.UserLocation = Vector3.Zero;
@@ -920,7 +938,7 @@ VALUES
         }
 
         /// <summary>
-        /// Builds the landaccess data from a data record.
+        ///     Builds the landaccess data from a data record.
         /// </summary>
         /// <param name="row">datarecord with landaccess data</param>
         /// <returns></returns>
@@ -934,7 +952,7 @@ VALUES
         }
 
         /// <summary>
-        /// Builds the prim from a datarecord.
+        ///     Builds the prim from a datarecord.
         /// </summary>
         /// <param name="primRow">datarecord</param>
         /// <returns></returns>
@@ -943,19 +961,23 @@ VALUES
             SceneObjectPart prim = new SceneObjectPart();
 
             prim.UUID = new UUID((Guid)primRow["UUID"]);
+            
             // explicit conversion of integers is required, which sort
             // of sucks.  No idea if there is a shortcut here or not.
             prim.CreationDate = Convert.ToInt32(primRow["CreationDate"]);
             prim.Name = (string)primRow["Name"];
+            
             // various text fields
             prim.Text = (string)primRow["Text"];
             prim.Color = Color.FromArgb(Convert.ToInt32(primRow["ColorA"]),
                                         Convert.ToInt32(primRow["ColorR"]),
                                         Convert.ToInt32(primRow["ColorG"]),
                                         Convert.ToInt32(primRow["ColorB"]));
+
             prim.Description = (string)primRow["Description"];
             prim.SitName = (string)primRow["SitName"];
             prim.TouchName = (string)primRow["TouchName"];
+            
             // permissions
             prim.ObjectFlags = Convert.ToUInt32(primRow["ObjectFlags"]);
             prim.CreatorID = new UUID((Guid)primRow["CreatorID"]);
@@ -967,6 +989,7 @@ VALUES
             prim.GroupMask = Convert.ToUInt32(primRow["GroupMask"]);
             prim.EveryoneMask = Convert.ToUInt32(primRow["EveryoneMask"]);
             prim.BaseMask = Convert.ToUInt32(primRow["BaseMask"]);
+            
             // vectors
             prim.OffsetPosition = new Vector3(
                                     Convert.ToSingle(primRow["PositionX"]),
@@ -1022,9 +1045,14 @@ VALUES
             prim.SoundFlags = 1; // If it's persisted at all, it's looped
 
             if (!(primRow["TextureAnimation"] is DBNull))
+            {
                 prim.TextureAnimation = (Byte[])primRow["TextureAnimation"];
+            }
+
             if (!(primRow["ParticleSystem"] is DBNull))
+            {
                 prim.ParticleSystem = (Byte[])primRow["ParticleSystem"];
+            }
 
             prim.RotationalVelocity = new Vector3(
                                         Convert.ToSingle(primRow["OmegaX"]),
@@ -1044,15 +1072,21 @@ VALUES
                                        ));
 
             if (Convert.ToInt16(primRow["ForceMouselook"]) != 0)
+            {
                 prim.SetForceMouselook(true);
+            }
 
             prim.ScriptAccessPin = Convert.ToInt32(primRow["ScriptAccessPin"]);
 
             if (Convert.ToInt16(primRow["AllowedDrop"]) != 0)
+            {
                 prim.AllowedDrop = true;
+            }
 
             if (Convert.ToInt16(primRow["DieAtEdge"]) != 0)
+            {
                 prim.DIE_AT_EDGE = true;
+            }
 
             prim.SalePrice = Convert.ToInt32(primRow["SalePrice"]);
             prim.ObjectSaleType = Convert.ToByte(primRow["SaleType"]);
@@ -1060,7 +1094,9 @@ VALUES
             prim.Material = Convert.ToByte(primRow["Material"]);
 
             if (!(primRow["ClickAction"] is DBNull))
+            {
                 prim.ClickAction = Convert.ToByte(primRow["ClickAction"]);
+            }
 
             prim.CollisionSound = new UUID((Guid)primRow["CollisionSound"]);
             prim.CollisionSoundVolume = Convert.ToSingle(primRow["CollisionSoundVolume"]);
@@ -1071,7 +1107,7 @@ VALUES
         }
 
         /// <summary>
-        /// Builds the prim shape from a datarecord.
+        ///     Builds the prim shape from a datarecord.
         /// </summary>
         /// <param name="shapeRow">The row.</param>
         /// <returns></returns>
@@ -1100,6 +1136,7 @@ VALUES
             baseShape.PathTaperY = Convert.ToSByte(shapeRow["PathTaperY"]);
             baseShape.PathTwist = Convert.ToSByte(shapeRow["PathTwist"]);
             baseShape.PathTwistBegin = Convert.ToSByte(shapeRow["PathTwistBegin"]);
+            
             // profile
             baseShape.ProfileBegin = Convert.ToUInt16(shapeRow["ProfileBegin"]);
             baseShape.ProfileEnd = Convert.ToUInt16(shapeRow["ProfileEnd"]);
@@ -1115,6 +1152,7 @@ VALUES
             {
                 baseShape.State = Convert.ToByte(shapeRow["State"]);
             }
+
             catch (InvalidCastException)
             {
             }
@@ -1123,7 +1161,7 @@ VALUES
         }
 
         /// <summary>
-        /// Build a prim inventory item from the persisted data.
+        ///     Build a prim inventory item from the persisted data.
         /// </summary>
         /// <param name="inventoryRow"></param>
         /// <returns></returns>
@@ -1162,7 +1200,7 @@ VALUES
         #region Create parameters methods
         
         /// <summary>
-        /// Creates the prim inventory parameters.
+        ///     Creates the prim inventory parameters.
         /// </summary>
         /// <param name="taskItem">item in inventory.</param>
         /// <returns></returns>
@@ -1195,7 +1233,7 @@ VALUES
         }
 
         /// <summary>
-        /// Creates the region setting parameters.
+        ///     Creates the region setting parameters.
         /// </summary>
         /// <param name="settings">regionsettings.</param>
         /// <returns></returns>
@@ -1245,7 +1283,7 @@ VALUES
         }
 
         /// <summary>
-        /// Creates the land parameters.
+        ///     Creates the land parameters.
         /// </summary>
         /// <param name="land">land parameters.</param>
         /// <param name="regionUUID">region UUID.</param>
@@ -1296,7 +1334,7 @@ VALUES
         }
 
         /// <summary>
-        /// Creates the land access parameters.
+        ///     Creates the land access parameters.
         /// </summary>
         /// <param name="parcelAccessEntry">parcel access entry.</param>
         /// <param name="parcelID">parcel ID.</param>
@@ -1313,7 +1351,7 @@ VALUES
         }
 
         /// <summary>
-        /// Creates the prim parameters for storing in DB.
+        ///     Creates the prim parameters for storing in DB.
         /// </summary>
         /// <param name="prim">Basic data of SceneObjectpart prim.</param>
         /// <param name="sceneGroupID">The scenegroup ID.</param>
@@ -1328,6 +1366,7 @@ VALUES
             parameters.Add(_Database.CreateParameter("CreationDate", prim.CreationDate));
             parameters.Add(_Database.CreateParameter("Name", prim.Name));
             parameters.Add(_Database.CreateParameter("SceneGroupID", sceneGroupID));
+            
             // the UUID of the root part for this SceneObjectGroup
             // various text fields
             parameters.Add(_Database.CreateParameter("Text", prim.Text));
@@ -1338,6 +1377,7 @@ VALUES
             parameters.Add(_Database.CreateParameter("Description", prim.Description));
             parameters.Add(_Database.CreateParameter("SitName", prim.SitName));
             parameters.Add(_Database.CreateParameter("TouchName", prim.TouchName));
+            
             // permissions
             parameters.Add(_Database.CreateParameter("ObjectFlags", prim.ObjectFlags));
             parameters.Add(_Database.CreateParameter("CreatorID", prim.CreatorID));
@@ -1349,6 +1389,7 @@ VALUES
             parameters.Add(_Database.CreateParameter("GroupMask", prim.GroupMask));
             parameters.Add(_Database.CreateParameter("EveryoneMask", prim.EveryoneMask));
             parameters.Add(_Database.CreateParameter("BaseMask", prim.BaseMask));
+            
             // vectors
             parameters.Add(_Database.CreateParameter("PositionX", prim.OffsetPosition.X));
             parameters.Add(_Database.CreateParameter("PositionY", prim.OffsetPosition.Y));
@@ -1365,6 +1406,7 @@ VALUES
             parameters.Add(_Database.CreateParameter("AccelerationX", prim.Acceleration.X));
             parameters.Add(_Database.CreateParameter("AccelerationY", prim.Acceleration.Y));
             parameters.Add(_Database.CreateParameter("AccelerationZ", prim.Acceleration.Z));
+            
             // quaternions
             parameters.Add(_Database.CreateParameter("RotationX", prim.RotationOffset.X));
             parameters.Add(_Database.CreateParameter("RotationY", prim.RotationOffset.Y));
@@ -1416,21 +1458,33 @@ VALUES
             parameters.Add(_Database.CreateParameter("CameraAtOffsetZ", prim.GetCameraAtOffset().Z));
 
             if (prim.GetForceMouselook())
+            {
                 parameters.Add(_Database.CreateParameter("ForceMouselook", 1));
+            }
             else
+            {
                 parameters.Add(_Database.CreateParameter("ForceMouselook", 0));
+            }
 
             parameters.Add(_Database.CreateParameter("ScriptAccessPin", prim.ScriptAccessPin));
 
             if (prim.AllowedDrop)
+            {
                 parameters.Add(_Database.CreateParameter("AllowedDrop", 1));
+            }
             else
+            {
                 parameters.Add(_Database.CreateParameter("AllowedDrop", 0));
+            }
 
             if (prim.DIE_AT_EDGE)
+            {
                 parameters.Add(_Database.CreateParameter("DieAtEdge", 1));
+            }
             else
+            {
                 parameters.Add(_Database.CreateParameter("DieAtEdge", 0));
+            }
 
             parameters.Add(_Database.CreateParameter("SalePrice", prim.SalePrice));
             parameters.Add(_Database.CreateParameter("SaleType", prim.ObjectSaleType));
@@ -1448,7 +1502,7 @@ VALUES
         }
 
         /// <summary>
-        /// Creates the primshape parameters for stroing in DB.
+        ///     Creates the primshape parameters for stroing in DB.
         /// </summary>
         /// <param name="prim">Basic data of SceneObjectpart prim.</param>
         /// <param name="sceneGroupID">The scene group ID.</param>
@@ -1460,12 +1514,15 @@ VALUES
 
             PrimitiveBaseShape s = prim.Shape;
             parameters.Add(_Database.CreateParameter("UUID", prim.UUID));
+            
             // shape is an enum
             parameters.Add(_Database.CreateParameter("Shape", 0));
+            
             // vectors
             parameters.Add(_Database.CreateParameter("ScaleX", s.Scale.X));
             parameters.Add(_Database.CreateParameter("ScaleY", s.Scale.Y));
             parameters.Add(_Database.CreateParameter("ScaleZ", s.Scale.Z));
+            
             // paths
             parameters.Add(_Database.CreateParameter("PCode", s.PCode));
             parameters.Add(_Database.CreateParameter("PathBegin", s.PathBegin));
@@ -1482,6 +1539,7 @@ VALUES
             parameters.Add(_Database.CreateParameter("PathTaperY", s.PathTaperY));
             parameters.Add(_Database.CreateParameter("PathTwist", s.PathTwist));
             parameters.Add(_Database.CreateParameter("PathTwistBegin", s.PathTwistBegin));
+            
             // profile
             parameters.Add(_Database.CreateParameter("ProfileBegin", s.ProfileBegin));
             parameters.Add(_Database.CreateParameter("ProfileEnd", s.ProfileEnd));

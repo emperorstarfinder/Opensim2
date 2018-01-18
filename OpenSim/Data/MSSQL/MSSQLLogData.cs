@@ -1,29 +1,29 @@
-/*
- * Copyright (c) Contributors, http://opensimulator.org/
- * See CONTRIBUTORS.TXT for a full list of copyright holders.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *     * Redistributions of source code must retain the above copyright
- *       notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above copyright
- *       notice, this list of conditions and the following disclaimer in the
- *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the OpenSim Project nor the
- *       names of its contributors may be used to endorse or promote products
- *       derived from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE DEVELOPERS ``AS IS'' AND ANY
- * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE CONTRIBUTORS BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+/// <license>
+///     Copyright (c) Contributors, http://opensimulator.org/
+///     See CONTRIBUTORS.TXT for a full list of copyright holders.
+/// 
+///     Redistribution and use in source and binary forms, with or without
+///     modification, are permitted provided that the following conditions are met:
+///         * Redistributions of source code must retain the above copyright
+///         notice, this list of conditions and the following disclaimer.
+///         * Redistributions in binary form must reproduce the above copyright
+///         notice, this list of conditions and the following disclaimer in the
+///         documentation and/or other materials provided with the distribution.
+///         * Neither the name of the OpenSim Project nor the
+///         names of its contributors may be used to endorse or promote products
+///         derived from this software without specific prior written permission.
+/// 
+///     THIS SOFTWARE IS PROVIDED BY THE DEVELOPERS ``AS IS'' AND ANY
+///     EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+///     WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+///     DISCLAIMED. IN NO EVENT SHALL THE CONTRIBUTORS BE LIABLE FOR ANY
+///     DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+///     (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+///     LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+///     ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+///     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+///     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+/// </license>
 
 using System;
 using System.Reflection;
@@ -33,7 +33,7 @@ using OpenSim.Framework;
 namespace OpenSim.Data.MSSQL
 {
     /// <summary>
-    /// An interface to the log database for MSSQL
+    ///     An interface to the log database for MSSQL
     /// </summary>
     internal class MSSQLLogData : ILogDataPlugin
     {
@@ -42,7 +42,7 @@ namespace OpenSim.Data.MSSQL
         private static readonly ILog m_log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         /// <summary>
-        /// The database manager
+        ///     The database manager
         /// </summary>
         public MSSQLManager database;
 
@@ -54,7 +54,7 @@ namespace OpenSim.Data.MSSQL
         }
 
         /// <summary>
-        /// Artificial constructor called when the plugin is loaded
+        ///     Artificial constructor called when the plugin is loaded
         /// </summary>
         public void Initialise(string connect)
         {
@@ -72,9 +72,7 @@ namespace OpenSim.Data.MSSQL
                 string settingUserId = gridDataMSSqlFile.ParseFileReadValue("user_id");
                 string settingPassword = gridDataMSSqlFile.ParseFileReadValue("password");
 
-                database =
-                    new MSSQLManager(settingDataSource, settingInitialCatalog, settingPersistSecurityInfo, settingUserId,
-                                     settingPassword);
+                database = new MSSQLManager(settingDataSource, settingInitialCatalog, settingPersistSecurityInfo, settingUserId, settingPassword);
             }
 
             //Updating mechanisme
@@ -82,7 +80,7 @@ namespace OpenSim.Data.MSSQL
         }
 
         /// <summary>
-        /// Saves a log item to the database
+        ///     Saves a log item to the database
         /// </summary>
         /// <param name="serverDaemon">The daemon triggering the event</param>
         /// <param name="target">The target of the action (region / agent UUID, etc)</param>
@@ -90,8 +88,7 @@ namespace OpenSim.Data.MSSQL
         /// <param name="arguments">The arguments passed to the method</param>
         /// <param name="priority">How critical is this?</param>
         /// <param name="logMessage">The message to log</param>
-        public void saveLog(string serverDaemon, string target, string methodCall, string arguments, int priority,
-                            string logMessage)
+        public void saveLog(string serverDaemon, string target, string methodCall, string arguments, int priority, string logMessage)
         {
             string sql = "INSERT INTO logs ([target], [server], [method], [arguments], [priority], [message]) VALUES ";
             sql += "(@target, @server, @method, @arguments, @priority, @message);";
@@ -109,6 +106,7 @@ namespace OpenSim.Data.MSSQL
                 {
                     command.ExecuteNonQuery();
                 }
+
                 catch (Exception e)
                 {
                     //Are we not in a loop here
@@ -118,7 +116,7 @@ namespace OpenSim.Data.MSSQL
         }
 
         /// <summary>
-        /// Returns the name of this DB provider
+        ///     Returns the name of this DB provider
         /// </summary>
         /// <returns>A string containing the DB provider name</returns>
         public string Name
@@ -127,7 +125,7 @@ namespace OpenSim.Data.MSSQL
         }
 
         /// <summary>
-        /// Closes the database provider
+        ///     Closes the database provider
         /// </summary>
         public void Dispose()
         {
@@ -135,7 +133,7 @@ namespace OpenSim.Data.MSSQL
         }
 
         /// <summary>
-        /// Returns the version of this DB provider
+        ///     Returns the version of this DB provider
         /// </summary>
         /// <returns>A string containing the provider version</returns>
         public string Version

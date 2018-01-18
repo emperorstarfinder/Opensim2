@@ -1,29 +1,29 @@
-/*
- * Copyright (c) Contributors, http://opensimulator.org/
- * See CONTRIBUTORS.TXT for a full list of copyright holders.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *     * Redistributions of source code must retain the above copyright
- *       notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above copyright
- *       notice, this list of conditions and the following disclaimer in the
- *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the OpenSim Project nor the
- *       names of its contributors may be used to endorse or promote products
- *       derived from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE DEVELOPERS ``AS IS'' AND ANY
- * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE CONTRIBUTORS BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+/// <license>
+///     Copyright (c) Contributors, http://opensimulator.org/
+///     See CONTRIBUTORS.TXT for a full list of copyright holders.
+/// 
+///     Redistribution and use in source and binary forms, with or without
+///     modification, are permitted provided that the following conditions are met:
+///         * Redistributions of source code must retain the above copyright
+///         notice, this list of conditions and the following disclaimer.
+///         * Redistributions in binary form must reproduce the above copyright
+///         notice, this list of conditions and the following disclaimer in the
+///         documentation and/or other materials provided with the distribution.
+///         * Neither the name of the OpenSim Project nor the
+///         names of its contributors may be used to endorse or promote products
+///         derived from this software without specific prior written permission.
+/// 
+///     THIS SOFTWARE IS PROVIDED BY THE DEVELOPERS ``AS IS'' AND ANY
+///     EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+///     WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+///     DISCLAIMED. IN NO EVENT SHALL THE CONTRIBUTORS BE LIABLE FOR ANY
+///     DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+///     (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+///     LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+///     ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+///     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+///     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+/// </license>
 
 using System;
 using System.Collections;
@@ -38,7 +38,7 @@ using OpenSim.Framework;
 namespace OpenSim.Data.MSSQL
 {
     /// <summary>
-    /// A database interface class to a user profile storage system
+    ///     A database interface class to a user profile storage system
     /// </summary>
     public class MSSQLUserData : UserDataBase
     {
@@ -47,7 +47,7 @@ namespace OpenSim.Data.MSSQL
         private static readonly ILog m_log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         /// <summary>
-        /// Database manager for MSSQL
+        ///     Database manager for MSSQL
         /// </summary>
         public MSSQLManager database;
 
@@ -55,7 +55,6 @@ namespace OpenSim.Data.MSSQL
         private const string m_usersTableName = "users";
         private const string m_userFriendsTableName = "userfriends";
 
-        // [Obsolete("Cannot be default-initialized!")]
         override public void Initialise()
         {
             m_log.Info("[MSSQLUserData]: " + Name + " cannot be default-initialized!");
@@ -63,13 +62,12 @@ namespace OpenSim.Data.MSSQL
         }
 
         /// <summary>
-        /// Loads and initialises the MSSQL storage plugin
+        ///     Loads and initialises the MSSQL storage plugin
         /// </summary>
         /// <param name="connect">connectionstring</param>
         /// <remarks>use mssql_connection.ini</remarks>
         override public void Initialise(string connect)
         {
-
             if (!string.IsNullOrEmpty(connect))
             {
                 database = new MSSQLManager(connect);
@@ -92,14 +90,14 @@ namespace OpenSim.Data.MSSQL
         }
 
         /// <summary>
-        /// Releases unmanaged and - optionally - managed resources
+        ///     Releases unmanaged and - optionally - managed resources
         /// </summary>
         override public void Dispose() { }
 
         #region User table methods
 
         /// <summary>
-        /// Searches the database for a specified user profile by name components
+        ///     Searches the database for a specified user profile by name components
         /// </summary>
         /// <param name="user">The first part of the account name</param>
         /// <param name="last">The second part of the account name</param>
@@ -118,6 +116,7 @@ namespace OpenSim.Data.MSSQL
                         return ReadUserRow(reader);
                     }
                 }
+
                 catch (Exception e)
                 {
                     m_log.Error("[USER DB] Error getting user profile, error: " + e.Message);
@@ -127,7 +126,7 @@ namespace OpenSim.Data.MSSQL
         }
 
         /// <summary>
-        /// See IUserDataPlugin
+        ///     See IUserDataPlugin
         /// </summary>
         /// <param name="uuid"></param>
         /// <returns></returns>
@@ -144,6 +143,7 @@ namespace OpenSim.Data.MSSQL
                         return ReadUserRow(reader);
                     }
                 }
+
                 catch (Exception e)
                 {
                     m_log.Error("[USER DB] Error getting user profile by UUID, error: " + e.Message);
@@ -152,9 +152,8 @@ namespace OpenSim.Data.MSSQL
             }
         }
 
-
         /// <summary>
-        /// Creates a new users profile
+        ///     Creates a new users profile
         /// </summary>
         /// <param name="user">The user profile to create</param>
         override public void AddNewUserProfile(UserProfileData user)
@@ -171,6 +170,7 @@ namespace OpenSim.Data.MSSQL
                               user.FirstLifeImage, user.WebLoginKey, user.HomeRegionID,
                               user.GodLevel, user.UserFlags, user.CustomType, user.Partner);
             }
+
             catch (Exception e)
             {
                 m_log.Error("[USER DB] Error adding new profile, error: " + e.Message);
@@ -178,7 +178,7 @@ namespace OpenSim.Data.MSSQL
         }
 
         /// <summary>
-        /// update a user profile
+        ///     update a user profile
         /// </summary>
         /// <param name="user">the profile to update</param>
         /// <returns></returns>
@@ -239,7 +239,7 @@ namespace OpenSim.Data.MSSQL
                 command.Parameters.Add(database.CreateParameter("profileImage", user.Image));
                 command.Parameters.Add(database.CreateParameter("profileFirstImage", user.FirstLifeImage));
                 command.Parameters.Add(database.CreateParameter("webLoginKey", user.WebLoginKey));
-                //
+
                 command.Parameters.Add(database.CreateParameter("homeRegionID", user.HomeRegionID));
                 command.Parameters.Add(database.CreateParameter("userFlags", user.UserFlags));
                 command.Parameters.Add(database.CreateParameter("godLevel", user.GodLevel));
@@ -252,11 +252,13 @@ namespace OpenSim.Data.MSSQL
                     int affected = command.ExecuteNonQuery();
                     return (affected != 0);
                 }
+
                 catch (Exception e)
                 {
                     m_log.Error("[USER DB] Error updating profile, error: " + e.Message);
                 }
             }
+
             return false;
         }
 
@@ -265,7 +267,7 @@ namespace OpenSim.Data.MSSQL
         #region Agent table methods
 
         /// <summary>
-        /// Returns a user session searching by name
+        ///     Returns a user session searching by name
         /// </summary>
         /// <param name="name">The account name</param>
         /// <returns>The users session</returns>
@@ -275,7 +277,7 @@ namespace OpenSim.Data.MSSQL
         }
 
         /// <summary>
-        /// Returns a user session by account name
+        ///     Returns a user session by account name
         /// </summary>
         /// <param name="user">First part of the users account name</param>
         /// <param name="last">Second part of the users account name</param>
@@ -287,7 +289,7 @@ namespace OpenSim.Data.MSSQL
         }
 
         /// <summary>
-        /// Returns an agent session by account UUID
+        ///     Returns an agent session by account UUID
         /// </summary>
         /// <param name="uuid">The accounts UUID</param>
         /// <returns>The users session</returns>
@@ -296,6 +298,7 @@ namespace OpenSim.Data.MSSQL
             using (AutoClosingSqlCommand command = database.Query("SELECT * FROM " + m_agentsTableName + " WHERE UUID = @uuid"))
             {
                 command.Parameters.Add(database.CreateParameter("uuid", uuid));
+
                 try
                 {
                     using (SqlDataReader reader = command.ExecuteReader())
@@ -303,6 +306,7 @@ namespace OpenSim.Data.MSSQL
                         return readAgentRow(reader);
                     }
                 }
+
                 catch (Exception e)
                 {
                     m_log.Error("[USER DB] Error updating agentdata by UUID, error: " + e.Message);
@@ -312,7 +316,7 @@ namespace OpenSim.Data.MSSQL
         }
 
         /// <summary>
-        /// Creates a new agent
+        ///     Creates a new agent
         /// </summary>
         /// <param name="agent">The agent to create</param>
         override public void AddNewUserAgent(UserAgentData agent)
@@ -321,6 +325,7 @@ namespace OpenSim.Data.MSSQL
             {
                 InsertUpdateAgentRow(agent);
             }
+
             catch (Exception e)
             {
                 m_log.Error("[USER DB] Error adding new agentdata, error: " + e.Message);
@@ -332,7 +337,7 @@ namespace OpenSim.Data.MSSQL
         #region User Friends List Data
 
         /// <summary>
-        /// Add a new friend in the friendlist
+        ///     Add a new friend in the friendlist
         /// </summary>
         /// <param name="friendlistowner">UUID of the friendlist owner</param>
         /// <param name="friend">Friend's UUID</param>
@@ -360,6 +365,7 @@ namespace OpenSim.Data.MSSQL
 
                     command.ExecuteNonQuery();
                 }
+
                 catch (Exception e)
                 {
                     m_log.Error("[USER DB] Error adding new userfriend, error: " + e.Message);
@@ -369,7 +375,7 @@ namespace OpenSim.Data.MSSQL
         }
 
         /// <summary>
-        /// Remove an friend from the friendlist
+        ///     Remove an friend from the friendlist
         /// </summary>
         /// <param name="friendlistowner">UUID of the friendlist owner</param>
         /// <param name="friend">UUID of the not-so-friendly user to remove from the list</param>
@@ -387,6 +393,7 @@ namespace OpenSim.Data.MSSQL
                 {
                     command.ExecuteNonQuery();
                 }
+
                 catch (Exception e)
                 {
                     m_log.Error("[USER DB] Error removing userfriend, error: " + e.Message);
@@ -395,7 +402,7 @@ namespace OpenSim.Data.MSSQL
         }
 
         /// <summary>
-        /// Update friendlist permission flag for a friend
+        ///     Update friendlist permission flag for a friend
         /// </summary>
         /// <param name="friendlistowner">UUID of the friendlist owner</param>
         /// <param name="friend">UUID of the friend</param>
@@ -415,6 +422,7 @@ namespace OpenSim.Data.MSSQL
                 {
                     command.ExecuteNonQuery();
                 }
+
                 catch (Exception e)
                 {
                     m_log.Error("[USER DB] Error updating userfriend, error: " + e.Message);
@@ -423,7 +431,7 @@ namespace OpenSim.Data.MSSQL
         }
 
         /// <summary>
-        /// Get (fetch?) the user's friendlist
+        ///     Get (fetch?) the user's friendlist
         /// </summary>
         /// <param name="friendlistowner">UUID of the friendlist owner</param>
         /// <returns>Friendlist list</returns>
@@ -456,6 +464,7 @@ namespace OpenSim.Data.MSSQL
                         }
                     }
                 }
+
                 catch (Exception e)
                 {
                     m_log.Error("[USER DB] Error updating userfriend, error: " + e.Message);
@@ -467,13 +476,13 @@ namespace OpenSim.Data.MSSQL
 
         override public Dictionary<UUID, FriendRegionInfo> GetFriendRegionInfos (List<UUID> uuids)
         {
-            Dictionary<UUID, FriendRegionInfo> infos = new Dictionary<UUID,FriendRegionInfo>(); 
+            Dictionary<UUID, FriendRegionInfo> infos = new Dictionary<UUID,FriendRegionInfo>();
+
             try
             {
                 foreach (UUID uuid in uuids)
                 {
-                    using (AutoClosingSqlCommand command = database.Query(
-                        "select agentOnline,currentHandle from " + m_agentsTableName + " where UUID = @uuid"))
+                    using (AutoClosingSqlCommand command = database.Query("select agentOnline,currentHandle from " + m_agentsTableName + " where UUID = @uuid"))
                     {
                         command.Parameters.Add(database.CreateParameter("@uuid", uuid));
 
@@ -491,6 +500,7 @@ namespace OpenSim.Data.MSSQL
                     }
                 }
             }
+
             catch (Exception e)
             {
                 m_log.Warn("[MSSQL]: Got exception on trying to find friends regions:", e);
@@ -498,12 +508,13 @@ namespace OpenSim.Data.MSSQL
 
             return infos;
         }
+
         #endregion
 
         #region Money functions (not used)
 
         /// <summary>
-        /// Performs a money transfer request between two accounts
+        ///     Performs a money transfer request between two accounts
         /// </summary>
         /// <param name="from">The senders account ID</param>
         /// <param name="to">The receivers account ID</param>
@@ -515,7 +526,7 @@ namespace OpenSim.Data.MSSQL
         }
 
         /// <summary>
-        /// Performs an inventory transfer request between two accounts
+        ///     Performs an inventory transfer request between two accounts
         /// </summary>
         /// <remarks>TODO: Move to inventory server</remarks>
         /// <param name="from">The senders account ID</param>
@@ -532,7 +543,7 @@ namespace OpenSim.Data.MSSQL
         #region Appearance methods
 
         /// <summary>
-        /// Gets the user appearance.
+        ///     Gets the user appearance.
         /// </summary>
         /// <param name="user">The user.</param>
         /// <returns></returns>
@@ -545,16 +556,18 @@ namespace OpenSim.Data.MSSQL
                 using (AutoClosingSqlCommand command = database.Query("SELECT * FROM avatarappearance WHERE owner = @UUID"))
                 {
                     command.Parameters.Add(database.CreateParameter("@UUID", user));
+
                     using (IDataReader reader = command.ExecuteReader())
                     {
                         if (reader.Read())
+                        {
                             appearance = readUserAppearance(reader);
+                        }
                         else
                         {
                             m_log.WarnFormat("[USER DB] No appearance found for user {0}", user.ToString());
                             return null;
                         }
-
                     }
                 }
 
@@ -562,16 +575,17 @@ namespace OpenSim.Data.MSSQL
 
                 return appearance;
             }
+
             catch (Exception e)
             {
                 m_log.Error("[USER DB] Error updating userfriend, error: " + e.Message);
             }
+
             return null;
         }
 
-
         /// <summary>
-        /// Update a user appearence into database
+        ///     Update a user appearence into database
         /// </summary>
         /// <param name="user">the used UUID</param>
         /// <param name="appearance">the appearence</param>
@@ -630,6 +644,7 @@ namespace OpenSim.Data.MSSQL
                 {
                     cmd.ExecuteNonQuery();
                 }
+
                 catch (Exception e)
                 {
                     m_log.Error("[USER DB] Error updating user appearance, error: " + e.Message);
@@ -644,13 +659,14 @@ namespace OpenSim.Data.MSSQL
         #region Attachment methods
 
         /// <summary>
-        /// Gets all attachment of a agent.
+        ///     Gets all attachment of a agent.
         /// </summary>
         /// <param name="agentID">agent ID.</param>
         /// <returns></returns>
         public Hashtable GetUserAttachments(UUID agentID)
         {
             Hashtable returnTable = new Hashtable();
+
             using (AutoClosingSqlCommand command = database.Query("select attachpoint, item, asset from avatarattachments where UUID = @uuid", database.CreateParameter("@uuid", agentID)))
             {
                 using (SqlDataReader reader = command.ExecuteReader())
@@ -658,8 +674,12 @@ namespace OpenSim.Data.MSSQL
                     while (reader.Read())
                     {
                         int attachpoint = Convert.ToInt32(reader["attachpoint"]);
+
                         if (returnTable.ContainsKey(attachpoint))
+                        {
                             continue;
+                        }
+
                         Hashtable item = new Hashtable();
                         item.Add("item", reader["item"].ToString());
                         item.Add("asset", reader["asset"].ToString());
@@ -668,11 +688,12 @@ namespace OpenSim.Data.MSSQL
                     }
                 }
             }
+
             return returnTable;
         }
 
         /// <summary>
-        /// Updates all attachments of the agent.
+        ///     Updates all attachments of the agent.
         /// </summary>
         /// <param name="agentID">agentID.</param>
         /// <param name="data">data with all items on attachmentpoints</param>
@@ -685,14 +706,18 @@ namespace OpenSim.Data.MSSQL
                 command.Parameters.Add(database.CreateParameter("uuid", agentID));
                 command.ExecuteNonQuery();
             }
+
             if (data == null)
+            {
                 return;
+            }
 
             sql = "insert into avatarattachments (UUID, attachpoint, item, asset) values (@uuid, @attachpoint, @item, @asset)";
 
             using (AutoClosingSqlCommand command = database.Query(sql))
             {
                 bool firstTime = true;
+
                 foreach (DictionaryEntry e in data)
                 {
                     int attachpoint = Convert.ToInt32(e.Key);
@@ -707,6 +732,7 @@ namespace OpenSim.Data.MSSQL
                         command.Parameters.Add(database.CreateParameter("@asset", new UUID(item["asset"].ToString())));
                         firstTime = false;
                     }
+
                     command.Parameters["@uuid"].Value = agentID.Guid; //.ToString();
                     command.Parameters["@attachpoint"].Value = attachpoint;
                     command.Parameters["@item"].Value = new Guid(item["item"].ToString());
@@ -716,6 +742,7 @@ namespace OpenSim.Data.MSSQL
                     {
                         command.ExecuteNonQuery();
                     }
+
                     catch (Exception ex)
                     {
                         m_log.DebugFormat("[USER DB] : Error adding user attachment. {0}", ex.Message);
@@ -725,7 +752,7 @@ namespace OpenSim.Data.MSSQL
         }
 
         /// <summary>
-        /// Resets all attachments of a agent in the database.
+        ///     Resets all attachments of a agent in the database.
         /// </summary>
         /// <param name="agentID">agentID.</param>
         override public void ResetAttachments(UUID agentID)
@@ -755,6 +782,7 @@ namespace OpenSim.Data.MSSQL
         {
             List<AvatarPickerAvatar> returnlist = new List<AvatarPickerAvatar>();
             string[] querysplit = query.Split(' ');
+
             if (querysplit.Length == 2)
             {
                 try
@@ -764,6 +792,7 @@ namespace OpenSim.Data.MSSQL
                         //Add wildcard to the search
                         command.Parameters.Add(database.CreateParameter("first", querysplit[0] + "%"));
                         command.Parameters.Add(database.CreateParameter("second", querysplit[1] + "%"));
+
                         using (IDataReader reader = command.ExecuteReader())
                         {
                             while (reader.Read())
@@ -777,6 +806,7 @@ namespace OpenSim.Data.MSSQL
                         }
                     }
                 }
+
                 catch (Exception e)
                 {
                     m_log.Error(e.ToString());
@@ -803,16 +833,18 @@ namespace OpenSim.Data.MSSQL
                         }
                     }
                 }
+
                 catch (Exception e)
                 {
                     m_log.Error(e.ToString());
                 }
             }
+
             return returnlist;
         }
 
         /// <summary>
-        /// Store a weblogin key
+        ///     Store a weblogin key
         /// </summary>
         /// <param name="AgentID">The agent UUID</param>
         /// <param name="WebLoginKey">the WebLogin Key</param>
@@ -822,11 +854,10 @@ namespace OpenSim.Data.MSSQL
             UserProfileData user = GetUserByUUID(AgentID);
             user.WebLoginKey = WebLoginKey;
             UpdateUserProfile(user);
-
         }
 
         /// <summary>
-        /// Database provider name
+        ///     Database provider name
         /// </summary>
         /// <returns>Provider name</returns>
         override public string Name
@@ -835,7 +866,7 @@ namespace OpenSim.Data.MSSQL
         }
 
         /// <summary>
-        /// Database provider version
+        ///     Database provider version
         /// </summary>
         /// <returns>provider version</returns>
         override public string Version
@@ -848,7 +879,7 @@ namespace OpenSim.Data.MSSQL
         #region Private functions
 
         /// <summary>
-        /// Reads a one item from an SQL result
+        ///     Reads a one item from an SQL result
         /// </summary>
         /// <param name="reader">The SQL Result</param>
         /// <returns>the item read</returns>
@@ -892,6 +923,7 @@ namespace OpenSim.Data.MSSQL
 
                 return appearance;
             }
+
             catch (SqlException e)
             {
                 m_log.Error(e.ToString());
@@ -901,13 +933,12 @@ namespace OpenSim.Data.MSSQL
         }
 
         /// <summary>
-        /// Insert/Update a agent row in the DB.
+        ///     Insert/Update a agent row in the DB.
         /// </summary>
         /// <param name="agentdata">agentdata.</param>
         private void InsertUpdateAgentRow(UserAgentData agentdata)
         {
             string sql = @"
-
 IF EXISTS (SELECT * FROM agents WHERE UUID = @UUID)
     BEGIN
         UPDATE agents SET UUID = @UUID, sessionID = @sessionID, secureSessionID = @secureSessionID, agentIP = @agentIP, agentPort = @agentPort, agentOnline = @agentOnline, loginTime = @loginTime, logoutTime = @logoutTime, currentRegion = @currentRegion, currentHandle = @currentHandle, currentPos = @currentPos
@@ -936,6 +967,7 @@ ELSE
                 command.Parameters.Add(database.CreateParameter("@currentPos", "<" + ((int)agentdata.Position.X) + "," + ((int)agentdata.Position.Y) + "," + ((int)agentdata.Position.Z) + ">"));
 
                 command.Transaction = command.Connection.BeginTransaction(IsolationLevel.Serializable);
+
                 try
                 {
                     if (command.ExecuteNonQuery() > 0)
@@ -947,6 +979,7 @@ ELSE
                     command.Transaction.Rollback();
                     return;
                 }
+
                 catch (Exception e)
                 {
                     command.Transaction.Rollback();
@@ -954,11 +987,10 @@ ELSE
                     return;
                 }
             }
-
         }
 
         /// <summary>
-        /// Reads an agent row from a database reader
+        ///     Reads an agent row from a database reader
         /// </summary>
         /// <param name="reader">An active database reader</param>
         /// <returns>A user session agent</returns>
@@ -988,17 +1020,17 @@ ELSE
                 Vector3 tmp_v;
                 Vector3.TryParse((string)reader["currentPos"], out tmp_v);
                 retval.Position = tmp_v;
-
             }
             else
             {
                 return null;
             }
+
             return retval;
         }
 
         /// <summary>
-        /// Creates a new user and inserts it into the database
+        ///     Creates a new user and inserts it into the database
         /// </summary>
         /// <param name="uuid">User ID</param>
         /// <param name="username">First part of the login</param>
@@ -1079,28 +1111,27 @@ ELSE
                     command.Parameters.Add(database.CreateParameter("profileImage", profileImage));
                     command.Parameters.Add(database.CreateParameter("profileFirstImage", firstImage));
                     command.Parameters.Add(database.CreateParameter("webLoginKey", webLoginKey));
-                    //
+
                     command.Parameters.Add(database.CreateParameter("homeRegionID", homeRegionID));
                     command.Parameters.Add(database.CreateParameter("userFlags", userFlags));
                     command.Parameters.Add(database.CreateParameter("godLevel", godLevel));
                     command.Parameters.Add(database.CreateParameter("customType", customType));
                     command.Parameters.Add(database.CreateParameter("partner", partnerID));
-
                     
                     command.ExecuteNonQuery();
                     return;
                 }
             }
+
             catch (Exception e)
             {
                 m_log.Error(e.ToString());
                 return;
             }
-
         }
 
         /// <summary>
-        /// Reads a user profile from an active data reader
+        ///     Reads a user profile from an active data reader
         /// </summary>
         /// <param name="reader">An active database reader</param>
         /// <returns>A user profile</returns>
@@ -1122,6 +1153,7 @@ ELSE
                     Convert.ToSingle(reader["homeLocationX"].ToString()),
                     Convert.ToSingle(reader["homeLocationY"].ToString()),
                     Convert.ToSingle(reader["homeLocationZ"].ToString()));
+
                 retval.HomeLookAt = new Vector3(
                     Convert.ToSingle(reader["homeLookAtX"].ToString()),
                     Convert.ToSingle(reader["homeLookAtY"].ToString()),
@@ -1147,10 +1179,10 @@ ELSE
             {
                 return null;
             }
+
             return retval;
         }
 
         #endregion
     }
-
 }

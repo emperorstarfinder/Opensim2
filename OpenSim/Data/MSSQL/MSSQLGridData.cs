@@ -1,29 +1,29 @@
-/*
- * Copyright (c) Contributors, http://opensimulator.org/
- * See CONTRIBUTORS.TXT for a full list of copyright holders.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *     * Redistributions of source code must retain the above copyright
- *       notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above copyright
- *       notice, this list of conditions and the following disclaimer in the
- *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the OpenSim Project nor the
- *       names of its contributors may be used to endorse or promote products
- *       derived from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE DEVELOPERS ``AS IS'' AND ANY
- * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE CONTRIBUTORS BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+/// <license>
+///     Copyright (c) Contributors, http://opensimulator.org/
+///     See CONTRIBUTORS.TXT for a full list of copyright holders.
+/// 
+///     Redistribution and use in source and binary forms, with or without
+///     modification, are permitted provided that the following conditions are met:
+///         * Redistributions of source code must retain the above copyright
+///         notice, this list of conditions and the following disclaimer.
+///         * Redistributions in binary form must reproduce the above copyright
+///         notice, this list of conditions and the following disclaimer in the
+///         documentation and/or other materials provided with the distribution.
+///         * Neither the name of the OpenSim Project nor the
+///         names of its contributors may be used to endorse or promote products
+///         derived from this software without specific prior written permission.
+/// 
+///     THIS SOFTWARE IS PROVIDED BY THE DEVELOPERS ``AS IS'' AND ANY
+///     EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+///     WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+///     DISCLAIMED. IN NO EVENT SHALL THE CONTRIBUTORS BE LIABLE FOR ANY
+///     DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+///     (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+///     LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+///     ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+///     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+///     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+/// </license>
 
 using System;
 using System.Collections.Generic;
@@ -37,7 +37,7 @@ using OpenSim.Framework;
 namespace OpenSim.Data.MSSQL
 {
     /// <summary>
-    /// A grid data interface for MSSQL Server
+    ///     A grid data interface for MSSQL Server
     /// </summary>
     public class MSSQLGridData : GridDataBase
     {
@@ -46,7 +46,7 @@ namespace OpenSim.Data.MSSQL
         private static readonly ILog m_log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         /// <summary>
-        /// Database manager
+        ///     Database manager
         /// </summary>
         private MSSQLManager database;
 
@@ -54,7 +54,6 @@ namespace OpenSim.Data.MSSQL
 
         #region IPlugin Members
 
-        // [Obsolete("Cannot be default-initialized!")]
         override public void Initialise()
         {
             m_log.Info("[GRID DB]: " + Name + " cannot be default-initialized!");
@@ -62,7 +61,7 @@ namespace OpenSim.Data.MSSQL
         }
 
         /// <summary>
-        /// Initialises the Grid Interface
+        ///     Initialises the Grid Interface
         /// </summary>
         /// <param name="connectionString">connect string</param>
         /// <remarks>use mssql_connection.ini</remarks>
@@ -84,14 +83,13 @@ namespace OpenSim.Data.MSSQL
                 string settingPassword = iniFile.ParseFileReadValue("password");
 
                 m_regionsTableName = iniFile.ParseFileReadValue("regionstablename");
+
                 if (m_regionsTableName == null)
                 {
                     m_regionsTableName = "regions";
                 }
 
-                database =
-                    new MSSQLManager(settingDataSource, settingInitialCatalog, settingPersistSecurityInfo, settingUserId,
-                                     settingPassword);
+                database = new MSSQLManager(settingDataSource, settingInitialCatalog, settingPersistSecurityInfo, settingUserId, settingPassword);
             }
 
             //New migrations check of store
@@ -99,7 +97,7 @@ namespace OpenSim.Data.MSSQL
         }
 
         /// <summary>
-        /// Shuts down the grid interface
+        ///     Shuts down the grid interface
         /// </summary>
         override public void Dispose()
         {
@@ -107,7 +105,7 @@ namespace OpenSim.Data.MSSQL
         }
 
         /// <summary>
-        /// The name of this DB provider.
+        ///     The name of this DB provider.
         /// </summary>
         /// <returns>A string containing the storage system name</returns>
         override public string Name
@@ -116,7 +114,7 @@ namespace OpenSim.Data.MSSQL
         }
 
         /// <summary>
-        /// Database provider version.
+        ///     Database provider version.
         /// </summary>
         /// <returns>A string containing the storage system version</returns>
         override public string Version
@@ -129,7 +127,7 @@ namespace OpenSim.Data.MSSQL
         #region Public override GridDataBase methods
 
         /// <summary>
-        /// Returns a list of regions within the specified ranges
+        ///     Returns a list of regions within the specified ranges
         /// </summary>
         /// <param name="xmin">minimum X coordinate</param>
         /// <param name="ymin">minimum Y coordinate</param>
@@ -161,13 +159,13 @@ namespace OpenSim.Data.MSSQL
                     return rows.ToArray();
                 }
             }
+
             m_log.Info("[GRID DB] : Found no regions within range.");
             return null;
         }
 
-        
         /// <summary>
-        /// Returns up to maxNum profiles of regions that have a name starting with namePrefix
+        ///     Returns up to maxNum profiles of regions that have a name starting with namePrefix
         /// </summary>
         /// <param name="namePrefix">The name to match against</param>
         /// <param name="maxNum">Maximum number of profiles to return</param>
@@ -193,7 +191,7 @@ namespace OpenSim.Data.MSSQL
         }
 
         /// <summary>
-        /// Returns a sim profile from its location
+        ///     Returns a sim profile from its location
         /// </summary>
         /// <param name="handle">Region location handle</param>
         /// <returns>Sim profile</returns>
@@ -211,12 +209,13 @@ namespace OpenSim.Data.MSSQL
                     }
                 }
             }
+
             m_log.InfoFormat("[GRID DB] : No region found with handle : {0}", handle);
             return null;
         }
 
         /// <summary>
-        /// Returns a sim profile from its UUID
+        ///     Returns a sim profile from its UUID
         /// </summary>
         /// <param name="uuid">The region UUID</param>
         /// <returns>The sim profile</returns>
@@ -234,12 +233,13 @@ namespace OpenSim.Data.MSSQL
                     }
                 }
             }
+
             m_log.InfoFormat("[GRID DB] : No region found with UUID : {0}", uuid);
             return null;
         }
 
         /// <summary>
-        /// Returns a sim profile from it's Region name string
+        ///     Returns a sim profile from it's Region name string
         /// </summary>
         /// <param name="regionName">The region name search query</param>
         /// <returns>The sim profile</returns>
@@ -259,6 +259,7 @@ namespace OpenSim.Data.MSSQL
                         }
                     }
                 }
+
                 m_log.InfoFormat("[GRID DB] : No region found with regionName : {0}", regionName);
                 return null;
             }
@@ -268,7 +269,7 @@ namespace OpenSim.Data.MSSQL
         }
 
         /// <summary>
-        /// Adds a new specified region to the database
+        ///     Adds a new specified region to the database
         /// </summary>
         /// <param name="profile">The profile to add</param>
         /// <returns>A dataresponse enum indicating success</returns>
@@ -278,11 +279,12 @@ namespace OpenSim.Data.MSSQL
             {
                 return DataResponse.RESPONSE_OK;
             }
+
             return DataResponse.RESPONSE_ERROR;
         }
 
         /// <summary>
-        /// Update the specified region in the database
+        ///     Update the specified region in the database
         /// </summary>
         /// <param name="profile">The profile to update</param>
         /// <returns>A dataresponse enum indicating success</returns>
@@ -292,25 +294,27 @@ namespace OpenSim.Data.MSSQL
             {
                 return DataResponse.RESPONSE_OK;
             }
+
             return DataResponse.RESPONSE_ERROR;
         }
 
         /// <summary>
-        /// Deletes a sim profile from the database
+        ///     Deletes a sim profile from the database
         /// </summary>
         /// <param name="uuid">the sim UUID</param>
         /// <returns>Successful?</returns>
-        //public DataResponse DeleteProfile(RegionProfileData profile)
         override public DataResponse DeleteProfile(string uuid)
         {
             using (AutoClosingSqlCommand command = database.Query("DELETE FROM regions WHERE uuid = @uuid;"))
             {
                 command.Parameters.Add(database.CreateParameter("uuid", uuid));
+
                 try
                 {
                     command.ExecuteNonQuery();
                     return DataResponse.RESPONSE_OK;
                 }
+
                 catch (Exception e)
                 {
                     m_log.DebugFormat("[GRID DB] : Error deleting region info, error is : {0}", e.Message);
@@ -324,7 +328,7 @@ namespace OpenSim.Data.MSSQL
         #region Methods that are not used or deprecated (still needed because of base class)
 
         /// <summary>
-        /// DEPRECATED. Attempts to authenticate a region by comparing a shared secret.
+        ///     DEPRECATED. Attempts to authenticate a region by comparing a shared secret.
         /// </summary>
         /// <param name="uuid">The UUID of the challenger</param>
         /// <param name="handle">The attempted regionHandle of the challenger</param>
@@ -335,7 +339,9 @@ namespace OpenSim.Data.MSSQL
             bool throwHissyFit = false; // Should be true by 1.0
 
             if (throwHissyFit)
+            {
                 throw new Exception("CRYPTOWEAK AUTHENTICATE: Refusing to authenticate due to replay potential.");
+            }
 
             RegionProfileData data = GetProfileByUUID(uuid);
 
@@ -343,7 +349,7 @@ namespace OpenSim.Data.MSSQL
         }
 
         /// <summary>
-        /// NOT YET FUNCTIONAL. Provides a cryptographic authentication of a region
+        ///     NOT YET FUNCTIONAL. Provides a cryptographic authentication of a region
         /// </summary>
         /// <remarks>This requires a security audit.</remarks>
         /// <param name="uuid"></param>
@@ -353,17 +359,12 @@ namespace OpenSim.Data.MSSQL
         /// <returns></returns>
         public bool AuthenticateSim(UUID uuid, ulong handle, string authhash, string challenge)
         {
-            // SHA512Managed HashProvider = new SHA512Managed();
-            // Encoding TextProvider = new UTF8Encoding();
-
-            // byte[] stream = TextProvider.GetBytes(uuid.ToString() + ":" + handle.ToString() + ":" + challenge);
-            // byte[] hash = HashProvider.ComputeHash(stream);
             return false;
         }
 
         /// <summary>
-        /// NOT IMPLEMENTED
-        /// WHEN IS THIS GONNA BE IMPLEMENTED.
+        ///     NOT IMPLEMENTED
+        ///     WHEN IS THIS GONNA BE IMPLEMENTED.
         /// </summary>
         /// <param name="x"></param>
         /// <param name="y"></param>
@@ -378,7 +379,7 @@ namespace OpenSim.Data.MSSQL
         #region private methods
 
         /// <summary>
-        /// Reads a region row from a database reader
+        ///     Reads a region row from a database reader
         /// </summary>
         /// <param name="reader">An active database reader</param>
         /// <returns>A region profile</returns>
@@ -388,18 +389,13 @@ namespace OpenSim.Data.MSSQL
 
             // Region Main gotta-have-or-we-return-null parts
             UInt64 tmp64;
+
             if (!UInt64.TryParse(reader["regionHandle"].ToString(), out tmp64))
             {
                 return null;
             }
 
             retval.regionHandle = tmp64;
-
-//            UUID tmp_uuid;
-//            if (!UUID.TryParse((string)reader["uuid"], out tmp_uuid))
-//            {
-//                return null;
-//            }
 
             retval.UUID = new UUID((Guid)reader["uuid"]); // tmp_uuid;
 
@@ -445,14 +441,11 @@ namespace OpenSim.Data.MSSQL
             // World Map Addition
             retval.regionMapTextureID = new UUID((Guid)reader["regionMapTexture"]);
             retval.owner_uuid = new UUID((Guid)reader["owner_uuid"]);
-//            UUID.TryParse((string)reader["regionMapTexture"], out retval.regionMapTextureID);
-//            UUID.TryParse((string)reader["owner_uuid"], out retval.owner_uuid);
-
             return retval;
         }
 
         /// <summary>
-        /// Update the specified region in the database
+        ///     Update the specified region in the database
         /// </summary>
         /// <param name="profile">The profile to update</param>
         /// <returns>success ?</returns>
@@ -511,6 +504,7 @@ namespace OpenSim.Data.MSSQL
                     command.ExecuteNonQuery();
                     returnval = true;
                 }
+
                 catch (Exception e)
                 {
                     m_log.Error("[GRID DB] : Error updating region, error: " + e.Message);
@@ -521,7 +515,7 @@ namespace OpenSim.Data.MSSQL
         }
 
         /// <summary>
-        /// Creates a new region in the database
+        ///     Creates a new region in the database
         /// </summary>
         /// <param name="profile">The region profile to insert</param>
         /// <returns>Successful?</returns>
@@ -577,6 +571,7 @@ namespace OpenSim.Data.MSSQL
                     command.ExecuteNonQuery();
                     returnval = true;
                 }
+
                 catch (Exception e)
                 {
                     m_log.Error("[GRID DB] : Error inserting region, error: " + e.Message);

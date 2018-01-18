@@ -1,29 +1,29 @@
-/*
- * Copyright (c) Contributors, http://opensimulator.org/
- * See CONTRIBUTORS.TXT for a full list of copyright holders.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *     * Redistributions of source code must retain the above copyright
- *       notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above copyright
- *       notice, this list of conditions and the following disclaimer in the
- *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the OpenSim Project nor the
- *       names of its contributors may be used to endorse or promote products
- *       derived from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE DEVELOPERS ``AS IS'' AND ANY
- * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE CONTRIBUTORS BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+/// <license>
+///     Copyright (c) Contributors, http://opensimulator.org/
+///     See CONTRIBUTORS.TXT for a full list of copyright holders.
+/// 
+///     Redistribution and use in source and binary forms, with or without
+///     modification, are permitted provided that the following conditions are met:
+///         * Redistributions of source code must retain the above copyright
+///         notice, this list of conditions and the following disclaimer.
+///         * Redistributions in binary form must reproduce the above copyright
+///         notice, this list of conditions and the following disclaimer in the
+///         documentation and/or other materials provided with the distribution.
+///         * Neither the name of the OpenSim Project nor the
+///         names of its contributors may be used to endorse or promote products
+///         derived from this software without specific prior written permission.
+/// 
+///     THIS SOFTWARE IS PROVIDED BY THE DEVELOPERS ``AS IS'' AND ANY
+///     EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+///     WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+///     DISCLAIMED. IN NO EVENT SHALL THE CONTRIBUTORS BE LIABLE FOR ANY
+///     DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+///     (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+///     LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+///     ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+///     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+///     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+/// </license>
 
 using System;
 using System.Collections.Generic;
@@ -37,7 +37,7 @@ using OpenSim.Framework;
 namespace OpenSim.Data.MSSQL
 {
     /// <summary>
-    /// A MSSQL interface for the inventory server
+    ///     A MSSQL interface for the inventory server
     /// </summary>
     public class MSSQLInventoryData : IInventoryDataPlugin
     {
@@ -46,7 +46,7 @@ namespace OpenSim.Data.MSSQL
         private static readonly ILog m_log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         /// <summary>
-        /// The database manager
+        ///     The database manager
         /// </summary>
         private MSSQLManager database;
 
@@ -60,7 +60,7 @@ namespace OpenSim.Data.MSSQL
         }
 
         /// <summary>
-        /// Loads and initialises the MSSQL inventory storage interface
+        ///     Loads and initialises the MSSQL inventory storage interface
         /// </summary>
         /// <param name="connectionString">connect string</param>
         /// <remarks>use mssql_connection.ini</remarks>
@@ -79,9 +79,7 @@ namespace OpenSim.Data.MSSQL
                 string settingUserId = gridDataMSSqlFile.ParseFileReadValue("user_id");
                 string settingPassword = gridDataMSSqlFile.ParseFileReadValue("password");
 
-                database =
-                    new MSSQLManager(settingDataSource, settingInitialCatalog, settingPersistSecurityInfo, settingUserId,
-                                     settingPassword);
+                database = new MSSQLManager(settingDataSource, settingInitialCatalog, settingPersistSecurityInfo, settingUserId, settingPassword);
             }
 
             //New migrations check of store
@@ -89,7 +87,7 @@ namespace OpenSim.Data.MSSQL
         }
 
         /// <summary>
-        /// The name of this DB provider
+        ///     The name of this DB provider
         /// </summary>
         /// <returns>A string containing the name of the DB provider</returns>
         public string Name
@@ -98,7 +96,7 @@ namespace OpenSim.Data.MSSQL
         }
 
         /// <summary>
-        /// Closes this DB provider
+        ///     Closes this DB provider
         /// </summary>
         public void Dispose()
         {
@@ -106,7 +104,7 @@ namespace OpenSim.Data.MSSQL
         }
 
         /// <summary>
-        /// Returns the version of this DB provider
+        ///     Returns the version of this DB provider
         /// </summary>
         /// <returns>A string containing the DB provider</returns>
         public string Version
@@ -119,7 +117,7 @@ namespace OpenSim.Data.MSSQL
         #region Folder methods
 
         /// <summary>
-        /// Returns a list of the root folders within a users inventory
+        ///     Returns a list of the root folders within a users inventory
         /// </summary>
         /// <param name="user">The user whos inventory is to be searched</param>
         /// <returns>A list of folder objects</returns>
@@ -129,7 +127,7 @@ namespace OpenSim.Data.MSSQL
         }
 
         /// <summary>
-        /// see InventoryItemBase.getUserRootFolder
+        ///     see InventoryItemBase.getUserRootFolder
         /// </summary>
         /// <param name="user">the User UUID</param>
         /// <returns></returns>
@@ -153,7 +151,7 @@ namespace OpenSim.Data.MSSQL
         }
 
         /// <summary>
-        /// Returns a list of folders in a users inventory contained within the specified folder
+        ///     Returns a list of folders in a users inventory contained within the specified folder
         /// </summary>
         /// <param name="parentID">The folder to search</param>
         /// <returns>A list of inventory folders</returns>
@@ -163,7 +161,7 @@ namespace OpenSim.Data.MSSQL
         }
 
         /// <summary>
-        /// Returns a specified inventory folder
+        ///     Returns a specified inventory folder
         /// </summary>
         /// <param name="folderID">The folder to return</param>
         /// <returns>A folder class</returns>
@@ -181,13 +179,14 @@ namespace OpenSim.Data.MSSQL
                     }
                 }
             }
+
             m_log.InfoFormat("[INVENTORY DB] : Found no inventory folder with ID : {0}", folderID);
             return null;
         }
 
         /// <summary>
-        /// Returns all child folders in the hierarchy from the parent folder and down.
-        /// Does not return the parent folder itself.
+        ///     Returns all child folders in the hierarchy from the parent folder and down.
+        ///     Does not return the parent folder itself.
         /// </summary>
         /// <param name="parentID">The folder to get subfolders for</param>
         /// <returns>A list of inventory folders</returns>
@@ -210,23 +209,24 @@ namespace OpenSim.Data.MSSQL
                 {
                     tempFolders.AddRange(getFolderHierarchy(folderBase.ID, command));
                 }
+
                 if (tempFolders.Count > 0)
                 {
                     folders.AddRange(tempFolders);
                 }
             }
+
             return folders;
         }
 
         /// <summary>
-        /// Creates a new inventory folder
+        ///     Creates a new inventory folder
         /// </summary>
         /// <param name="folder">Folder to create</param>
         public void addInventoryFolder(InventoryFolderBase folder)
         {
             string sql = @"INSERT INTO inventoryfolders ([folderID], [agentID], [parentFolderID], [folderName], [type], [version]) 
                             VALUES (@folderID, @agentID, @parentFolderID, @folderName, @type, @version);";
-
 
             using (AutoClosingSqlCommand command = database.Query(sql))
             {
@@ -239,9 +239,9 @@ namespace OpenSim.Data.MSSQL
 
                 try
                 {
-                    //IDbCommand result = database.Query(sql, param);
                     command.ExecuteNonQuery();
                 }
+
                 catch (Exception e)
                 {
                     m_log.ErrorFormat("[INVENTORY DB]: Error : {0}", e.Message);
@@ -250,7 +250,7 @@ namespace OpenSim.Data.MSSQL
         }
 
         /// <summary>
-        /// Updates an inventory folder
+        ///     Updates an inventory folder
         /// </summary>
         /// <param name="folder">Folder to update</param>
         public void updateInventoryFolder(InventoryFolderBase folder)
@@ -262,6 +262,7 @@ namespace OpenSim.Data.MSSQL
                                                        type = @type,
                                                        version = @version 
                            WHERE folderID = @keyFolderID";
+
             using (AutoClosingSqlCommand command = database.Query(sql))
             {
                 command.Parameters.Add(database.CreateParameter("folderID", folder.ID));
@@ -271,10 +272,12 @@ namespace OpenSim.Data.MSSQL
                 command.Parameters.Add(database.CreateParameter("type", folder.Type));
                 command.Parameters.Add(database.CreateParameter("version", folder.Version));
                 command.Parameters.Add(database.CreateParameter("@keyFolderID", folder.ID));
+
                 try
                 {
                     command.ExecuteNonQuery();
                 }
+
                 catch (Exception e)
                 {
                     m_log.ErrorFormat("[INVENTORY DB]: Error : {0}", e.Message);
@@ -283,12 +286,13 @@ namespace OpenSim.Data.MSSQL
         }
 
         /// <summary>
-        /// Updates an inventory folder
+        ///     Updates an inventory folder
         /// </summary>
         /// <param name="folder">Folder to update</param>
         public void moveInventoryFolder(InventoryFolderBase folder)
         {
             string sql = @"UPDATE inventoryfolders SET parentFolderID = @parentFolderID WHERE folderID = @folderID";
+
             using (IDbCommand command = database.Query(sql))
             {
                 command.Parameters.Add(database.CreateParameter("parentFolderID", folder.ParentID));
@@ -298,6 +302,7 @@ namespace OpenSim.Data.MSSQL
                 {
                     command.ExecuteNonQuery();
                 }
+
                 catch (Exception e)
                 {
                     m_log.ErrorFormat("[INVENTORY DB]: Error : {0}", e.Message);
@@ -306,7 +311,7 @@ namespace OpenSim.Data.MSSQL
         }
 
         /// <summary>
-        /// Delete an inventory folder
+        ///     Delete an inventory folder
         /// </summary>
         /// <param name="folderID">Id of folder to delete</param>
         public void deleteInventoryFolder(UUID folderID)
@@ -314,6 +319,7 @@ namespace OpenSim.Data.MSSQL
             using (SqlConnection connection = database.DatabaseConnection())
             {
                 List<InventoryFolderBase> subFolders;
+
                 using (SqlCommand command = new SqlCommand("SELECT * FROM inventoryfolders WHERE parentFolderID = @parentID", connection))
                 {
                     command.Parameters.Add(database.CreateParameter("@parentID", UUID.Zero));
@@ -343,7 +349,7 @@ namespace OpenSim.Data.MSSQL
         #region Item Methods
 
         /// <summary>
-        /// Returns a list of items in a specified folder
+        ///     Returns a list of items in a specified folder
         /// </summary>
         /// <param name="folderID">The folder to search</param>
         /// <returns>A list containing inventory items</returns>
@@ -362,12 +368,13 @@ namespace OpenSim.Data.MSSQL
                         items.Add(readInventoryItem(reader));
                     }
                 }
+
                 return items;
             }
         }
 
         /// <summary>
-        /// Returns a specified inventory item
+        ///     Returns a specified inventory item
         /// </summary>
         /// <param name="itemID">The item ID</param>
         /// <returns>An inventory item</returns>
@@ -391,7 +398,7 @@ namespace OpenSim.Data.MSSQL
         }
 
         /// <summary>
-        /// Adds a specified item to the database
+        ///     Adds a specified item to the database
         /// </summary>
         /// <param name="item">The inventory item</param>
         public void addInventoryItem(InventoryItemBase item)
@@ -440,6 +447,7 @@ namespace OpenSim.Data.MSSQL
                 {
                     command.ExecuteNonQuery();
                 }
+
                 catch (Exception e)
                 {
                     m_log.Error("[INVENTORY DB]: Error inserting item :" + e.Message);
@@ -447,13 +455,16 @@ namespace OpenSim.Data.MSSQL
             }
 
             sql = "UPDATE inventoryfolders SET version = version + 1 WHERE folderID = @folderID";
+
             using (AutoClosingSqlCommand command = database.Query(sql))
             {
                 command.Parameters.Add(database.CreateParameter("folderID", item.Folder.ToString()));
+
                 try
                 {
                     command.ExecuteNonQuery();
                 }
+
                 catch (Exception e)
                 {
                     m_log.Error("[INVENTORY DB] Error updating inventory folder for new item :" + e.Message);
@@ -462,7 +473,7 @@ namespace OpenSim.Data.MSSQL
         }
 
         /// <summary>
-        /// Updates the specified inventory item
+        ///     Updates the specified inventory item
         /// </summary>
         /// <param name="item">Inventory item to update</param>
         public void updateInventoryItem(InventoryItemBase item)
@@ -487,6 +498,7 @@ namespace OpenSim.Data.MSSQL
                                                 groupOwned = @groupOwned, 
                                                 flags = @flags 
                                         WHERE inventoryID = @keyInventoryID";
+
             using (AutoClosingSqlCommand command = database.Query(sql))
             {
                 command.Parameters.Add(database.CreateParameter("inventoryID", item.ID));
@@ -514,6 +526,7 @@ namespace OpenSim.Data.MSSQL
                 {
                     command.ExecuteNonQuery();
                 }
+
                 catch (Exception e)
                 {
                     m_log.Error("[INVENTORY DB]: Error updating item :" + e.Message);
@@ -524,7 +537,7 @@ namespace OpenSim.Data.MSSQL
         // See IInventoryDataPlugin
 
         /// <summary>
-        /// Delete an item in inventory database
+        ///     Delete an item in inventory database
         /// </summary>
         /// <param name="itemID">the item UUID</param>
         public void deleteInventoryItem(UUID itemID)
@@ -532,11 +545,13 @@ namespace OpenSim.Data.MSSQL
             using (AutoClosingSqlCommand command = database.Query("DELETE FROM inventoryitems WHERE inventoryID=@inventoryID"))
             {
                 command.Parameters.Add(database.CreateParameter("inventoryID", itemID));
+
                 try
                 {
 
                     command.ExecuteNonQuery();
                 }
+
                 catch (Exception e)
                 {
                     m_log.Error("[INVENTORY DB]: Error deleting item :" + e.Message);
@@ -555,7 +570,7 @@ namespace OpenSim.Data.MSSQL
         }
 
         /// <summary>
-        /// Returns all activated gesture-items in the inventory of the specified avatar.
+        ///     Returns all activated gesture-items in the inventory of the specified avatar.
         /// </summary>
         /// <param name="avatarID">The <see cref="UUID"/> of the avatar</param>
         /// <returns>
@@ -571,10 +586,12 @@ namespace OpenSim.Data.MSSQL
                 using (IDataReader reader = command.ExecuteReader())
                 {
                     List<InventoryItemBase> gestureList = new List<InventoryItemBase>();
+
                     while (reader.Read())
                     {
                         gestureList.Add(readInventoryItem(reader));
                     }
+
                     return gestureList;
                 }
             }
@@ -585,7 +602,7 @@ namespace OpenSim.Data.MSSQL
         #region Private methods
 
         /// <summary>
-        /// Delete an item in inventory database
+        ///     Delete an item in inventory database
         /// </summary>
         /// <param name="folderID">the item ID</param>
         /// <param name="connection">connection to the database</param>
@@ -599,6 +616,7 @@ namespace OpenSim.Data.MSSQL
                 {
                     command.ExecuteNonQuery();
                 }
+
                 catch (Exception e)
                 {
                     m_log.Error("[INVENTORY DB] Error deleting item :" + e.Message);
@@ -607,7 +625,7 @@ namespace OpenSim.Data.MSSQL
         }
 
         /// <summary>
-        /// Gets the folder hierarchy in a loop.
+        ///     Gets the folder hierarchy in a loop.
         /// </summary>
         /// <param name="parentID">parent ID.</param>
         /// <param name="command">SQL command/connection to database</param>
@@ -632,11 +650,12 @@ namespace OpenSim.Data.MSSQL
                     folders.AddRange(tempFolders);
                 }
             }
+
             return folders;
         }
 
         /// <summary>
-        /// Gets the inventory folders.
+        ///     Gets the inventory folders.
         /// </summary>
         /// <param name="parentID">parentID, use UUID.Zero to get root</param>
         /// <param name="user">user id, use UUID.Zero, if you want all folders from a parentID.</param>
@@ -653,6 +672,7 @@ namespace OpenSim.Data.MSSQL
                 {
                     command.Parameters.Add(database.CreateParameter("uuid", user));
                 }
+
                 command.Parameters.Add(database.CreateParameter("parentID", parentID));
 
                 return getInventoryFolders(command);
@@ -660,7 +680,7 @@ namespace OpenSim.Data.MSSQL
         }
 
         /// <summary>
-        /// Gets the inventory folders.
+        ///     Gets the inventory folders.
         /// </summary>
         /// <param name="command">SQLcommand.</param>
         /// <returns></returns>
@@ -668,18 +688,19 @@ namespace OpenSim.Data.MSSQL
         {
             using (IDataReader reader = command.ExecuteReader())
             {
-
                 List<InventoryFolderBase> items = new List<InventoryFolderBase>();
+
                 while (reader.Read())
                 {
                     items.Add(readInventoryFolder(reader));
                 }
+
                 return items;
             }
         }
 
         /// <summary>
-        /// Reads a list of inventory folders returned by a query.
+        ///     Reads a list of inventory folders returned by a query.
         /// </summary>
         /// <param name="reader">A MSSQL Data Reader</param>
         /// <returns>A List containing inventory folders</returns>
@@ -697,6 +718,7 @@ namespace OpenSim.Data.MSSQL
 
                 return folder;
             }
+
             catch (Exception e)
             {
                 m_log.Error("[INVENTORY DB] Error reading inventory folder :" + e.Message);
@@ -706,7 +728,7 @@ namespace OpenSim.Data.MSSQL
         }
 
         /// <summary>
-        /// Reads a one item from an SQL result
+        ///     Reads a one item from an SQL result
         /// </summary>
         /// <param name="reader">The SQL Result</param>
         /// <returns>the item read</returns>
@@ -739,6 +761,7 @@ namespace OpenSim.Data.MSSQL
 
                 return item;
             }
+
             catch (SqlException e)
             {
                 m_log.Error("[INVENTORY DB]: Error reading inventory item :" + e.Message);
@@ -748,7 +771,7 @@ namespace OpenSim.Data.MSSQL
         }
 
         /// <summary>
-        /// Delete a folder in inventory databasae
+        ///     Delete a folder in inventory databasae
         /// </summary>
         /// <param name="folderID">the folder UUID</param>
         /// <param name="connection">connection to database</param>
@@ -763,6 +786,7 @@ namespace OpenSim.Data.MSSQL
                     command.ExecuteNonQuery();
                 }
             }
+
             catch (SqlException e)
             {
                 m_log.Error("[INVENTORY DB]: Error deleting folder :" + e.Message);

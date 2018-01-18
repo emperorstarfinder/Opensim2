@@ -1,29 +1,29 @@
-/*
- * Copyright (c) Contributors, http://opensimulator.org/
- * See CONTRIBUTORS.TXT for a full list of copyright holders.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *     * Redistributions of source code must retain the above copyright
- *       notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above copyright
- *       notice, this list of conditions and the following disclaimer in the
- *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the OpenSim Project nor the
- *       names of its contributors may be used to endorse or promote products
- *       derived from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE DEVELOPERS ``AS IS'' AND ANY
- * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE CONTRIBUTORS BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+/// <license>
+///     Copyright (c) Contributors, http://opensimulator.org/
+///     See CONTRIBUTORS.TXT for a full list of copyright holders.
+/// 
+///     Redistribution and use in source and binary forms, with or without
+///     modification, are permitted provided that the following conditions are met:
+///         * Redistributions of source code must retain the above copyright
+///         notice, this list of conditions and the following disclaimer.
+///         * Redistributions in binary form must reproduce the above copyright
+///         notice, this list of conditions and the following disclaimer in the
+///         documentation and/or other materials provided with the distribution.
+///         * Neither the name of the OpenSim Project nor the
+///         names of its contributors may be used to endorse or promote products
+///         derived from this software without specific prior written permission.
+/// 
+///     THIS SOFTWARE IS PROVIDED BY THE DEVELOPERS ``AS IS'' AND ANY
+///     EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+///     WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+///     DISCLAIMED. IN NO EVENT SHALL THE CONTRIBUTORS BE LIABLE FOR ANY
+///     DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+///     (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+///     LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+///     ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+///     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+///     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+/// </license>
 
 using System;
 using System.Data.Common;
@@ -33,7 +33,7 @@ using NHibernate;
 using NHibernate.Cfg;
 using NHibernate.Tool.hbm2ddl;
 using OpenMetaverse;
-using Environment=NHibernate.Cfg.Environment;
+using Environment = NHibernate.Cfg.Environment;
 
 namespace OpenSim.Data.NHibernate
 {
@@ -48,27 +48,20 @@ namespace OpenSim.Data.NHibernate
         #region Initialization
 
         /// <summary>
-        /// Initiate NHibernate Manager
+        ///     Initiate NHibernate Manager
         /// </summary>
         /// <param name="connect">NHibernate dialect, driver and connection string separated by ';'</param>
         /// <param name="store">Name of the store</param>
         public NHibernateManager(string connect, string store)
         {
             ParseConnectionString(connect);
-
-            //To create sql file uncomment code below and write the name of the file
-            //SchemaExport exp = new SchemaExport(cfg);
-            //exp.SetOutputFile("nameofthefile.sql");
-            //exp.Create(false, true); 
-
             Assembly assembly = GetType().Assembly;
-
             sessionFactory = configuration.BuildSessionFactory();
             RunMigration(dialect, assembly, store);
         }
 
         /// <summary>
-        /// Initiate NHibernate Manager with spesific assembly
+        ///     Initiate NHibernate Manager with spesific assembly
         /// </summary>
         /// <param name="connect">NHibernate dialect, driver and connection string separated by ';'</param>
         /// <param name="store">Name of the store</param>
@@ -76,14 +69,13 @@ namespace OpenSim.Data.NHibernate
         public NHibernateManager(string connect, string store, Assembly assembly)
         {
             ParseConnectionString(connect);
-
             configuration.AddAssembly(assembly);
             sessionFactory = configuration.BuildSessionFactory();
             RunMigration(dialect, assembly, store);
         }
 
         /// <summary>
-        /// Parses the connection string and creates the NHibernate configuration
+        ///     Parses the connection string and creates the NHibernate configuration
         /// </summary>
         /// <param name="connect">NHibernate dialect, driver and connection string separated by ';'</param>
         private void ParseConnectionString(string connect)
@@ -91,6 +83,7 @@ namespace OpenSim.Data.NHibernate
             // Split out the dialect, driver, and connect string
             char[] split = { ';' };
             string[] parts = connect.Split(split, 3);
+
             if (parts.Length != 3)
             {
                 // TODO: make this a real exception type
@@ -101,18 +94,15 @@ namespace OpenSim.Data.NHibernate
 
             // NHibernate setup
             configuration = new Configuration();
-            configuration.SetProperty(Environment.ConnectionProvider,
-                            "NHibernate.Connection.DriverConnectionProvider");
-            configuration.SetProperty(Environment.Dialect,
-                            "NHibernate.Dialect." + dialect);
-            configuration.SetProperty(Environment.ConnectionDriver,
-                            "NHibernate.Driver." + parts[1]);
+            configuration.SetProperty(Environment.ConnectionProvider, "NHibernate.Connection.DriverConnectionProvider");
+            configuration.SetProperty(Environment.Dialect, "NHibernate.Dialect." + dialect);
+            configuration.SetProperty(Environment.ConnectionDriver, "NHibernate.Driver." + parts[1]);
             configuration.SetProperty(Environment.ConnectionString, parts[2]);
             configuration.AddAssembly("OpenSim.Data.NHibernate");
         }
 
         /// <summary>
-        /// Runs migration for the the store in assembly
+        ///     Runs migration for the the store in assembly
         /// </summary>
         /// <param name="dialect">Dialect in use</param>
         /// <param name="assembly">Assembly where migration files exist</param>
@@ -123,6 +113,7 @@ namespace OpenSim.Data.NHibernate
             // MySQLDialect instead of MySQL5Dialect which is the dialect currently in use. To avoid renaming 
             // this folder each time the mysql version changes creating simple mapping:
             String migrationSubType = dialect;
+
             if (dialect.StartsWith("MySQL"))
             {
                 migrationSubType = "MySQLDialect";
@@ -135,8 +126,8 @@ namespace OpenSim.Data.NHibernate
         #endregion
 
         /// <summary>
-        /// Gets object of given type from database with given id. 
-        /// Uses stateless session for efficiency.
+        ///     Gets object of given type from database with given id. 
+        ///     Uses stateless session for efficiency.
         /// </summary>
         /// <param name="type">Type of the object.</param>
         /// <param name="id">Id of the object.</param>
@@ -146,21 +137,24 @@ namespace OpenSim.Data.NHibernate
             using (IStatelessSession session = sessionFactory.OpenStatelessSession())
             {
                 object obj = null;
+
                 try
                 {
                     obj = session.Get(type.FullName, id);
                 }
+
                 catch (Exception e)
                 {
                     m_log.ErrorFormat("[NHIBERNATE] {0} of id {1} loading threw exception: " + e.ToString(), type.Name, id);
                 }
+
                 return obj;
             }            
         }
 
         /// <summary>
-        /// Gets object of given type from database with given id. 
-        /// Use this method for objects containing collections. For flat objects stateless mode is more efficient.
+        ///     Gets object of given type from database with given id. 
+        ///     Use this method for objects containing collections. For flat objects stateless mode is more efficient.
         /// </summary>
         /// <param name="type">Type of the object.</param>
         /// <param name="id">Id of the object.</param>
@@ -170,22 +164,24 @@ namespace OpenSim.Data.NHibernate
             using (ISession session = sessionFactory.OpenSession())
             {
                 object obj = null;
+
                 try
                 {
                     obj = session.Get(type.FullName, id);
                 }
+
                 catch (Exception e)
                 {
                     m_log.ErrorFormat("[NHIBERNATE] {0} of id {1} loading threw exception: " + e.ToString(), type.Name, id);
                 }
+
                 return obj;
             }
-
         }
 
         /// <summary>
-        /// Inserts given object to database.
-        /// Uses stateless session for efficiency.
+        ///     Inserts given object to database.
+        ///     Uses stateless session for efficiency.
         /// </summary>
         /// <param name="obj">Object to be insterted.</param>
         /// <returns>Identifier of the object. Useful for situations when NHibernate generates the identifier.</returns>
@@ -203,6 +199,7 @@ namespace OpenSim.Data.NHibernate
                     }
                 }
             }
+
             catch (Exception e)
             {
                 m_log.Error("[NHIBERNATE] issue inserting object ", e);
@@ -211,8 +208,8 @@ namespace OpenSim.Data.NHibernate
         }
 
         /// <summary>
-        /// Inserts given object to database.
-        /// Use this method for objects containing collections. For flat objects stateless mode is more efficient.
+        ///     Inserts given object to database.
+        ///     Use this method for objects containing collections. For flat objects stateless mode is more efficient.
         /// </summary>
         /// <param name="obj">Object to be insterted.</param>
         /// <returns>Identifier of the object. Useful for situations when NHibernate generates the identifier.</returns>
@@ -230,6 +227,7 @@ namespace OpenSim.Data.NHibernate
                     }
                 }
             }
+
             catch (Exception e)
             {
                 m_log.Error("[NHIBERNATE] issue inserting object ", e);
@@ -238,8 +236,8 @@ namespace OpenSim.Data.NHibernate
         }
 
         /// <summary>
-        /// Updates given object to database.
-        /// Uses stateless session for efficiency.
+        ///     Updates given object to database.
+        ///     Uses stateless session for efficiency.
         /// </summary>
         /// <param name="obj">Object to be updated.</param>
         /// <returns>True if operation was succesful.</returns>
@@ -257,6 +255,7 @@ namespace OpenSim.Data.NHibernate
                     }
                 }
             }
+
             catch (Exception e)
             {
                 m_log.Error("[NHIBERNATE] issue updating object ", e);
@@ -265,8 +264,8 @@ namespace OpenSim.Data.NHibernate
         }
 
         /// <summary>
-        /// Updates given object to database.
-        /// Use this method for objects containing collections. For flat objects stateless mode is more efficient.
+        ///     Updates given object to database.
+        ///     Use this method for objects containing collections. For flat objects stateless mode is more efficient.
         /// </summary>
         /// <param name="obj">Object to be updated.</param>
         /// <returns>True if operation was succesful.</returns>
@@ -284,6 +283,7 @@ namespace OpenSim.Data.NHibernate
                     }
                 }
             }
+
             catch (Exception e)
             {
                 m_log.Error("[NHIBERNATE] issue updating object ", e);
@@ -292,7 +292,7 @@ namespace OpenSim.Data.NHibernate
         }
 
         /// <summary>
-        /// Deletes given object from database.
+        ///     Deletes given object from database.
         /// </summary>
         /// <param name="obj">Object to be deleted.</param>
         /// <returns>True if operation was succesful.</returns>
@@ -310,6 +310,7 @@ namespace OpenSim.Data.NHibernate
                     }
                 }
             }
+
             catch (Exception e)
             {
                 m_log.Error("[NHIBERNATE] issue deleting object ", e);
@@ -318,7 +319,7 @@ namespace OpenSim.Data.NHibernate
         }
 
         /// <summary>
-        /// Returns statefull session which can be used to execute custom nhibernate or sql queries.
+        ///     Returns statefull session which can be used to execute custom nhibernate or sql queries.
         /// </summary>
         /// <returns>Statefull session</returns>
         public ISession GetSession()
@@ -327,7 +328,7 @@ namespace OpenSim.Data.NHibernate
         }
 
         /// <summary>
-        /// Drops the database schema. This exist for unit tests. It should not be invoked from other than test teardown.
+        ///     Drops the database schema. This exist for unit tests. It should not be invoked from other than test teardown.
         /// </summary>
         public void DropSchema()
         {
@@ -340,6 +341,5 @@ namespace OpenSim.Data.NHibernate
                 sqlQuery.ExecuteUpdate();
             }
         }
-
     }
 }

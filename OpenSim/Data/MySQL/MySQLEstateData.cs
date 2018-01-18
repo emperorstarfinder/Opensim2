@@ -1,29 +1,29 @@
-/*
- * Copyright (c) Contributors, http://opensimulator.org/
- * See CONTRIBUTORS.TXT for a full list of copyright holders.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *     * Redistributions of source code must retain the above copyright
- *       notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above copyright
- *       notice, this list of conditions and the following disclaimer in the
- *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the OpenSim Project nor the
- *       names of its contributors may be used to endorse or promote products
- *       derived from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE DEVELOPERS ``AS IS'' AND ANY
- * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE CONTRIBUTORS BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+/// <license>
+///     Copyright (c) Contributors, http://opensimulator.org/
+///     See CONTRIBUTORS.TXT for a full list of copyright holders.
+/// 
+///     Redistribution and use in source and binary forms, with or without
+///     modification, are permitted provided that the following conditions are met:
+///         * Redistributions of source code must retain the above copyright
+///         notice, this list of conditions and the following disclaimer.
+///         * Redistributions in binary form must reproduce the above copyright
+///         notice, this list of conditions and the following disclaimer in the
+///         documentation and/or other materials provided with the distribution.
+///         * Neither the name of the OpenSim Project nor the
+///         names of its contributors may be used to endorse or promote products
+///         derived from this software without specific prior written permission.
+/// 
+///     THIS SOFTWARE IS PROVIDED BY THE DEVELOPERS ``AS IS'' AND ANY
+///     EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+///     WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+///     DISCLAIMED. IN NO EVENT SHALL THE CONTRIBUTORS BE LIABLE FOR ANY
+///     DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+///     (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+///     LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+///     ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+///     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+///     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+/// </license>
 
 using System;
 using System.Collections.Generic;
@@ -39,8 +39,7 @@ namespace OpenSim.Data.MySQL
 {
     public class MySQLEstateStore : IEstateDataStore
     {
-        private static readonly ILog m_log =
-            LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly ILog m_log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         private const string m_waitTimeoutSelect = "select @@wait_timeout";
 
@@ -51,8 +50,7 @@ namespace OpenSim.Data.MySQL
         private long m_lastConnectionUse;
 
         private FieldInfo[] m_Fields;
-        private Dictionary<string, FieldInfo> m_FieldMap =
-                new Dictionary<string, FieldInfo>();
+        private Dictionary<string, FieldInfo> m_FieldMap = new Dictionary<string, FieldInfo>();
 
         public void Initialise(string connectionString)
         {
@@ -62,6 +60,7 @@ namespace OpenSim.Data.MySQL
             {
                 m_log.Info("[REGION DB]: MySql - connecting: " + Util.GetDisplayConnectionString(m_connectionString));
             }
+
             catch (Exception e)
             {
                 m_log.Debug("Exception: password not found in connection string\n" + e.ToString());
@@ -84,7 +83,9 @@ namespace OpenSim.Data.MySQL
             foreach (FieldInfo f in m_Fields)
             {
                 if (f.Name.Substring(0, 2) == "m_")
+                {
                     m_FieldMap[f.Name.Substring(2)] = f;
+                }
             }
         }
 
@@ -95,17 +96,13 @@ namespace OpenSim.Data.MySQL
 
         protected void GetWaitTimeout()
         {
-            MySqlCommand cmd = new MySqlCommand(m_waitTimeoutSelect,
-                    m_connection);
+            MySqlCommand cmd = new MySqlCommand(m_waitTimeoutSelect, m_connection);
 
-            using (MySqlDataReader dbReader =
-                    cmd.ExecuteReader(CommandBehavior.SingleRow))
+            using (MySqlDataReader dbReader = cmd.ExecuteReader(CommandBehavior.SingleRow))
             {
                 if (dbReader.Read())
                 {
-                    m_waitTimeout
-                        = Convert.ToInt32(dbReader["@@wait_timeout"]) *
-                        TimeSpan.TicksPerSecond + m_waitTimeoutLeeway;
+                    m_waitTimeout = Convert.ToInt32(dbReader["@@wait_timeout"]) * TimeSpan.TicksPerSecond + m_waitTimeoutLeeway;
                 }
 
                 dbReader.Close();
@@ -114,16 +111,14 @@ namespace OpenSim.Data.MySQL
 
             m_lastConnectionUse = DateTime.Now.Ticks;
 
-            m_log.DebugFormat(
-                "[REGION DB]: Connection wait timeout {0} seconds",
-                m_waitTimeout / TimeSpan.TicksPerSecond);
+            m_log.DebugFormat("[REGION DB]: Connection wait timeout {0} seconds", m_waitTimeout / TimeSpan.TicksPerSecond);
         }
 
         protected void CheckConnection()
         {
             long timeNow = DateTime.Now.Ticks;
-            if (timeNow - m_lastConnectionUse > m_waitTimeout ||
-                    m_connection.State != ConnectionState.Open)
+
+            if (timeNow - m_lastConnectionUse > m_waitTimeout || m_connection.State != ConnectionState.Open)
             {
                 m_log.DebugFormat("[REGION DB]: Database connection has gone away - reconnecting");
 
@@ -161,10 +156,15 @@ namespace OpenSim.Data.MySQL
                     if (m_FieldMap[name].GetValue(es) is bool)
                     {
                         int v = Convert.ToInt32(r[name]);
+
                         if (v != 0)
+                        {
                             m_FieldMap[name].SetValue(es, true);
+                        }
                         else
+                        {
                             m_FieldMap[name].SetValue(es, false);
+                        }
                     }
                     else if (m_FieldMap[name].GetValue(es) is UUID)
                     {
@@ -178,12 +178,12 @@ namespace OpenSim.Data.MySQL
                         m_FieldMap[name].SetValue(es, r[name]);
                     }
                 }
+
                 r.Close();
             }
             else
             {
                 // Migration case
-                //
                 r.Close();
 
                 List<string> names = new List<string>(FieldList);
@@ -200,9 +200,13 @@ namespace OpenSim.Data.MySQL
                     if (m_FieldMap[name].GetValue(es) is bool)
                     {
                         if ((bool)m_FieldMap[name].GetValue(es))
+                        {
                             cmd.Parameters.AddWithValue("?" + name, "1");
+                        }
                         else
+                        {
                             cmd.Parameters.AddWithValue("?" + name, "0");
+                        }
                     }
                     else
                     {
@@ -232,12 +236,12 @@ namespace OpenSim.Data.MySQL
                 {
                     cmd.ExecuteNonQuery();
                 }
+
                 catch (Exception)
                 {
                 }
 
                 // Munge and transfer the ban list
-                //
                 cmd.Parameters.Clear();
                 cmd.CommandText = "insert into estateban select " + es.EstateID.ToString() + ", bannedUUID, bannedIp, bannedIpHostMask, '' from regionban where regionban.regionUUID = ?UUID";
                 cmd.Parameters.AddWithValue("?UUID", regionID.ToString());
@@ -246,6 +250,7 @@ namespace OpenSim.Data.MySQL
                 {
                     cmd.ExecuteNonQuery();
                 }
+
                 catch (Exception)
                 {
                 }
@@ -276,9 +281,13 @@ namespace OpenSim.Data.MySQL
                 if (m_FieldMap[name].GetValue(es) is bool)
                 {
                     if ((bool)m_FieldMap[name].GetValue(es))
+                    {
                         cmd.Parameters.AddWithValue("?" + name, "1");
+                    }
                     else
+                    {
                         cmd.Parameters.AddWithValue("?" + name, "0");
+                    }
                 }
                 else
                 {
@@ -319,6 +328,7 @@ namespace OpenSim.Data.MySQL
                 eb.BannedHostIPMask = "0.0.0.0";
                 es.AddBan(eb);
             }
+
             r.Close();
         }
 
@@ -387,13 +397,12 @@ namespace OpenSim.Data.MySQL
 
             while (r.Read())
             {
-                // EstateBan eb = new EstateBan();
-
                 UUID uuid = new UUID();
                 UUID.TryParse(r["uuid"].ToString(), out uuid);
 
                 uuids.Add(uuid);
             }
+
             r.Close();
 
             return uuids.ToArray();

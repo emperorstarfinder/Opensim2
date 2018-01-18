@@ -1,29 +1,29 @@
-/*
- * Copyright (c) Contributors, http://opensimulator.org/
- * See CONTRIBUTORS.TXT for a full list of copyright holders.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *     * Redistributions of source code must retain the above copyright
- *       notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above copyright
- *       notice, this list of conditions and the following disclaimer in the
- *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the OpenSim Project nor the
- *       names of its contributors may be used to endorse or promote products
- *       derived from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE DEVELOPERS ``AS IS'' AND ANY
- * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE CONTRIBUTORS BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+/// <license>
+///     Copyright (c) Contributors, http://opensimulator.org/
+///     See CONTRIBUTORS.TXT for a full list of copyright holders.
+/// 
+///     Redistribution and use in source and binary forms, with or without
+///     modification, are permitted provided that the following conditions are met:
+///         * Redistributions of source code must retain the above copyright
+///         notice, this list of conditions and the following disclaimer.
+///         * Redistributions in binary form must reproduce the above copyright
+///         notice, this list of conditions and the following disclaimer in the
+///         documentation and/or other materials provided with the distribution.
+///         * Neither the name of the OpenSim Project nor the
+///         names of its contributors may be used to endorse or promote products
+///         derived from this software without specific prior written permission.
+/// 
+///     THIS SOFTWARE IS PROVIDED BY THE DEVELOPERS ``AS IS'' AND ANY
+///     EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+///     WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+///     DISCLAIMED. IN NO EVENT SHALL THE CONTRIBUTORS BE LIABLE FOR ANY
+///     DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+///     (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+///     LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+///     ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+///     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+///     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+/// </license>
 
 using System.Data;
 using System.Data.SqlClient;
@@ -31,7 +31,7 @@ using System.Data.SqlClient;
 namespace OpenSim.Data.MSSQL
 {
     /// <summary>
-    /// Encapsulates a SqlCommand object but ensures that when it is disposed, its connection is closed and disposed also.
+    ///     Encapsulates a SqlCommand object but ensures that when it is disposed, its connection is closed and disposed also.
     /// </summary>
     internal class AutoClosingSqlCommand : IDbCommand
     {
@@ -51,58 +51,31 @@ namespace OpenSim.Data.MSSQL
 
         public string CommandText
         {
-            get
-            {
-                return realCommand.CommandText;
-            }
-            set
-            {
-                realCommand.CommandText = value;
-            }
+            get { return realCommand.CommandText; }
+            set { realCommand.CommandText = value; }
         }
 
         public int CommandTimeout
         {
-            get
-            {
-                return realCommand.CommandTimeout;
-            }
-            set
-            {
-                realCommand.CommandTimeout = value;
-            }
+            get { return realCommand.CommandTimeout; }
+            set { realCommand.CommandTimeout = value; }
         }
 
         public CommandType CommandType
         {
-            get
-            {
-                return realCommand.CommandType;
-            }
-            set
-            {
-                realCommand.CommandType = value;
-            }
+            get { return realCommand.CommandType; }
+            set { realCommand.CommandType = value; }
         }
 
         IDbConnection IDbCommand.Connection
         {
-            get
-            {
-                return realCommand.Connection;
-            }
-            set
-            {
-                realCommand.Connection = (SqlConnection) value;
-            }
+            get { return realCommand.Connection; }
+            set { realCommand.Connection = (SqlConnection) value; }
         }
 
         public SqlConnection Connection
         {
-            get
-            {
-                return realCommand.Connection;
-            }
+            get { return realCommand.Connection; }
         }
 
         IDbDataParameter IDbCommand.CreateParameter()
@@ -160,18 +133,6 @@ namespace OpenSim.Data.MSSQL
             realCommand.Prepare();
         }
 
-//        IDbTransaction IDbCommand.Transaction
-//        {
-//            get
-//            {
-//                return realCommand.Transaction;
-//            }
-//            set
-//            {
-//                realCommand.Transaction = (SqlTransaction) value;
-//            }
-//        }
-
         public IDbTransaction Transaction
         {
             get { return realCommand.Transaction; }
@@ -180,14 +141,8 @@ namespace OpenSim.Data.MSSQL
 
         UpdateRowSource IDbCommand.UpdatedRowSource
         {
-            get
-            {
-                return realCommand.UpdatedRowSource;
-            }
-            set
-            {
-                realCommand.UpdatedRowSource = value;
-            }
+            get { return realCommand.UpdatedRowSource; }
+            set { realCommand.UpdatedRowSource = value; }
         }
 
         #endregion
@@ -197,16 +152,19 @@ namespace OpenSim.Data.MSSQL
         public void Dispose()
         {
             SqlConnection conn = realCommand.Connection;
+
             try
             {
                 realCommand.Dispose();
             }
+
             finally
             {
                 try
                 {
                     conn.Close();
                 }
+
                 finally
                 {
                     conn.Dispose();

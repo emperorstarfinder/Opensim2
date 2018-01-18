@@ -1,29 +1,29 @@
-/*
- * Copyright (c) Contributors, http://opensimulator.org/
- * See CONTRIBUTORS.TXT for a full list of copyright holders.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *     * Redistributions of source code must retain the above copyright
- *       notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above copyright
- *       notice, this list of conditions and the following disclaimer in the
- *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the OpenSim Project nor the
- *       names of its contributors may be used to endorse or promote products
- *       derived from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE DEVELOPERS ``AS IS'' AND ANY
- * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE CONTRIBUTORS BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+/// <license>
+///     Copyright (c) Contributors, http://opensimulator.org/
+///     See CONTRIBUTORS.TXT for a full list of copyright holders.
+/// 
+///     Redistribution and use in source and binary forms, with or without
+///     modification, are permitted provided that the following conditions are met:
+///         * Redistributions of source code must retain the above copyright
+///         notice, this list of conditions and the following disclaimer.
+///         * Redistributions in binary form must reproduce the above copyright
+///         notice, this list of conditions and the following disclaimer in the
+///         documentation and/or other materials provided with the distribution.
+///         * Neither the name of the OpenSim Project nor the
+///         names of its contributors may be used to endorse or promote products
+///         derived from this software without specific prior written permission.
+/// 
+///     THIS SOFTWARE IS PROVIDED BY THE DEVELOPERS ``AS IS'' AND ANY
+///     EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+///     WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+///     DISCLAIMED. IN NO EVENT SHALL THE CONTRIBUTORS BE LIABLE FOR ANY
+///     DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+///     (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+///     LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+///     ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+///     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+///     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+/// </license>
 
 using System.Collections.Generic;
 using System.Reflection;
@@ -36,25 +36,23 @@ using OpenSim.Framework;
 namespace OpenSim.Data.NHibernate
 {
     /// <summary>
-    /// A User storage interface for the DB4o database system
+    ///     A User storage interface for the DB4o database system
     /// </summary>
     public class NHibernateUserData : UserDataBase
     {
         private static readonly ILog m_log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         private NHibernateManager manager;
+
         public NHibernateManager Manager
         {
-            get
-            {
-                return manager;
-            }
+            get { return manager; }
         }
 
         public override void Initialise()
         {
-            m_log.Info("[NHibernateUserData]: " + Name + " cannot be default-initialized!");
-            throw new PluginNotInitialisedException (Name);
+            m_log.Info("[NHibernate User Data]: " + Name + " cannot be default-initialized!");
+            throw new PluginNotInitialisedException(Name);
         }
 
         public override void Initialise(string connect)
@@ -69,7 +67,7 @@ namespace OpenSim.Data.NHibernate
 
             m_log.InfoFormat("[NHIBERNATE] ExistsUser; {0}", uuid);
             user = (UserProfileData)manager.Get(typeof(UserProfileData), uuid);
-            
+
             if (user == null)
             {
                 m_log.InfoFormat("[NHIBERNATE] User with given UUID does not exist {0} ", uuid);
@@ -77,18 +75,19 @@ namespace OpenSim.Data.NHibernate
             }
 
             return true;
-
         }
 
         override public UserProfileData GetUserByUUID(UUID uuid)
         {
             UserProfileData user;
             m_log.InfoFormat("[NHIBERNATE] GetUserByUUID: {0} ", uuid);
-            
+
             user = (UserProfileData)manager.Get(typeof(UserProfileData), uuid);
-            if (user != null)    
+
+            if (user != null)
             {
                 UserAgentData agent = GetAgentByUUID(uuid);
+
                 if (agent != null)
                 {
                     user.CurrentAgent = agent;
@@ -110,9 +109,6 @@ namespace OpenSim.Data.NHibernate
             {
                 m_log.InfoFormat("[NHIBERNATE] AddNewUserProfile {0}", profile.ID);
                 manager.Insert(profile);
-                // Agent should not be saved according to BasicUserTest.T015_UserPersistency()
-                // SetAgentData(profile.ID, profile.CurrentAgent);
-
             }
             else
             {
@@ -121,30 +117,11 @@ namespace OpenSim.Data.NHibernate
             }
         }
 
-        /*
-        private void SetAgentData(UUID uuid, UserAgentData agent)
-        {
-            UserAgentData old = (UserAgentData)manager.Load(typeof(UserAgentData), uuid);
-            if (old != null)
-            {
-                m_log.InfoFormat("[NHIBERNATE] SetAgentData deleting old: {0} ",uuid);
-                manager.Delete(old);
-            }
-            if (agent != null)
-            {
-                m_log.InfoFormat("[NHIBERNATE] SetAgentData: {0} ", agent.ProfileID);
-                manager.Save(agent);
-            }
-        }
-        */
-        
         override public bool UpdateUserProfile(UserProfileData profile)
         {
             if (ExistsUser(profile.ID))
             {
                 manager.Update(profile);
-                // Agent should not be saved according to BasicUserTest.T015_UserPersistency()
-                // SetAgentData(profile.ID, profile.CurrentAgent);
                 return true;
             }
             else
@@ -169,15 +146,14 @@ namespace OpenSim.Data.NHibernate
                 return;
             }
 
-
             UserAgentData old = (UserAgentData)manager.Get(typeof(UserAgentData), agent.ProfileID);
+
             if (old != null)
             {
                 manager.Delete(old);
             }
-            
+
             manager.Insert(agent);
-            
         }
 
         public void UpdateUserAgent(UserAgentData agent)
@@ -198,11 +174,13 @@ namespace OpenSim.Data.NHibernate
             ICriteria criteria = manager.GetSession().CreateCriteria(typeof(UserProfileData));
             criteria.Add(Expression.Eq("FirstName", fname));
             criteria.Add(Expression.Eq("SurName", lname));
+
             foreach (UserProfileData profile in criteria.List())
             {
                 profile.CurrentAgent = GetAgentByUUID(profile.ID);
                 return profile;
             }
+
             return null;
         }
 
@@ -227,6 +205,7 @@ namespace OpenSim.Data.NHibernate
                 ICriteria criteria = manager.GetSession().CreateCriteria(typeof(UserProfileData));
                 criteria.Add(Expression.Like("FirstName", querysplit[0]));
                 criteria.Add(Expression.Like("SurName", querysplit[1]));
+
                 foreach (UserProfileData profile in criteria.List())
                 {
                     AvatarPickerAvatar user = new AvatarPickerAvatar();
@@ -236,29 +215,32 @@ namespace OpenSim.Data.NHibernate
                     results.Add(user);
                 }
             }
+
             return results;
         }
 
         // TODO: actually implement these
-        public override void StoreWebLoginKey(UUID agentID, UUID webLoginKey) 
+        public override void StoreWebLoginKey(UUID agentID, UUID webLoginKey)
         {
-            UserProfileData user=GetUserByUUID(agentID);
+            UserProfileData user = GetUserByUUID(agentID);
             user.WebLoginKey = webLoginKey;
             UpdateUserProfile(user);
-            return;         
+            return;
         }
 
-        public override void AddNewUserFriend(UUID ownerId, UUID friendId, uint perms) 
+        public override void AddNewUserFriend(UUID ownerId, UUID friendId, uint perms)
         {
-            if (!FriendRelationExists(ownerId,friendId))
+            if (!FriendRelationExists(ownerId, friendId))
             {
                 manager.Insert(new UserFriend(UUID.Random(), ownerId, friendId, perms));
             }
+
             if (!FriendRelationExists(friendId, ownerId))
             {
                 manager.Insert(new UserFriend(UUID.Random(), friendId, ownerId, perms));
             }
-            return;         
+
+            return;
         }
 
         private bool FriendRelationExists(UUID ownerId, UUID friendId)
@@ -271,119 +253,109 @@ namespace OpenSim.Data.NHibernate
                 return criteria.List().Count > 0;
             }
         }
-        
-        public override void RemoveUserFriend(UUID ownerId, UUID friendId) 
+
+        public override void RemoveUserFriend(UUID ownerId, UUID friendId)
         {
             using (ISession session = manager.GetSession())
             {
                 using (ITransaction transaction = session.BeginTransaction())
                 {
+                    ICriteria criteria = session.CreateCriteria(typeof(UserFriend));
+                    criteria.Add(Expression.Eq("OwnerID", ownerId));
+                    criteria.Add(Expression.Eq("FriendID", friendId));
 
+                    foreach (UserFriend userFriend in criteria.List())
                     {
-                        ICriteria criteria = session.CreateCriteria(typeof(UserFriend));
-                        criteria.Add(Expression.Eq("OwnerID", ownerId));
-                        criteria.Add(Expression.Eq("FriendID", friendId));
-
-                        foreach (UserFriend userFriend in criteria.List())
-                        {
-                            session.Delete(userFriend);
-                        }
+                        session.Delete(userFriend);
                     }
 
-                    {
-                        ICriteria criteria = session.CreateCriteria(typeof(UserFriend));
-                        criteria.Add(Expression.Eq("OwnerID", friendId));
-                        criteria.Add(Expression.Eq("FriendID", ownerId));
+                    ICriteria criteria = session.CreateCriteria(typeof(UserFriend));
+                    criteria.Add(Expression.Eq("OwnerID", friendId));
+                    criteria.Add(Expression.Eq("FriendID", ownerId));
 
-                        foreach (UserFriend userFriend in criteria.List())
-                        {
-                            session.Delete(userFriend);
-                        }
+                    foreach (UserFriend userFriend in criteria.List())
+                    {
+                        session.Delete(userFriend);
                     }
 
                     transaction.Commit();
                 }
             }
-            return; 
+
+            return;
         }
 
-
-        public override void UpdateUserFriendPerms(UUID ownerId, UUID friendId, uint perms) 
+        public override void UpdateUserFriendPerms(UUID ownerId, UUID friendId, uint perms)
         {
             using (ISession session = manager.GetSession())
             {
                 using (ITransaction transaction = session.BeginTransaction())
                 {
-                    {
-                        ICriteria criteria = session.CreateCriteria(typeof(UserFriend));
-                        criteria.Add(Expression.Eq("OwnerID", ownerId));
-                        criteria.Add(Expression.Eq("FriendID", friendId));
+                    ICriteria criteria = session.CreateCriteria(typeof(UserFriend));
+                    criteria.Add(Expression.Eq("OwnerID", ownerId));
+                    criteria.Add(Expression.Eq("FriendID", friendId));
 
-                        foreach (UserFriend userFriend in criteria.List())
-                        {
-                            userFriend.FriendPermissions = perms;
-                            session.Update(userFriend);
-                        }
+                    foreach (UserFriend userFriend in criteria.List())
+                    {
+                        userFriend.FriendPermissions = perms;
+                        session.Update(userFriend);
                     }
+
                     transaction.Commit();
                 }
             }
-            return; 
+
+            return;
         }
 
-        public override List<FriendListItem> GetUserFriendList(UUID ownerId) 
+        public override List<FriendListItem> GetUserFriendList(UUID ownerId)
         {
-            List<FriendListItem> friendList=new List<FriendListItem>();
+            List<FriendListItem> friendList = new List<FriendListItem>();
             Dictionary<UUID, FriendListItem> friendListItemDictionary = new Dictionary<UUID, FriendListItem>();
 
             using (ISession session = manager.GetSession())
             {
-                    ICriteria criteria = session.CreateCriteria(typeof(UserFriend));
-                    criteria.Add(Expression.Or(
-                        Expression.Eq("OwnerID", ownerId),
-                        Expression.Eq("FriendID", ownerId)
-                        ));
+                ICriteria criteria = session.CreateCriteria(typeof(UserFriend));
+                criteria.Add(Expression.Or(
+                    Expression.Eq("OwnerID", ownerId),
+                    Expression.Eq("FriendID", ownerId)
+                    ));
 
-                    foreach (UserFriend userFriend in criteria.List())
+                foreach (UserFriend userFriend in criteria.List())
+                {
+                    if (userFriend.OwnerID == ownerId)
                     {
-                        if (userFriend.OwnerID == ownerId)
-                        {
-                            FriendListItem friendListItem = new FriendListItem();
-                            friendListItem.FriendListOwner = userFriend.OwnerID;
-                            friendListItem.Friend = userFriend.FriendID;
-                            friendListItem.FriendPerms = userFriend.FriendPermissions;
-                            friendListItemDictionary.Add(userFriend.FriendID, friendListItem);
-                            friendList.Add(friendListItem);
-                        }
+                        FriendListItem friendListItem = new FriendListItem();
+                        friendListItem.FriendListOwner = userFriend.OwnerID;
+                        friendListItem.Friend = userFriend.FriendID;
+                        friendListItem.FriendPerms = userFriend.FriendPermissions;
+                        friendListItemDictionary.Add(userFriend.FriendID, friendListItem);
+                        friendList.Add(friendListItem);
                     }
+                }
 
-                    // Reading permissions to other direction
-                    foreach (UserFriend userFriend in criteria.List())
+                // Reading permissions to other direction
+                foreach (UserFriend userFriend in criteria.List())
+                {
+                    if (userFriend.FriendID == ownerId)
                     {
-                        if (userFriend.FriendID == ownerId)
-                        {
-                            //Ignore if there is no reverse relation existing.
-                            //if (friendListItemDictionary.ContainsKey(userFriend.OwnerID))
-                            {
-                                FriendListItem friendListItem = friendListItemDictionary[userFriend.OwnerID];
-                                friendListItem.FriendListOwnerPerms = userFriend.FriendPermissions;
-                            }
-                        }
+                        FriendListItem friendListItem = friendListItemDictionary[userFriend.OwnerID];
+                        friendListItem.FriendListOwnerPerms = userFriend.FriendPermissions;
                     }
-
+                }
             }
 
-            return friendList; 
+            return friendList;
         }
 
-
-        public override Dictionary<UUID, FriendRegionInfo> GetFriendRegionInfos (List<UUID> friendsIds) 
-        { 
-            Dictionary<UUID, FriendRegionInfo> friendRegionInfos=new Dictionary<UUID, FriendRegionInfo>();
+        public override Dictionary<UUID, FriendRegionInfo> GetFriendRegionInfos(List<UUID> friendsIds)
+        {
+            Dictionary<UUID, FriendRegionInfo> friendRegionInfos = new Dictionary<UUID, FriendRegionInfo>();
 
             foreach (UUID friendId in friendsIds)
             {
-                UserAgentData agent=GetAgentByUUID(friendId);
+                UserAgentData agent = GetAgentByUUID(friendId);
+
                 if (agent != null)
                 {
                     FriendRegionInfo fri = new FriendRegionInfo();
@@ -400,8 +372,10 @@ namespace OpenSim.Data.NHibernate
         public override bool MoneyTransferRequest(UUID from, UUID to, uint amount) { return true; }
         public override bool InventoryTransferRequest(UUID from, UUID to, UUID inventory) { return true; }
 
-        /// Appearance
-        /// TODO: stubs for now to get us to a compiling state gently
+        /// <summary>
+        ///     Appearance
+        ///     TODO: stubs for now to get us to a compiling state gently
+        /// </summary>
         public override AvatarAppearance GetUserAppearance(UUID user)
         {
             return (AvatarAppearance)manager.Get(typeof(AvatarAppearance), user);
@@ -410,6 +384,7 @@ namespace OpenSim.Data.NHibernate
         private bool ExistsAppearance(UUID uuid)
         {
             AvatarAppearance appearance = (AvatarAppearance)manager.Get(typeof(AvatarAppearance), uuid);
+
             if (appearance == null)
             {
                 return false;
@@ -418,15 +393,17 @@ namespace OpenSim.Data.NHibernate
             return true;
         }
 
-
         public override void UpdateUserAppearance(UUID user, AvatarAppearance appearance)
         {
             if (appearance == null)
+            {
                 return;
+            }
 
             appearance.Owner = user;
 
             bool exists = ExistsAppearance(user);
+
             if (exists)
             {
                 manager.Update(appearance);
@@ -445,11 +422,13 @@ namespace OpenSim.Data.NHibernate
         {
         }
 
-        public override string Name {
+        public override string Name
+        {
             get { return "NHibernate"; }
         }
 
-        public override string Version {
+        public override string Version
+        {
             get { return "0.1"; }
         }
 

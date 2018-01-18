@@ -1,42 +1,42 @@
-/*
- * Copyright (c) Contributors, http://opensimulator.org/
- * See CONTRIBUTORS.TXT for a full list of copyright holders.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *     * Redistributions of source code must retain the above copyright
- *       notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above copyright
- *       notice, this list of conditions and the following disclaimer in the
- *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the OpenSim Project nor the
- *       names of its contributors may be used to endorse or promote products
- *       derived from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE DEVELOPERS ``AS IS'' AND ANY
- * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE CONTRIBUTORS BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+/// <license>
+///     Copyright (c) Contributors, http://opensimulator.org/
+///     See CONTRIBUTORS.TXT for a full list of copyright holders.
+/// 
+///     Redistribution and use in source and binary forms, with or without
+///     modification, are permitted provided that the following conditions are met:
+///         * Redistributions of source code must retain the above copyright
+///         notice, this list of conditions and the following disclaimer.
+///         * Redistributions in binary form must reproduce the above copyright
+///         notice, this list of conditions and the following disclaimer in the
+///         documentation and/or other materials provided with the distribution.
+///         * Neither the name of the OpenSim Project nor the
+///         names of its contributors may be used to endorse or promote products
+///         derived from this software without specific prior written permission.
+/// 
+///     THIS SOFTWARE IS PROVIDED BY THE DEVELOPERS ``AS IS'' AND ANY
+///     EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+///     WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+///     DISCLAIMED. IN NO EVENT SHALL THE CONTRIBUTORS BE LIABLE FOR ANY
+///     DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+///     (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+///     LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+///     ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+///     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+///     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+/// </license>
 
 using System;
 using System.Data;
 using System.Reflection;
 using System.Collections.Generic;
-using OpenMetaverse;
 using log4net;
+using OpenMetaverse;
 using OpenSim.Framework;
 
 namespace OpenSim.Data.MSSQL
 {
     /// <summary>
-    /// A MSSQL Interface for the Asset server
+    ///     A MSSQL Interface for the Asset server
     /// </summary>
     internal class MSSQLAssetData : AssetDataBase
     {
@@ -44,8 +44,9 @@ namespace OpenSim.Data.MSSQL
 
         private static readonly ILog m_log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
         private long m_ticksToEpoch;
+        
         /// <summary>
-        /// Database manager
+        ///     Database manager
         /// </summary>
         private MSSQLManager m_database;
 
@@ -54,17 +55,17 @@ namespace OpenSim.Data.MSSQL
         override public void Dispose() { }
 
         /// <summary>
-        /// <para>Initialises asset interface</para>
+        ///     <para>Initialises asset interface</para>
         /// </summary>
         // [Obsolete("Cannot be default-initialized!")]
         override public void Initialise()
         {
-            m_log.Info("[MSSQLUserData]: " + Name + " cannot be default-initialized!");
+            m_log.Info("[MSSQL User Data]: " + Name + " cannot be default-initialized!");
             throw new PluginNotInitialisedException(Name);
         }
 
         /// <summary>
-        /// Initialises asset interface
+        ///     Initialises asset interface
         /// </summary>
         /// <para>
         /// a string instead of file, if someone writes the support
@@ -80,7 +81,6 @@ namespace OpenSim.Data.MSSQL
             }
             else
             {
-
                 IniFile gridDataMSSqlFile = new IniFile("mssql_connection.ini");
                 string settingDataSource = gridDataMSSqlFile.ParseFileReadValue("data_source");
                 string settingInitialCatalog = gridDataMSSqlFile.ParseFileReadValue("initial_catalog");
@@ -88,9 +88,7 @@ namespace OpenSim.Data.MSSQL
                 string settingUserId = gridDataMSSqlFile.ParseFileReadValue("user_id");
                 string settingPassword = gridDataMSSqlFile.ParseFileReadValue("password");
 
-                m_database =
-                    new MSSQLManager(settingDataSource, settingInitialCatalog, settingPersistSecurityInfo, settingUserId,
-                                     settingPassword);
+                m_database = new MSSQLManager(settingDataSource, settingInitialCatalog, settingPersistSecurityInfo, settingUserId, settingPassword);
             }
 
             //New migration to check for DB changes
@@ -98,7 +96,7 @@ namespace OpenSim.Data.MSSQL
         }
 
         /// <summary>
-        /// Database provider version.
+        ///     Database provider version.
         /// </summary>
         override public string Version
         {
@@ -106,7 +104,7 @@ namespace OpenSim.Data.MSSQL
         }
 
         /// <summary>
-        /// The name of this DB provider.
+        ///     The name of this DB provider.
         /// </summary>
         override public string Name
         {
@@ -118,7 +116,7 @@ namespace OpenSim.Data.MSSQL
         #region IAssetDataPlugin Members
 
         /// <summary>
-        /// Fetch Asset from m_database
+        ///     Fetch Asset from m_database
         /// </summary>
         /// <param name="assetID">the asset UUID</param>
         /// <returns></returns>
@@ -127,11 +125,13 @@ namespace OpenSim.Data.MSSQL
             using (AutoClosingSqlCommand command = m_database.Query("SELECT * FROM assets WHERE id = @id"))
             {
                 command.Parameters.Add(m_database.CreateParameter("id", assetID));
+
                 using (IDataReader reader = command.ExecuteReader())
                 {
                     if (reader.Read())
                     {
                         AssetBase asset = new AssetBase();
+                
                         // Region Main
                         asset.FullID = new UUID((Guid)reader["id"]);
                         asset.Name = (string)reader["name"];
@@ -142,13 +142,14 @@ namespace OpenSim.Data.MSSQL
                         asset.Data = (byte[])reader["data"];
                         return asset;
                     }
+
                     return null; // throw new Exception("No rows to return");
                 }
             }
         }
 
         /// <summary>
-        /// Create asset in m_database
+        ///     Create asset in m_database
         /// </summary>
         /// <param name="asset">the asset</param>
         override public void CreateAsset(AssetBase asset)
@@ -179,7 +180,7 @@ namespace OpenSim.Data.MSSQL
         }
 
         /// <summary>
-        /// Update asset in m_database
+        ///     Update asset in m_database
         /// </summary>
         /// <param name="asset">the asset</param>
         override public void UpdateAsset(AssetBase asset)
@@ -206,6 +207,7 @@ namespace OpenSim.Data.MSSQL
                 {
                     command.ExecuteNonQuery();
                 }
+
                 catch (Exception e)
                 {
                     m_log.Error(e.ToString());
@@ -213,27 +215,8 @@ namespace OpenSim.Data.MSSQL
             }
         }
 
-// Commented out since currently unused - this probably should be called in FetchAsset()
-//        private void UpdateAccessTime(AssetBase asset)
-//        {
-//            using (AutoClosingSqlCommand cmd = m_database.Query("UPDATE assets SET access_time = @access_time WHERE id=@id"))
-//            {
-//                int now = (int)((System.DateTime.Now.Ticks - m_ticksToEpoch) / 10000000);
-//                cmd.Parameters.AddWithValue("@id", asset.FullID.ToString());
-//                cmd.Parameters.AddWithValue("@access_time", now);
-//                try
-//                {
-//                    cmd.ExecuteNonQuery();
-//                }
-//                catch (Exception e)
-//                {
-//                    m_log.Error(e.ToString());
-//                }
-//            }
-//        }
-
         /// <summary>
-        /// Check if asset exist in m_database
+        ///     Check if asset exist in m_database
         /// </summary>
         /// <param name="uuid"></param>
         /// <returns>true if exist.</returns>
@@ -243,12 +226,13 @@ namespace OpenSim.Data.MSSQL
             {
                 return true;
             }
+
             return false;
         }
 
         /// <summary>
-        /// Returns a list of AssetMetadata objects. The list is a subset of
-        /// the entire data set offset by <paramref name="start" /> containing
+        ///     Returns a list of AssetMetadata objects. The list is a subset of
+        ///     the entire data set offset by <paramref name="start" /> containing
         /// <paramref name="count" /> elements.
         /// </summary>
         /// <param name="start">The number of results to discard from the total data set.</param>
@@ -268,6 +252,7 @@ namespace OpenSim.Data.MSSQL
                     while (reader.Read())
                     {
                         AssetMetadata metadata = new AssetMetadata();
+            
                         // Region Main
                         metadata.FullID = new UUID((Guid)reader["id"]);
                         metadata.Name = (string)reader["name"];

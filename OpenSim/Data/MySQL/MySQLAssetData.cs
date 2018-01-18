@@ -1,29 +1,29 @@
-/*
- * Copyright (c) Contributors, http://opensimulator.org/
- * See CONTRIBUTORS.TXT for a full list of copyright holders.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *     * Redistributions of source code must retain the above copyright
- *       notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above copyright
- *       notice, this list of conditions and the following disclaimer in the
- *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the OpenSim Project nor the
- *       names of its contributors may be used to endorse or promote products
- *       derived from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE DEVELOPERS ``AS IS'' AND ANY
- * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE CONTRIBUTORS BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+/// <license>
+///     Copyright (c) Contributors, http://opensimulator.org/
+///     See CONTRIBUTORS.TXT for a full list of copyright holders.
+/// 
+///     Redistribution and use in source and binary forms, with or without
+///     modification, are permitted provided that the following conditions are met:
+///         * Redistributions of source code must retain the above copyright
+///         notice, this list of conditions and the following disclaimer.
+///         * Redistributions in binary form must reproduce the above copyright
+///         notice, this list of conditions and the following disclaimer in the
+///         documentation and/or other materials provided with the distribution.
+///         * Neither the name of the OpenSim Project nor the
+///         names of its contributors may be used to endorse or promote products
+///         derived from this software without specific prior written permission.
+/// 
+///     THIS SOFTWARE IS PROVIDED BY THE DEVELOPERS ``AS IS'' AND ANY
+///     EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+///     WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+///     DISCLAIMED. IN NO EVENT SHALL THE CONTRIBUTORS BE LIABLE FOR ANY
+///     DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+///     (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+///     LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+///     ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+///     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+///     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+/// </license>
 
 using System;
 using System.Data;
@@ -37,7 +37,7 @@ using OpenSim.Framework;
 namespace OpenSim.Data.MySQL
 {
     /// <summary>
-    /// A MySQL Interface for the Asset Server
+    ///     A MySQL Interface for the Asset Server
     /// </summary>
     public class MySQLAssetData : AssetDataBase
     {
@@ -104,13 +104,12 @@ namespace OpenSim.Data.MySQL
             string port = GridDataMySqlFile.ParseFileReadValue("port");
 
             _dbConnection = new MySQLManager(hostname, database, username, password, pooling, port);
-
         }
 
         public override void Dispose() { }
 
         /// <summary>
-        /// Database provider version
+        ///     Database provider version
         /// </summary>
         override public string Version
         {
@@ -118,7 +117,7 @@ namespace OpenSim.Data.MySQL
         }
 
         /// <summary>
-        /// The name of this DB provider
+        ///     The name of this DB provider
         /// </summary>
         override public string Name
         {
@@ -130,7 +129,7 @@ namespace OpenSim.Data.MySQL
         #region IAssetDataPlugin Members
 
         /// <summary>
-        /// Fetch Asset <paramref name="assetID"/> from database
+        ///     Fetch Asset <paramref name="assetID"/> from database
         /// </summary>
         /// <param name="assetID">Asset UUID to fetch</param>
         /// <returns>Return the asset</returns>
@@ -138,14 +137,12 @@ namespace OpenSim.Data.MySQL
         override protected AssetBase FetchStoredAsset(UUID assetID)
         {
             AssetBase asset = null;
+
             lock (_dbConnection)
             {
                 _dbConnection.CheckConnection();
 
-                MySqlCommand cmd =
-                    new MySqlCommand(
-                        "SELECT name, description, assetType, local, temporary, data FROM assets WHERE id=?id",
-                        _dbConnection.Connection);
+                MySqlCommand cmd = new MySqlCommand("SELECT name, description, assetType, local, temporary, data FROM assets WHERE id=?id", _dbConnection.Connection);
                 cmd.Parameters.AddWithValue("?id", assetID.ToString());
 
                 try
@@ -158,36 +155,44 @@ namespace OpenSim.Data.MySQL
                             asset.Data = (byte[]) dbReader["data"];
                             asset.Description = (string) dbReader["description"];
                             asset.FullID = assetID;
+
                             try
                             {
                                 asset.Local = (bool)dbReader["local"];
                             }
+
                             catch (InvalidCastException)
                             {
                                 asset.Local = false;
                             }
+
                             asset.Name = (string) dbReader["name"];
                             asset.Type = (sbyte) dbReader["assetType"];
                         }
+
                         dbReader.Close();
+
                         cmd.Dispose();
                     }
+
                     if (asset != null)
+                    {
                         UpdateAccessTime(asset);
+                    }
                 }
+
                 catch (Exception e)
                 {
-                    m_log.ErrorFormat(
-                        "[ASSETS DB]: MySql failure fetching asset {0}" + Environment.NewLine + e.ToString()
-                        + Environment.NewLine + "Reconnecting", assetID);
+                    m_log.ErrorFormat("[ASSETS DB]: MySql failure fetching asset {0}" + Environment.NewLine + e.ToString() + Environment.NewLine + "Reconnecting", assetID);
                     _dbConnection.Reconnect();
                 }
             }
+
             return asset;
         }
 
         /// <summary>
-        /// Create an asset in database, or update it if existing.
+        ///     Create an asset in database, or update it if existing.
         /// </summary>
         /// <param name="asset">Asset UUID to create</param>
         /// <remarks>On failure : Throw an exception and attempt to reconnect to database</remarks>
@@ -195,10 +200,8 @@ namespace OpenSim.Data.MySQL
         {
             lock (_dbConnection)
             {
-                //m_log.Info("[ASSET DB]: Creating Asset " + asset.FullID);
                 if (ExistsAsset(asset.FullID))
                 {
-                    //m_log.Info("[ASSET DB]: Asset exists already, ignoring.");
                     return;
                 }
 
@@ -230,6 +233,7 @@ namespace OpenSim.Data.MySQL
                         cmd.Dispose();
                     }
                 }
+
                 catch (Exception e)
                 {
                     m_log.ErrorFormat(
@@ -247,9 +251,7 @@ namespace OpenSim.Data.MySQL
             {
                 _dbConnection.CheckConnection();
 
-                MySqlCommand cmd =
-                    new MySqlCommand("update assets set access_time=?access_time where id=?id",
-                                     _dbConnection.Connection);
+                MySqlCommand cmd = new MySqlCommand("update assets set access_time=?access_time where id=?id", _dbConnection.Connection);
 
                 // need to ensure we dispose
                 try
@@ -264,6 +266,7 @@ namespace OpenSim.Data.MySQL
                         cmd.Dispose();
                     }
                 }
+
                 catch (Exception e)
                 {
                     m_log.ErrorFormat(
@@ -273,11 +276,10 @@ namespace OpenSim.Data.MySQL
                     _dbConnection.Reconnect();
                 }
             }
-
         }
 
         /// <summary>
-        /// Update a asset in database, see <see cref="CreateAsset"/>
+        ///     Update a asset in database, see <see cref="CreateAsset"/>
         /// </summary>
         /// <param name="asset">Asset UUID to update</param>
         override public void UpdateAsset(AssetBase asset)
@@ -286,7 +288,7 @@ namespace OpenSim.Data.MySQL
         }
 
         /// <summary>
-        /// check if the asset UUID exist in database
+        ///     check if the asset UUID exist in database
         /// </summary>
         /// <param name="uuid">The asset UUID</param>
         /// <returns>true if exist.</returns>
@@ -298,10 +300,7 @@ namespace OpenSim.Data.MySQL
             {
                 _dbConnection.CheckConnection();
 
-                MySqlCommand cmd =
-                    new MySqlCommand(
-                        "SELECT id FROM assets WHERE id=?id",
-                        _dbConnection.Connection);
+                MySqlCommand cmd = new MySqlCommand("SELECT id FROM assets WHERE id=?id", _dbConnection.Connection);
 
                 cmd.Parameters.AddWithValue("?id", uuid.ToString());
 
@@ -318,11 +317,10 @@ namespace OpenSim.Data.MySQL
                         cmd.Dispose();
                     }
                 }
+
                 catch (Exception e)
                 {
-                    m_log.ErrorFormat(
-                        "[ASSETS DB]: MySql failure fetching asset {0}" + Environment.NewLine + e.ToString()
-                        + Environment.NewLine + "Attempting reconnection", uuid);
+                    m_log.ErrorFormat("[ASSETS DB]: MySql failure fetching asset {0}" + Environment.NewLine + e.ToString() + Environment.NewLine + "Attempting reconnection", uuid);
                     _dbConnection.Reconnect();
                 }
             }
@@ -331,8 +329,8 @@ namespace OpenSim.Data.MySQL
         }
 
         /// <summary>
-        /// Returns a list of AssetMetadata objects. The list is a subset of
-        /// the entire data set offset by <paramref name="start" /> containing
+        ///     Returns a list of AssetMetadata objects. The list is a subset of
+        ///     the entire data set offset by <paramref name="start" /> containing
         /// <paramref name="count" /> elements.
         /// </summary>
         /// <param name="start">The number of results to discard from the total data set.</param>
@@ -370,6 +368,7 @@ namespace OpenSim.Data.MySQL
                         }
                     }
                 }
+
                 catch (Exception e)
                 {
                     m_log.Error("[ASSETS DB]: MySql failure fetching asset set" + Environment.NewLine + e.ToString() + Environment.NewLine + "Attempting reconnection");
@@ -381,7 +380,5 @@ namespace OpenSim.Data.MySQL
         }
 
         #endregion
-
-
     }
 }
