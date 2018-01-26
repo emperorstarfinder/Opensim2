@@ -43,7 +43,7 @@ namespace OpenSim
         public static string iniFilePath = "";
 
         public static bool m_saveCrashDumps = false;
-        public const string m_crashDir = Constants.DEFAULT_CRASH_DIR;
+        public static string crashDir = Constants.DEFAULT_CRASH_DIR;
 
         protected static OpenSimBase m_sim = null;
 
@@ -100,7 +100,7 @@ namespace OpenSim
 
             bool background = configSource.Configs["Startup"].GetBoolean("background", false);
             m_saveCrashDumps = configSource.Configs["Startup"].GetBoolean("save_crashes", false);
-            m_crashDir = configSource.Configs["Startup"].GetString("crash_dir", m_crashDir);
+            crashDir = configSource.Configs["Startup"].GetString("crash_dir", crashDir);
 
             if (background)
             {
@@ -167,18 +167,18 @@ namespace OpenSim
             // Log exception to disk
             try
             {
-                if (!Directory.Exists(m_crashDir))
+                if (!Directory.Exists(crashDir))
                 {
-                    Directory.CreateDirectory(m_crashDir);
+                    Directory.CreateDirectory(crashDir);
                 }
 
                 string log = Util.GetUniqueFilename(ex.GetType() + ".txt");
-                StreamWriter m_crashLog = new StreamWriter(Path.Combine(m_crashDir, log));
+                StreamWriter m_crashLog = new StreamWriter(Path.Combine(crashDir, log));
 
                 m_crashLog.WriteLine(msg);
                 m_crashLog.Close();
 
-                File.Copy("OpenSim.ini", Path.Combine(m_crashDir, log + "_OpenSim.ini"), true);
+                File.Copy("OpenSim.ini", Path.Combine(crashDir, log + "_OpenSim.ini"), true);
             }
 
             catch (Exception e2)
