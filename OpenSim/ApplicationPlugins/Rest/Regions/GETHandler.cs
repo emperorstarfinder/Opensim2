@@ -1,34 +1,37 @@
-/*
- * Copyright (c) Contributors, http://opensimulator.org/
- * See CONTRIBUTORS.TXT for a full list of copyright holders.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *     * Redistributions of source code must retain the above copyright
- *       notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above copyright
- *       notice, this list of conditions and the following disclaimer in the
- *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the OpenSim Project nor the
- *       names of its contributors may be used to endorse or promote products
- *       derived from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE DEVELOPERS ``AS IS'' AND ANY
- * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE CONTRIBUTORS BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+/// <summary>
+///     Copyright (c) Contributors, http://opensimulator.org/
+///     See CONTRIBUTORS.TXT for a full list of copyright holders.
+///     For an explanation of the license of each contributor and the content it 
+///     covers please see the Licenses directory.
+/// 
+///     Redistribution and use in source and binary forms, with or without
+///     modification, are permitted provided that the following conditions are met:
+///         * Redistributions of source code must retain the above copyright
+///         notice, this list of conditions and the following disclaimer.
+///         * Redistributions in binary form must reproduce the above copyright
+///         notice, this list of conditions and the following disclaimer in the
+///         documentation and/or other materials provided with the distribution.
+///         * Neither the name of the OpenSim Project nor the
+///         names of its contributors may be used to endorse or promote products
+///         derived from this software without specific prior written permission.
+/// 
+///     THIS SOFTWARE IS PROVIDED BY THE DEVELOPERS ``AS IS'' AND ANY
+///     EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+///     WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+///     DISCLAIMED. IN NO EVENT SHALL THE CONTRIBUTORS BE LIABLE FOR ANY
+///     DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+///     (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+///     LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+///     ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+///     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+///     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+/// </summary>
 
 using System;
 using System.IO;
 using System.Xml.Serialization;
 using OpenMetaverse;
+using OpenSim.Framework;
 using OpenSim.Framework.Servers;
 using OpenSim.Framework.Servers.HttpServer;
 using OpenSim.Region.Framework.Interfaces;
@@ -61,31 +64,37 @@ namespace OpenSim.ApplicationPlugins.Rest.Regions
 
         public string GetHandlerRegions(OSHttpResponse httpResponse)
         {
-            XmlWriter.WriteStartElement(String.Empty, "regions", String.Empty);
+            RestXmlWriter rxw = new RestXmlWriter(new StringWriter());
+
+            rxw.WriteStartElement(String.Empty, "regions", String.Empty);
 
             foreach (Scene s in App.SceneManager.Scenes)
             {
-                XmlWriter.WriteStartElement(String.Empty, "uuid", String.Empty);
-                XmlWriter.WriteString(s.RegionInfo.RegionID.ToString());
-                XmlWriter.WriteEndElement();
+                rxw.WriteStartElement(String.Empty, "uuid", String.Empty);
+                rxw.WriteString(s.RegionInfo.RegionID.ToString());
+                rxw.WriteEndElement();
             }
 
-            XmlWriter.WriteEndElement();
+            rxw.WriteEndElement();
 
-            return XmlWriterResult;
+            return rxw.ToString();
         }
 
         protected string ShortRegionInfo(string key, string value)
         {
-            if (String.IsNullOrEmpty(value) ||
-                String.IsNullOrEmpty(key)) return null;
+            RestXmlWriter rxw = new RestXmlWriter(new StringWriter());
 
-            XmlWriter.WriteStartElement(String.Empty, "region", String.Empty);
-            XmlWriter.WriteStartElement(String.Empty, key, String.Empty);
-            XmlWriter.WriteString(value);
-            XmlWriter.WriteEndDocument();
+            if (String.IsNullOrEmpty(value) || String.IsNullOrEmpty(key))
+            {
+                return null;
+            }
 
-            return XmlWriterResult;
+            rxw.WriteStartElement(String.Empty, "region", String.Empty);
+            rxw.WriteStartElement(String.Empty, key, String.Empty);
+            rxw.WriteString(value);
+            rxw.WriteEndDocument();
+
+            return rxw.ToString();
         }
 
         public string GetHandlerRegion(OSHttpResponse httpResponse, string param)
@@ -97,23 +106,25 @@ namespace OpenSim.ApplicationPlugins.Rest.Regions
 
             m_log.DebugFormat("{0} GET region UUID {1}", MsgID, regionID.ToString());
 
-            if (UUID.Zero == regionID)
-                throw new Exception("missing region ID");
+            if (UUID.Zero == regionID) throw new Exception("missing region ID");
 
             Scene scene = null;
             App.SceneManager.TryGetScene(regionID, out scene);
 
             if (null == scene)
+            {
                 return Failure(httpResponse, OSHttpStatusCode.ClientErrorNotFound, "GET", "cannot find region {0}", regionID.ToString());
+            }
 
             RegionDetails details = new RegionDetails(scene.RegionInfo);
 
             if (1 == comps.Length)
             {
                 // complete region details requested
+                RestXmlWriter rxw = new RestXmlWriter(new StringWriter());
                 XmlSerializer xs = new XmlSerializer(typeof(RegionDetails));
-                xs.Serialize(XmlWriter, details, _xmlNs);
-                return XmlWriterResult;
+                xs.Serialize(rxw, details, _xmlNs);
+                return rxw.ToString();
             }
 
             if (2 == comps.Length)
@@ -121,7 +132,9 @@ namespace OpenSim.ApplicationPlugins.Rest.Regions
                 string resp = ShortRegionInfo(comps[1], details[comps[1]]);
 
                 if (null != resp)
+                {
                     return resp;
+                }
 
                 // check for {terrain,stats,prims}
                 switch (comps[1].ToLower())
@@ -149,8 +162,8 @@ namespace OpenSim.ApplicationPlugins.Rest.Regions
                             Vector3 min, max;
                             try
                             {
-                                min = new Vector3((float)Double.Parse(subregion[0]), (float)Double.Parse(subregion[1]), (float)Double.Parse(subregion[2]));
-                                max = new Vector3((float)Double.Parse(subregion[3]), (float)Double.Parse(subregion[4]), (float)Double.Parse(subregion[5]));
+                                min = new Vector3((float)Double.Parse(subregion[0], Culture.NumberFormatInfo), (float)Double.Parse(subregion[1], Culture.NumberFormatInfo), (float)Double.Parse(subregion[2], Culture.NumberFormatInfo));
+                                max = new Vector3((float)Double.Parse(subregion[3], Culture.NumberFormatInfo), (float)Double.Parse(subregion[4], Culture.NumberFormatInfo), (float)Double.Parse(subregion[5], Culture.NumberFormatInfo));
                             }
                             catch (Exception)
                             {
@@ -173,28 +186,33 @@ namespace OpenSim.ApplicationPlugins.Rest.Regions
 
         protected string RegionTerrain(OSHttpResponse httpResponse, Scene scene)
         {
-            return Failure(httpResponse, OSHttpStatusCode.ServerErrorNotImplemented, "GET", "terrain not implemented");
+            httpResponse.SendChunked = true;
+            httpResponse.ContentType = "text/xml";
+
+            return scene.Heightmap.SaveToXmlString();
         }
 
         protected string RegionStats(OSHttpResponse httpResponse, Scene scene)
         {
-            int users = scene.GetAvatars().Count;
+            int users = scene.GetRootAgentCount();
             int objects = scene.Entities.Count - users;
 
-            XmlWriter.WriteStartElement(String.Empty, "region", String.Empty);
-            XmlWriter.WriteStartElement(String.Empty, "stats", String.Empty);
+            RestXmlWriter rxw = new RestXmlWriter(new StringWriter());
 
-            XmlWriter.WriteStartElement(String.Empty, "users", String.Empty);
-            XmlWriter.WriteString(users.ToString());
-            XmlWriter.WriteEndElement();
+            rxw.WriteStartElement(String.Empty, "region", String.Empty);
+            rxw.WriteStartElement(String.Empty, "stats", String.Empty);
 
-            XmlWriter.WriteStartElement(String.Empty, "objects", String.Empty);
-            XmlWriter.WriteString(objects.ToString());
-            XmlWriter.WriteEndElement();
+            rxw.WriteStartElement(String.Empty, "users", String.Empty);
+            rxw.WriteString(users.ToString());
+            rxw.WriteEndElement();
 
-            XmlWriter.WriteEndDocument();
+            rxw.WriteStartElement(String.Empty, "objects", String.Empty);
+            rxw.WriteString(objects.ToString());
+            rxw.WriteEndElement();
 
-            return XmlWriterResult;
+            rxw.WriteEndDocument();
+
+            return rxw.ToString();
         }
 
         protected string RegionPrims(OSHttpResponse httpResponse, Scene scene, Vector3 min, Vector3 max)
@@ -205,7 +223,9 @@ namespace OpenSim.ApplicationPlugins.Rest.Regions
             IRegionSerialiserModule serialiser = scene.RequestModuleInterface<IRegionSerialiserModule>();
 
             if (serialiser != null)
+            {
                 serialiser.SavePrimsToXml2(scene, new StreamWriter(httpResponse.OutputStream), min, max);
+            }
 
             return "";
         }

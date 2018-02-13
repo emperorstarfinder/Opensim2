@@ -1,29 +1,31 @@
-/*
- * Copyright (c) Contributors, http://opensimulator.org/
- * See CONTRIBUTORS.TXT for a full list of copyright holders.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *     * Redistributions of source code must retain the above copyright
- *       notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above copyright
- *       notice, this list of conditions and the following disclaimer in the
- *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the OpenSim Project nor the
- *       names of its contributors may be used to endorse or promote products
- *       derived from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE DEVELOPERS ``AS IS'' AND ANY
- * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE CONTRIBUTORS BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+/// <summary>
+///     Copyright (c) Contributors, http://opensimulator.org/
+///     See CONTRIBUTORS.TXT for a full list of copyright holders.
+///     For an explanation of the license of each contributor and the content it 
+///     covers please see the Licenses directory.
+/// 
+///     Redistribution and use in source and binary forms, with or without
+///     modification, are permitted provided that the following conditions are met:
+///         * Redistributions of source code must retain the above copyright
+///         notice, this list of conditions and the following disclaimer.
+///         * Redistributions in binary form must reproduce the above copyright
+///         notice, this list of conditions and the following disclaimer in the
+///         documentation and/or other materials provided with the distribution.
+///         * Neither the name of the OpenSim Project nor the
+///         names of its contributors may be used to endorse or promote products
+///         derived from this software without specific prior written permission.
+/// 
+///     THIS SOFTWARE IS PROVIDED BY THE DEVELOPERS ``AS IS'' AND ANY
+///     EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+///     WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+///     DISCLAIMED. IN NO EVENT SHALL THE CONTRIBUTORS BE LIABLE FOR ANY
+///     DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+///     (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+///     LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+///     ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+///     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+///     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+/// </summary>
 
 using System;
 using System.Collections.Generic;
@@ -34,25 +36,27 @@ using OpenSim.Framework.Servers.HttpServer;
 namespace OpenSim.ApplicationPlugins.Rest.Inventory
 {
     /// <summary>
-    /// The class signature reveals the roles that RestHandler plays.
+    ///     The class signature reveals the roles that RestHandler plays.
     ///
-    /// [1] It is a sub-class of RestPlugin. It inherits and extends
-    ///     the functionality of this class, constraining it to the
-    ///     specific needs of this REST implementation. This relates
-    ///     to the plug-in mechanism supported by OpenSim, the specifics
-    ///     of which are mostly hidden by RestPlugin.
-    /// [2] IRestHandler describes the interface that this class
-    ///     exports to service implementations. This is the services
-    ///     management interface.
-    /// [3] IHttpAgentHandler describes the interface that is exported
-    ///     to the BaseHttpServer in support of this particular HTTP
-    ///     processing model. This is the request interface of the
-    ///     handler.
+    ///     [1] It is a sub-class of RestPlugin. It inherits and extends
+    ///         the functionality of this class, constraining it to the
+    ///         specific needs of this REST implementation. This relates
+    ///         to the plug-in mechanism supported by OpenSim, the specifics
+    ///         of which are mostly hidden by RestPlugin.
+    ///     [2] IRestHandler describes the interface that this class
+    ///         exports to service implementations. This is the services
+    ///         management interface.
+    ///     [3] IHttpAgentHandler describes the interface that is exported
+    ///         to the BaseHttpServer in support of this particular HTTP
+    ///         processing model. This is the request interface of the
+    ///         handler.
     /// </summary>
+
     public class RestHandler : RestPlugin, IRestHandler, IHttpAgentHandler
     {
         // Handler tables: both stream and REST are supported. The path handlers and their
         // respective allocators are stored in separate tables.
+
         internal Dictionary<string, RestMethodHandler> pathHandlers = new Dictionary<string, RestMethodHandler>();
         internal Dictionary<string, RestMethodAllocator> pathAllocators = new Dictionary<string, RestMethodAllocator>();
         internal Dictionary<string, RestStreamHandler> streamHandlers = new Dictionary<string, RestStreamHandler>();
@@ -77,7 +81,6 @@ namespace OpenSim.ApplicationPlugins.Rest.Inventory
         ///     of handlers. Examples of services classes are RestInventoryServices
         ///     and RestSkeleton.
         /// </summary>
-
         static RestHandler()
         {
             Module[] mods = Assembly.GetExecutingAssembly().GetModules();
@@ -97,8 +100,8 @@ namespace OpenSim.ApplicationPlugins.Rest.Inventory
                     }
                     catch (Exception)
                     {
-                        Rest.Log.WarnFormat("[STATIC-HANDLER]: #0 Error scanning {1}", t);
-                        Rest.Log.InfoFormat("[STATIC-HANDLER]: #0 {1} is not included", t);
+                        Rest.Log.WarnFormat("[Static Handler]: #0 Error scanning {1}", t);
+                        Rest.Log.InfoFormat("[Static Handler]: #0 {1} is not included", t);
                     }
                 }
             }
@@ -115,9 +118,9 @@ namespace OpenSim.ApplicationPlugins.Rest.Inventory
         ///     is built, and this table is then used by the constructor to
         ///     initialize each of the handlers in turn.
         ///     NOTE: The loading process does not automatically imply that
-        ///     the handler has registered any kind of an interface, that
-        ///     may be (optionally) done by the handler either during
-        ///     construction, or during initialization.
+        ///             the handler has registered any kind of an interface, that
+        ///             may be (optionally) done by the handler either during
+        ///             construction, or during initialization.
         ///
         ///     I was not able to make this code work within a constructor
         ///     so it is isolated within this method.
@@ -192,8 +195,8 @@ namespace OpenSim.ApplicationPlugins.Rest.Inventory
         ///     plugin and after basic server setup,  but before running any server commands.
         /// </summary>
         /// <remarks>
-        /// Note that entries MUST be added to the active configuration files before
-        /// the plugin can be enabled.
+        ///     Note that entries MUST be added to the active configuration files before
+        ///     the plugin can be enabled.
         /// </remarks>
         public override void Initialise(OpenSimBase openSim)
         {
@@ -201,14 +204,12 @@ namespace OpenSim.ApplicationPlugins.Rest.Inventory
             {
                 // This plugin will only be enabled if the broader
                 // REST plugin mechanism is enabled.
-                Rest.Log.InfoFormat("{0}  Plugin is initializing", MsgId);
                 base.Initialise(openSim);
 
                 // IsEnabled is implemented by the base class and
                 // reflects an overall RestPlugin status
                 if (!IsEnabled)
                 {
-                    Rest.Log.WarnFormat("{0} Plugins are disabled", MsgId);
                     return;
                 }
 
@@ -220,7 +221,9 @@ namespace OpenSim.ApplicationPlugins.Rest.Inventory
                 Rest.main = openSim;
 
                 if (Rest.main == null)
+                {
                     throw new Exception("OpenSim base pointer is null");
+                }
 
                 Rest.Plugin = this;
                 Rest.Config = Config;
@@ -393,7 +396,7 @@ namespace OpenSim.ApplicationPlugins.Rest.Inventory
         ///     that it is able to handle the request.
         ///     Preconditions:
         ///         [1] request  != null and is a valid request object
-        ///         [2] response != null and is a valid response object
+        ///  [      2] response != null and is a valid response object
         ///     Behavior is undefined if preconditions are not satisfied.
         /// </summary>
         public bool Handle(OSHttpRequest request, OSHttpResponse response)
@@ -402,6 +405,7 @@ namespace OpenSim.ApplicationPlugins.Rest.Inventory
             base.MsgID = base.RequestID;
 
             // Debug only
+
             if (Rest.DEBUG)
             {
                 Rest.Log.DebugFormat("{0} ENTRY", MsgId);

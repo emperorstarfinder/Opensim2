@@ -1,29 +1,31 @@
-/*
- * Copyright (c) Contributors, http://opensimulator.org/
- * See CONTRIBUTORS.TXT for a full list of copyright holders.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *     * Redistributions of source code must retain the above copyright
- *       notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above copyright
- *       notice, this list of conditions and the following disclaimer in the
- *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the OpenSim Project nor the
- *       names of its contributors may be used to endorse or promote products
- *       derived from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE DEVELOPERS ``AS IS'' AND ANY
- * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE CONTRIBUTORS BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+/// <summary>
+///     Copyright (c) Contributors, http://opensimulator.org/
+///     See CONTRIBUTORS.TXT for a full list of copyright holders.
+///     For an explanation of the license of each contributor and the content it 
+///     covers please see the Licenses directory.
+/// 
+///     Redistribution and use in source and binary forms, with or without
+///     modification, are permitted provided that the following conditions are met:
+///         * Redistributions of source code must retain the above copyright
+///         notice, this list of conditions and the following disclaimer.
+///         * Redistributions in binary form must reproduce the above copyright
+///         notice, this list of conditions and the following disclaimer in the
+///         documentation and/or other materials provided with the distribution.
+///         * Neither the name of the OpenSim Project nor the
+///         names of its contributors may be used to endorse or promote products
+///         derived from this software without specific prior written permission.
+/// 
+///     THIS SOFTWARE IS PROVIDED BY THE DEVELOPERS ``AS IS'' AND ANY
+///     EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+///     WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+///     DISCLAIMED. IN NO EVENT SHALL THE CONTRIBUTORS BE LIABLE FOR ANY
+///     DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+///     (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+///     LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+///     ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+///     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+///     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+/// </summary>
 
 using System;
 using System.Collections.Generic;
@@ -32,9 +34,11 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml;
+using OpenMetaverse;
 using OpenSim.Framework;
 using OpenSim.Framework.Servers;
 using OpenSim.Framework.Servers.HttpServer;
+using OpenSim.Services.Interfaces;
 
 namespace OpenSim.ApplicationPlugins.Rest.Inventory
 {
@@ -187,7 +191,7 @@ namespace OpenSim.ApplicationPlugins.Rest.Inventory
 
         #region properties
 
-        // Just for convenience
+        // Just for convenience...
         internal string MsgId
         {
             get { return Rest.MsgId; }
@@ -212,7 +216,9 @@ namespace OpenSim.ApplicationPlugins.Rest.Inventory
                     return authenticated;
                 }
                 else
+                {
                     return true;
+                }
             }
         }
 
@@ -558,13 +564,14 @@ namespace OpenSim.ApplicationPlugins.Rest.Inventory
 
             // Both values are required
             if (user == null || pass == null)
+            {
                 return false;
+            }
 
             // Eliminate any leading or trailing spaces
             user = user.Trim();
 
             return vetPassword(user, pass);
-
         }
 
         /// <summary>
@@ -578,7 +585,6 @@ namespace OpenSim.ApplicationPlugins.Rest.Inventory
         private bool vetPassword(string user, string pass)
         {
             int x;
-            string HA1;
             string first;
             string last;
 
@@ -594,16 +600,15 @@ namespace OpenSim.ApplicationPlugins.Rest.Inventory
                 last = String.Empty;
             }
 
-            UserProfileData udata = Rest.UserServices.GetUserProfile(first, last);
+            UserAccount account = Rest.UserServices.GetUserAccount(UUID.Zero, first, last);
 
             // If we don't recognize the user id, perhaps it is god?
-            if (udata == null)
+            if (account == null)
+            {
                 return pass == Rest.GodKey;
+            }
 
-            HA1 = HashToString(pass);
-            HA1 = HashToString(String.Format("{0}:{1}", HA1, udata.PasswordSalt));
-
-            return (0 == sc.Compare(HA1, udata.PasswordHash));
+            return (Rest.AuthServices.Authenticate(account.PrincipalID, pass, 1) != string.Empty);
         }
 
         #endregion authentication_basic
@@ -761,7 +766,9 @@ namespace OpenSim.ApplicationPlugins.Rest.Inventory
                 while (false);
             }
             else
+            {
                 Fail(Rest.HttpStatusCodeBadRequest);
+            }
         }
 
         /// <summary>
@@ -791,10 +798,10 @@ namespace OpenSim.ApplicationPlugins.Rest.Inventory
                 last = String.Empty;
             }
 
-            UserProfileData udata = Rest.UserServices.GetUserProfile(first, last);
+            UserAccount account = Rest.UserServices.GetUserAccount(UUID.Zero, first, last);
 
             // If we don;t recognize the user id, perhaps it is god?
-            if (udata == null)
+            if (account == null)
             {
                 Rest.Log.DebugFormat("{0} Administrator", MsgId);
                 return Rest.GodKey;
@@ -802,7 +809,11 @@ namespace OpenSim.ApplicationPlugins.Rest.Inventory
             else
             {
                 Rest.Log.DebugFormat("{0} Normal User {1}", MsgId, user);
-                return udata.PasswordHash;
+
+                // !!! REFACTORING PROBLEM
+                // This is what it was. It doesn't work in 0.7
+                // Nothing retrieves the password from the authentication service, there's only authentication.
+                return string.Empty;
             }
         }
 
@@ -1081,7 +1092,9 @@ namespace OpenSim.ApplicationPlugins.Rest.Inventory
                     response.ContentLength64 = buffer.Length;
 
                     if (response.ContentEncoding == null)
+                    {
                         response.ContentEncoding = encoding;
+                    }
 
                     response.SendChunked = chunked;
                     response.KeepAlive = keepAlive;
@@ -1140,7 +1153,9 @@ namespace OpenSim.ApplicationPlugins.Rest.Inventory
         internal void AddHeader(string hdr, string data)
         {
             if (Rest.DEBUG)
+            {
                 Rest.Log.DebugFormat("{0}   Adding header: <{1}: {2}>", MsgId, hdr, data);
+            }
 
             response.AddHeader(hdr, data);
         }
@@ -1162,6 +1177,7 @@ namespace OpenSim.ApplicationPlugins.Rest.Inventory
         internal void initXmlReader()
         {
             XmlReaderSettings settings = new XmlReaderSettings();
+
             settings.ConformanceLevel = ConformanceLevel.Fragment;
             settings.IgnoreComments = true;
             settings.IgnoreWhitespace = true;
@@ -1205,7 +1221,9 @@ namespace OpenSim.ApplicationPlugins.Rest.Inventory
                 path = uri.AbsolutePath;
 
                 if (path.EndsWith(Rest.UrlPathSeparator))
+                {
                     path = path.Substring(0, path.Length - 1);
+                }
             }
 
             // If we succeeded in getting a path, perform any
@@ -1215,7 +1233,7 @@ namespace OpenSim.ApplicationPlugins.Rest.Inventory
                 if (Rest.ExtendedEscape)
                 {
                     // Handle "+". Not a standard substitution, but
-                    // common enough
+                    // common enough...
                     path = path.Replace(Rest.C_PLUS, Rest.C_SPACE);
                 }
 

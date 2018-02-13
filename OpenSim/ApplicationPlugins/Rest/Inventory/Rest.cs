@@ -1,30 +1,31 @@
-/*
- * Copyright (c) Contributors, http://opensimulator.org/
- * See CONTRIBUTORS.TXT for a full list of copyright holders.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *     * Redistributions of source code must retain the above copyright
- *       notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above copyright
- *       notice, this list of conditions and the following disclaimer in the
- *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the OpenSim Project nor the
- *       names of its contributors may be used to endorse or promote products
- *       derived from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE DEVELOPERS ``AS IS'' AND ANY
- * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE CONTRIBUTORS BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- */
+/// <summary>
+///     Copyright (c) Contributors, http://opensimulator.org/
+///     See CONTRIBUTORS.TXT for a full list of copyright holders.
+///     For an explanation of the license of each contributor and the content it 
+///     covers please see the Licenses directory.
+/// 
+///     Redistribution and use in source and binary forms, with or without
+///     modification, are permitted provided that the following conditions are met:
+///         * Redistributions of source code must retain the above copyright
+///         notice, this list of conditions and the following disclaimer.
+///         * Redistributions in binary form must reproduce the above copyright
+///         notice, this list of conditions and the following disclaimer in the
+///         documentation and/or other materials provided with the distribution.
+///         * Neither the name of the OpenSim Project nor the
+///         names of its contributors may be used to endorse or promote products
+///         derived from this software without specific prior written permission.
+/// 
+///     THIS SOFTWARE IS PROVIDED BY THE DEVELOPERS ``AS IS'' AND ANY
+///     EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+///     WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+///     DISCLAIMED. IN NO EVENT SHALL THE CONTRIBUTORS BE LIABLE FOR ANY
+///     DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+///     (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+///     LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+///     ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+///     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+///     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+/// </summary>
 
 using System;
 using System.Collections.Generic;
@@ -34,6 +35,8 @@ using log4net;
 using Nini.Config;
 using OpenSim.Framework;
 using OpenSim.Framework.Communications;
+using OpenSim.Services.Interfaces;
+using IAvatarService = OpenSim.Services.Interfaces.IAvatarService;
 
 namespace OpenSim.ApplicationPlugins.Rest.Inventory
 {
@@ -49,7 +52,9 @@ namespace OpenSim.ApplicationPlugins.Rest.Inventory
         public const string AS_BASIC = "Basic";           // simple user/password verification
         public const string AS_DIGEST = "Digest";          // password safe authentication
 
-        // Supported Digest algorithms
+        /// <summary>
+        ///     Supported Digest algorithms
+        /// </summary>
         public const string Digest_MD5 = "MD5";             // assumed default if omitted
         public const string Digest_MD5Sess = "MD5-sess";        // session-span - not good for REST?
 
@@ -85,29 +90,29 @@ namespace OpenSim.ApplicationPlugins.Rest.Inventory
         ///     not guaranteed to be there when the rest handler
         ///     initializes.
         /// </summary>
-        internal static CommunicationsManager Comms
+        internal static IInventoryService InventoryServices
         {
-            get { return main.CommunicationsManager; }
+            get { return main.SceneManager.CurrentOrFirstScene.InventoryService; }
         }
 
-        internal static IInventoryServices InventoryServices
+        internal static IUserAccountService UserServices
         {
-            get { return Comms.InventoryService; }
+            get { return main.SceneManager.CurrentOrFirstScene.UserAccountService; }
         }
 
-        internal static IUserService UserServices
+        internal static IAuthenticationService AuthServices
         {
-            get { return Comms.UserService; }
+            get { return main.SceneManager.CurrentOrFirstScene.AuthenticationService; }
         }
 
         internal static IAvatarService AvatarServices
         {
-            get { return Comms.AvatarService; }
+            get { return main.SceneManager.CurrentOrFirstScene.AvatarService; }
         }
 
-        internal static IAssetCache AssetServices
+        internal static IAssetService AssetServices
         {
-            get { return Comms.AssetCache; }
+            get { return main.SceneManager.CurrentOrFirstScene.AssetService; }
         }
 
         /// <summary>
@@ -155,7 +160,7 @@ namespace OpenSim.ApplicationPlugins.Rest.Inventory
             get { return Plugin.RequestId; }
         }
 
-        internal static Encoding Encoding = Encoding.UTF8;
+        internal static Encoding Encoding = Util.UTF8;
 
         /// <summary>
         ///     Version control for REST implementation. This
@@ -178,7 +183,6 @@ namespace OpenSim.ApplicationPlugins.Rest.Inventory
         ///     supported by all servers. See Respond
         ///     to see how these are handled.
         /// </summary>
-
         // REST AGENT 1.0 interpretations
         public const string GET = "get";       // information retrieval - server state unchanged
         public const string HEAD = "head";      // same as get except only the headers are returned.
@@ -419,7 +423,7 @@ namespace OpenSim.ApplicationPlugins.Rest.Inventory
             try
             {
                 byte[] encData_byte = new byte[str.Length];
-                encData_byte = Encoding.UTF8.GetBytes(str);
+                encData_byte = Util.UTF8.GetBytes(str);
                 return Convert.ToBase64String(encData_byte);
             }
             catch
@@ -457,7 +461,9 @@ namespace OpenSim.ApplicationPlugins.Rest.Inventory
                     val = hvals.IndexOf(tmp[i]);
 
                     if (val == -1)
+                    {
                         break;
+                    }
 
                     sum *= 16;
                     sum += val;
@@ -482,17 +488,25 @@ namespace OpenSim.ApplicationPlugins.Rest.Inventory
             for (int i = 0; i < data.Length; i++)
             {
                 if (i % DumpLineSize == 0)
+                {
                     Console.Write("\n{0}: ", i.ToString("d8"));
+                }
 
                 if (i % 4 == 0)
+                {
                     Console.Write(" ");
+                }
 
                 Console.Write("{0}", data[i].ToString("x2"));
 
                 if (data[i] < 127 && data[i] > 31)
+                {
                     buffer[i % DumpLineSize] = (char)data[i];
+                }
                 else
+                {
                     buffer[i % DumpLineSize] = '.';
+                }
 
                 cc++;
 
@@ -509,7 +523,9 @@ namespace OpenSim.ApplicationPlugins.Rest.Inventory
                 for (int i = cc; i < DumpLineSize; i++)
                 {
                     if (i % 4 == 0)
+                    {
                         Console.Write(" ");
+                    }
 
                     Console.Write("  ");
                     buffer[i % DumpLineSize] = ' ';

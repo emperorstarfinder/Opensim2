@@ -1,29 +1,31 @@
-/*
- * Copyright (c) Contributors, http://opensimulator.org/
- * See CONTRIBUTORS.TXT for a full list of copyright holders.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *     * Redistributions of source code must retain the above copyright
- *       notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above copyright
- *       notice, this list of conditions and the following disclaimer in the
- *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the OpenSim Project nor the
- *       names of its contributors may be used to endorse or promote products
- *       derived from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE DEVELOPERS ``AS IS'' AND ANY
- * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE CONTRIBUTORS BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+/// <summary>
+///     Copyright (c) Contributors, http://opensimulator.org/
+///     See CONTRIBUTORS.TXT for a full list of copyright holders.
+///     For an explanation of the license of each contributor and the content it 
+///     covers please see the Licenses directory.
+/// 
+///     Redistribution and use in source and binary forms, with or without
+///     modification, are permitted provided that the following conditions are met:
+///         * Redistributions of source code must retain the above copyright
+///         notice, this list of conditions and the following disclaimer.
+///         * Redistributions in binary form must reproduce the above copyright
+///         notice, this list of conditions and the following disclaimer in the
+///         documentation and/or other materials provided with the distribution.
+///         * Neither the name of the OpenSim Project nor the
+///         names of its contributors may be used to endorse or promote products
+///         derived from this software without specific prior written permission.
+/// 
+///     THIS SOFTWARE IS PROVIDED BY THE DEVELOPERS ``AS IS'' AND ANY
+///     EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+///     WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+///     DISCLAIMED. IN NO EVENT SHALL THE CONTRIBUTORS BE LIABLE FOR ANY
+///     DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+///     (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+///     LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+///     ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+///     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+///     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+/// </summary>
 
 using System;
 using System.IO;
@@ -48,27 +50,35 @@ namespace OpenSim.ApplicationPlugins.Rest.Regions
             {
                 // param empty: new region post
                 if (!IsGod(httpRequest))
-                    // this needs to be turned into a FailureUnauthorized(...)
+                {
+                    // XXX: this needs to be turned into a FailureUnauthorized(...)
                     return Failure(httpResponse, OSHttpStatusCode.ClientErrorUnauthorized, "GET", "you are not god");
+                }
 
                 if (String.IsNullOrEmpty(param))
+                {
                     return CreateRegion(httpRequest, httpResponse);
+                }
 
                 // Parse region ID and other parameters
-                param = param.TrimEnd(new char[] {'/'});
+                param = param.TrimEnd(new char[] { '/' });
                 string[] comps = param.Split('/');
-                UUID regionID = (UUID) comps[0];
+                UUID regionID = (UUID)comps[0];
 
                 m_log.DebugFormat("{0} POST region UUID {1}", MsgID, regionID.ToString());
 
                 if (UUID.Zero == regionID)
+                {
                     throw new Exception("missing region ID");
+                }
 
                 Scene scene = null;
                 App.SceneManager.TryGetScene(regionID, out scene);
 
                 if (null == scene)
+                {
                     return Failure(httpResponse, OSHttpStatusCode.ClientErrorNotFound, "POST", "cannot find region {0}", regionID.ToString());
+                }
 
                 if (2 == comps.Length)
                 {
@@ -90,18 +100,20 @@ namespace OpenSim.ApplicationPlugins.Rest.Regions
 
         public string CreateRegion(OSHttpRequest request, OSHttpResponse response)
         {
-            XmlWriter.WriteStartElement(String.Empty, "regions", String.Empty);
+            RestXmlWriter rxw = new RestXmlWriter(new StringWriter());
+
+            rxw.WriteStartElement(String.Empty, "regions", String.Empty);
 
             foreach (Scene s in App.SceneManager.Scenes)
             {
-                XmlWriter.WriteStartElement(String.Empty, "uuid", String.Empty);
-                XmlWriter.WriteString(s.RegionInfo.RegionID.ToString());
-                XmlWriter.WriteEndElement();
+                rxw.WriteStartElement(String.Empty, "uuid", String.Empty);
+                rxw.WriteString(s.RegionInfo.RegionID.ToString());
+                rxw.WriteEndElement();
             }
 
-            XmlWriter.WriteEndElement();
+            rxw.WriteEndElement();
 
-            return XmlWriterResult;
+            return rxw.ToString();
         }
 
         public string LoadPrims(string requestBody, OSHttpRequest request, OSHttpResponse response, Scene scene)
@@ -109,7 +121,9 @@ namespace OpenSim.ApplicationPlugins.Rest.Regions
             IRegionSerialiserModule serialiser = scene.RequestModuleInterface<IRegionSerialiserModule>();
 
             if (serialiser != null)
+            {
                 serialiser.LoadPrimsFromXml2(scene, new StringReader(requestBody), true);
+            }
 
             return "";
         }

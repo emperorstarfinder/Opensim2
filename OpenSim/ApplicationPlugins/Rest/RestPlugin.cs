@@ -1,29 +1,31 @@
-/*
- * Copyright (c) Contributors, http://opensimulator.org/
- * See CONTRIBUTORS.TXT for a full list of copyright holders.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *     * Redistributions of source code must retain the above copyright
- *       notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above copyright
- *       notice, this list of conditions and the following disclaimer in the
- *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the OpenSim Project nor the
- *       names of its contributors may be used to endorse or promote products
- *       derived from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE DEVELOPERS ``AS IS'' AND ANY
- * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE CONTRIBUTORS BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+/// <summary>
+///     Copyright (c) Contributors, http://opensimulator.org/
+///     See CONTRIBUTORS.TXT for a full list of copyright holders.
+///     For an explanation of the license of each contributor and the content it 
+///     covers please see the Licenses directory.
+/// 
+///     Redistribution and use in source and binary forms, with or without
+///     modification, are permitted provided that the following conditions are met:
+///         * Redistributions of source code must retain the above copyright
+///         notice, this list of conditions and the following disclaimer.
+///         * Redistributions in binary form must reproduce the above copyright
+///         notice, this list of conditions and the following disclaimer in the
+///         documentation and/or other materials provided with the distribution.
+///         * Neither the name of the OpenSim Project nor the
+///         names of its contributors may be used to endorse or promote products
+///         derived from this software without specific prior written permission.
+/// 
+///     THIS SOFTWARE IS PROVIDED BY THE DEVELOPERS ``AS IS'' AND ANY
+///     EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+///     WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+///     DISCLAIMED. IN NO EVENT SHALL THE CONTRIBUTORS BE LIABLE FOR ANY
+///     DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+///     (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+///     LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+///     ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+///     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+///     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+/// </summary>
 
 using System;
 using System.Collections.Generic;
@@ -45,18 +47,26 @@ namespace OpenSim.ApplicationPlugins.Rest
 
         protected static readonly ILog m_log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-        private IConfig _config; // Configuration source: Rest Plugins
-        private IConfig _pluginConfig; // Configuration source: Plugin specific
-        private OpenSimBase _app; // The 'server'
-        private BaseHttpServer _httpd; // The server's RPC interface
-        private string _prefix; // URL prefix below
-        private StringWriter _sw = null;
-        private RestXmlWriter _xw = null;
+        // Configuration source: Rest Plugins
+        private IConfig _config;
+
+        // COnfiguration Source: Plugin specific
+        private IConfig _pluginConfig;
+
+        // The server
+        private OpenSimBase _app;
+
+        // The server's RPC Interface
+        private BaseHttpServer _httpd;
+
+        // URL Prefix below
+        private string _prefix;
+
         private string _godkey;
         private int _reqk;
 
         [ThreadStatic]
-        private static string  _threadRequestID = String.Empty;
+        private static string _threadRequestID = String.Empty;
 
         /// <summary>
         ///     Return an ever increasing request ID for logging
@@ -142,33 +152,6 @@ namespace OpenSim.ApplicationPlugins.Rest
         /// </summary>
         public abstract string ConfigName { get; }
 
-        public XmlTextWriter XmlWriter
-        {
-            get
-            {
-                if (null == _xw)
-                {
-                    _sw = new StringWriter();
-                    _xw = new RestXmlWriter(_sw);
-                    _xw.Formatting = Formatting.Indented;
-                }
-
-                return _xw;
-            }
-        }
-
-        public string XmlWriterResult
-        {
-            get
-            {
-                _xw.Flush();
-                _xw.Close();
-                _xw = null;
-
-                return _sw.ToString();
-            }
-        }
-
         #endregion properties
 
         #region methods
@@ -210,7 +193,6 @@ namespace OpenSim.ApplicationPlugins.Rest
 
                 if (!_config.GetBoolean("enabled", false))
                 {
-                    m_log.WarnFormat("{0} Rest Plugins are disabled", MsgID);
                     return;
                 }
 
@@ -234,8 +216,8 @@ namespace OpenSim.ApplicationPlugins.Rest
                 // the key lookup in Configs failed, which signals to
                 // us that noone is interested in our services...they
                 // don't know what they are missing out on...
-                // NOTE: Under the present OpenSim implementation it is
-                // not possible for the openSim pointer to be null. However
+                // NOTE: Under the present OpenSimulator implementation it is
+                // not possible for the openSimulator pointer to be null. However
                 // were the implementation to be changed, this could
                 // result in a silent initialization failure. Harmless
                 // except for lack of function and lack of any
@@ -264,7 +246,9 @@ namespace OpenSim.ApplicationPlugins.Rest
         public virtual void AddRestStreamHandler(string httpMethod, string path, RestMethod method)
         {
             if (!IsEnabled)
+            {
                 return;
+            }
 
             if (!path.StartsWith(_prefix))
             {
@@ -291,7 +275,9 @@ namespace OpenSim.ApplicationPlugins.Rest
         public bool AddAgentHandler(string agentName, IHttpAgentHandler handler)
         {
             if (!IsEnabled)
+            {
                 return false;
+            }
 
             _agents.Add(agentName, handler);
             return _httpd.AddAgentHandler(agentName, handler);
@@ -310,7 +296,9 @@ namespace OpenSim.ApplicationPlugins.Rest
         public bool RemoveAgentHandler(string agentName, IHttpAgentHandler handler)
         {
             if (!IsEnabled)
+            {
                 return false;
+            }
 
             if (_agents[agentName] == handler)
             {
@@ -333,7 +321,9 @@ namespace OpenSim.ApplicationPlugins.Rest
             string[] keys = request.Headers.GetValues("X-OpenSim-Godkey");
 
             if (null == keys)
+            {
                 return false;
+            }
 
             // we take the last key supplied
             return keys[keys.Length - 1] == _godkey;
@@ -346,7 +336,7 @@ namespace OpenSim.ApplicationPlugins.Rest
         /// </summary>
         protected bool IsVerifiedUser(OSHttpRequest request, UUID uuid)
         {
-            // under construction
+            // XXX under construction
             return false;
         }
 
@@ -386,7 +376,7 @@ namespace OpenSim.ApplicationPlugins.Rest
         {
             string m = String.Format(format, msg);
 
-            response.StatusCode = (int) status;
+            response.StatusCode = (int)status;
             response.StatusDescription = m;
 
             m_log.ErrorFormat("{0} {1} failed: {2}", MsgID, method, m);
@@ -404,7 +394,7 @@ namespace OpenSim.ApplicationPlugins.Rest
         {
             string m = String.Format("exception occurred: {0}", e.Message);
 
-            response.StatusCode = (int) status;
+            response.StatusCode = (int)status;
             response.StatusDescription = m;
 
             m_log.DebugFormat("{0} {1} failed: {2}", MsgID, method, e.ToString());

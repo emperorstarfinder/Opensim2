@@ -1,36 +1,42 @@
-/*
- * Copyright (c) Contributors, http://opensimulator.org/
- * See CONTRIBUTORS.TXT for a full list of copyright holders.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *     * Redistributions of source code must retain the above copyright
- *       notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above copyright
- *       notice, this list of conditions and the following disclaimer in the
- *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the OpenSim Project nor the
- *       names of its contributors may be used to endorse or promote products
- *       derived from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE DEVELOPERS ``AS IS'' AND ANY
- * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE CONTRIBUTORS BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+/// <summary>
+///     Copyright (c) Contributors, http://opensimulator.org/
+///     See CONTRIBUTORS.TXT for a full list of copyright holders.
+///     For an explanation of the license of each contributor and the content it 
+///     covers please see the Licenses directory.
+/// 
+///     Redistribution and use in source and binary forms, with or without
+///     modification, are permitted provided that the following conditions are met:
+///         * Redistributions of source code must retain the above copyright
+///         notice, this list of conditions and the following disclaimer.
+///         * Redistributions in binary form must reproduce the above copyright
+///         notice, this list of conditions and the following disclaimer in the
+///         documentation and/or other materials provided with the distribution.
+///         * Neither the name of the OpenSim Project nor the
+///         names of its contributors may be used to endorse or promote products
+///         derived from this software without specific prior written permission.
+/// 
+///     THIS SOFTWARE IS PROVIDED BY THE DEVELOPERS ``AS IS'' AND ANY
+///     EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+///     WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+///     DISCLAIMED. IN NO EVENT SHALL THE CONTRIBUTORS BE LIABLE FOR ANY
+///     DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+///     (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+///     LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+///     ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+///     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+///     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+/// </summary>
 
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Reflection;
 using log4net;
-using Mono.Data.SqliteClient;
+#if CSharpSqlite
+    using Community.CsharpSqlite.Sqlite;
+#else
+using Mono.Data.Sqlite;
+#endif
 using OpenMetaverse;
 using OpenSim.Framework;
 using OpenSim.Region.Framework.Interfaces;
@@ -39,21 +45,26 @@ namespace OpenSim.Data.SQLite
 {
     public class SQLiteEstateStore : IEstateDataStore
     {
-        private static readonly ILog m_log =
-            LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
-
+        private static readonly ILog m_log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
         private SqliteConnection m_connection;
         private string m_connectionString;
-
         private FieldInfo[] m_Fields;
-        private Dictionary<string, FieldInfo> m_FieldMap =
-                new Dictionary<string, FieldInfo>();
+        private Dictionary<string, FieldInfo> m_FieldMap = new Dictionary<string, FieldInfo>();
+
+        public SQLiteEstateStore()
+        {
+        }
+
+        public SQLiteEstateStore(string connectionString)
+        {
+            Initialise(connectionString);
+        }
 
         public void Initialise(string connectionString)
         {
             m_connectionString = connectionString;
 
-            m_log.Info("[ESTATE DB]: Sqlite - connecting: "+m_connectionString);
+            m_log.Info("[Estate Database]: Sqlite - connecting: " + m_connectionString);
 
             m_connection = new SqliteConnection(m_connectionString);
             m_connection.Open();
@@ -62,17 +73,16 @@ namespace OpenSim.Data.SQLite
             Migration m = new Migration(m_connection, assem, "EstateStore");
             m.Update();
 
-            m_connection.Close();
-            m_connection.Open();
-
             Type t = typeof(EstateSettings);
-            m_Fields = t.GetFields(BindingFlags.NonPublic |
-                                   BindingFlags.Instance |
-                                   BindingFlags.DeclaredOnly);
+            m_Fields = t.GetFields(BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly);
 
             foreach (FieldInfo f in m_Fields)
+            {
                 if (f.Name.Substring(0, 2) == "m_")
+                {
                     m_FieldMap[f.Name.Substring(2)] = f;
+                }
+            }
         }
 
         private string[] FieldList
@@ -80,36 +90,50 @@ namespace OpenSim.Data.SQLite
             get { return new List<string>(m_FieldMap.Keys).ToArray(); }
         }
 
-        public EstateSettings LoadEstateSettings(UUID regionID)
+        public EstateSettings LoadEstateSettings(UUID regionID, bool create)
+        {
+            string sql = "select estate_settings." + String.Join(",estate_settings.", FieldList) + " from estate_map left join estate_settings on estate_map.EstateID = estate_settings.EstateID where estate_settings.EstateID is not null and RegionID = :RegionID";
+            SqliteCommand cmd = (SqliteCommand)m_connection.CreateCommand();
+            cmd.CommandText = sql;
+            cmd.Parameters.AddWithValue(":RegionID", regionID.ToString());
+            return DoLoad(cmd, regionID, create);
+        }
+
+        private EstateSettings DoLoad(SqliteCommand cmd, UUID regionID, bool create)
         {
             EstateSettings es = new EstateSettings();
             es.OnSave += StoreEstateSettings;
+            IDataReader r = null;
 
-            string sql = "select estate_settings."+String.Join(",estate_settings.", FieldList)+" from estate_map left join estate_settings on estate_map.EstateID = estate_settings.EstateID where estate_settings.EstateID is not null and RegionID = :RegionID";
+            try
+            {
+                r = cmd.ExecuteReader();
+            }
+            catch (SqliteException)
+            {
+                m_log.Error("[SQLite]: There was an issue loading the estate settings.  This can happen the first time running OpenSimulator with CSharpSqlite the first time.  OpenSimulator will probably crash, restart it and it should be good to go.");
+            }
 
-            SqliteCommand cmd = (SqliteCommand)m_connection.CreateCommand();
-
-            cmd.CommandText = sql;
-            cmd.Parameters.Add(":RegionID", regionID.ToString());
-
-            IDataReader r = cmd.ExecuteReader();
-
-            if (r.Read())
+            if (r != null && r.Read())
             {
                 foreach (string name in FieldList)
                 {
                     if (m_FieldMap[name].GetValue(es) is bool)
                     {
                         int v = Convert.ToInt32(r[name]);
+
                         if (v != 0)
+                        {
                             m_FieldMap[name].SetValue(es, true);
+                        }
                         else
+                        {
                             m_FieldMap[name].SetValue(es, false);
+                        }
                     }
                     else if (m_FieldMap[name].GetValue(es) is UUID)
                     {
                         UUID uuid = UUID.Zero;
-
                         UUID.TryParse(r[name].ToString(), out uuid);
                         m_FieldMap[name].SetValue(es, uuid);
                     }
@@ -118,19 +142,18 @@ namespace OpenSim.Data.SQLite
                         m_FieldMap[name].SetValue(es, Convert.ChangeType(r[name], m_FieldMap[name].FieldType));
                     }
                 }
+
                 r.Close();
             }
-            else
+            else if (create)
             {
-                // Migration case
-                //
                 r.Close();
 
                 List<string> names = new List<string>(FieldList);
 
                 names.Remove("EstateID");
 
-                sql = "insert into estate_settings ("+String.Join(",", names.ToArray())+") values ( :"+String.Join(", :", names.ToArray())+")";
+                string sql = "insert into estate_settings (" + String.Join(",", names.ToArray()) + ") values ( :" + String.Join(", :", names.ToArray()) + ")";
 
                 cmd.CommandText = sql;
                 cmd.Parameters.Clear();
@@ -140,13 +163,17 @@ namespace OpenSim.Data.SQLite
                     if (m_FieldMap[name].GetValue(es) is bool)
                     {
                         if ((bool)m_FieldMap[name].GetValue(es))
-                            cmd.Parameters.Add(":"+name, "1");
+                        {
+                            cmd.Parameters.AddWithValue(":" + name, "1");
+                        }
                         else
-                            cmd.Parameters.Add(":"+name, "0");
+                        {
+                            cmd.Parameters.AddWithValue(":" + name, "0");
+                        }
                     }
                     else
                     {
-                        cmd.Parameters.Add(":"+name, m_FieldMap[name].GetValue(es).ToString());
+                        cmd.Parameters.AddWithValue(":" + name, m_FieldMap[name].GetValue(es).ToString());
                     }
                 }
 
@@ -164,24 +191,10 @@ namespace OpenSim.Data.SQLite
                 r.Close();
 
                 cmd.CommandText = "insert into estate_map values (:RegionID, :EstateID)";
-                cmd.Parameters.Add(":RegionID", regionID.ToString());
-                cmd.Parameters.Add(":EstateID", es.EstateID.ToString());
+                cmd.Parameters.AddWithValue(":RegionID", regionID.ToString());
+                cmd.Parameters.AddWithValue(":EstateID", es.EstateID.ToString());
 
                 // This will throw on dupe key
-                try
-                {
-                    cmd.ExecuteNonQuery();
-                }
-                catch (Exception)
-                {
-                }
-
-                // Munge and transfer the ban list
-                //
-                cmd.Parameters.Clear();
-                cmd.CommandText = "insert into estateban select "+es.EstateID.ToString()+", bannedUUID, bannedIp, bannedIpHostMask, '' from regionban where regionban.regionUUID = :UUID";
-                cmd.Parameters.Add(":UUID", regionID.ToString());
-
                 try
                 {
                     cmd.ExecuteNonQuery();
@@ -209,9 +222,11 @@ namespace OpenSim.Data.SQLite
             List<string> terms = new List<string>();
 
             foreach (string f in fields)
-                terms.Add(f+" = :"+f);
+            {
+                terms.Add(f + " = :" + f);
+            }
 
-            string sql = "update estate_settings set "+String.Join(", ", terms.ToArray())+" where EstateID = :EstateID";
+            string sql = "update estate_settings set " + String.Join(", ", terms.ToArray()) + " where EstateID = :EstateID";
 
             SqliteCommand cmd = (SqliteCommand)m_connection.CreateCommand();
 
@@ -222,13 +237,17 @@ namespace OpenSim.Data.SQLite
                 if (m_FieldMap[name].GetValue(es) is bool)
                 {
                     if ((bool)m_FieldMap[name].GetValue(es))
-                        cmd.Parameters.Add(":"+name, "1");
+                    {
+                        cmd.Parameters.AddWithValue(":" + name, "1");
+                    }
                     else
-                        cmd.Parameters.Add(":"+name, "0");
+                    {
+                        cmd.Parameters.AddWithValue(":" + name, "0");
+                    }
                 }
                 else
                 {
-                    cmd.Parameters.Add(":"+name, m_FieldMap[name].GetValue(es).ToString());
+                    cmd.Parameters.AddWithValue(":" + name, m_FieldMap[name].GetValue(es).ToString());
                 }
             }
 
@@ -247,7 +266,7 @@ namespace OpenSim.Data.SQLite
             SqliteCommand cmd = (SqliteCommand)m_connection.CreateCommand();
 
             cmd.CommandText = "select bannedUUID from estateban where EstateID = :EstateID";
-            cmd.Parameters.Add(":EstateID", es.EstateID);
+            cmd.Parameters.AddWithValue(":EstateID", es.EstateID);
 
             IDataReader r = cmd.ExecuteReader();
 
@@ -263,6 +282,7 @@ namespace OpenSim.Data.SQLite
                 eb.BannedHostIPMask = "0.0.0.0";
                 es.AddBan(eb);
             }
+
             r.Close();
         }
 
@@ -271,7 +291,7 @@ namespace OpenSim.Data.SQLite
             SqliteCommand cmd = (SqliteCommand)m_connection.CreateCommand();
 
             cmd.CommandText = "delete from estateban where EstateID = :EstateID";
-            cmd.Parameters.Add(":EstateID", es.EstateID.ToString());
+            cmd.Parameters.AddWithValue(":EstateID", es.EstateID.ToString());
 
             cmd.ExecuteNonQuery();
 
@@ -281,8 +301,8 @@ namespace OpenSim.Data.SQLite
 
             foreach (EstateBan b in es.EstateBans)
             {
-                cmd.Parameters.Add(":EstateID", es.EstateID.ToString());
-                cmd.Parameters.Add(":bannedUUID", b.BannedUserID.ToString());
+                cmd.Parameters.AddWithValue(":EstateID", es.EstateID.ToString());
+                cmd.Parameters.AddWithValue(":bannedUUID", b.BannedUserID.ToString());
 
                 cmd.ExecuteNonQuery();
                 cmd.Parameters.Clear();
@@ -293,19 +313,19 @@ namespace OpenSim.Data.SQLite
         {
             SqliteCommand cmd = (SqliteCommand)m_connection.CreateCommand();
 
-            cmd.CommandText = "delete from "+table+" where EstateID = :EstateID";
-            cmd.Parameters.Add(":EstateID", EstateID.ToString());
+            cmd.CommandText = "delete from " + table + " where EstateID = :EstateID";
+            cmd.Parameters.AddWithValue(":EstateID", EstateID.ToString());
 
             cmd.ExecuteNonQuery();
 
             cmd.Parameters.Clear();
 
-            cmd.CommandText = "insert into "+table+" (EstateID, uuid) values ( :EstateID, :uuid )";
+            cmd.CommandText = "insert into " + table + " (EstateID, uuid) values ( :EstateID, :uuid )";
 
             foreach (UUID uuid in data)
             {
-                cmd.Parameters.Add(":EstateID", EstateID.ToString());
-                cmd.Parameters.Add(":uuid", uuid.ToString());
+                cmd.Parameters.AddWithValue(":EstateID", EstateID.ToString());
+                cmd.Parameters.AddWithValue(":uuid", uuid.ToString());
 
                 cmd.ExecuteNonQuery();
                 cmd.Parameters.Clear();
@@ -318,23 +338,82 @@ namespace OpenSim.Data.SQLite
 
             SqliteCommand cmd = (SqliteCommand)m_connection.CreateCommand();
 
-            cmd.CommandText = "select uuid from "+table+" where EstateID = :EstateID";
-            cmd.Parameters.Add(":EstateID", EstateID);
+            cmd.CommandText = "select uuid from " + table + " where EstateID = :EstateID";
+            cmd.Parameters.AddWithValue(":EstateID", EstateID);
 
             IDataReader r = cmd.ExecuteReader();
 
             while (r.Read())
             {
-                // EstateBan eb = new EstateBan();
-
                 UUID uuid = new UUID();
                 UUID.TryParse(r["uuid"].ToString(), out uuid);
-
                 uuids.Add(uuid);
             }
+
             r.Close();
 
             return uuids.ToArray();
+        }
+
+        public EstateSettings LoadEstateSettings(int estateID)
+        {
+            string sql = "select estate_settings." + String.Join(",estate_settings.", FieldList) + " from estate_settings where estate_settings.EstateID = :EstateID";
+
+            SqliteCommand cmd = (SqliteCommand)m_connection.CreateCommand();
+
+            cmd.CommandText = sql;
+            cmd.Parameters.AddWithValue(":EstateID", estateID.ToString());
+
+            return DoLoad(cmd, UUID.Zero, false);
+        }
+
+        public List<int> GetEstates(string search)
+        {
+            List<int> result = new List<int>();
+
+            string sql = "select EstateID from estate_settings where estate_settings.EstateName = :EstateName";
+
+            SqliteCommand cmd = (SqliteCommand)m_connection.CreateCommand();
+
+            cmd.CommandText = sql;
+            cmd.Parameters.AddWithValue(":EstateName", search);
+
+            IDataReader r = cmd.ExecuteReader();
+
+            while (r.Read())
+            {
+                result.Add(Convert.ToInt32(r["EstateID"]));
+            }
+
+            r.Close();
+
+            return result;
+        }
+
+        public bool LinkRegion(UUID regionID, int estateID)
+        {
+            SqliteCommand cmd = (SqliteCommand)m_connection.CreateCommand();
+
+            cmd.CommandText = "insert into estate_map values (:RegionID, :EstateID)";
+            cmd.Parameters.AddWithValue(":RegionID", regionID.ToString());
+            cmd.Parameters.AddWithValue(":EstateID", estateID.ToString());
+
+            if (cmd.ExecuteNonQuery() == 0)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        public List<UUID> GetRegions(int estateID)
+        {
+            return new List<UUID>();
+        }
+
+        public bool DeleteEstate(int estateID)
+        {
+            return false;
         }
     }
 }
