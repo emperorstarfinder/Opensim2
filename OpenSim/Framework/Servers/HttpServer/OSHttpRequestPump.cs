@@ -1,31 +1,31 @@
-/*
- * Copyright (c) Contributors, http://opensimulator.org/
- * See CONTRIBUTORS.TXT for a full list of copyright holders.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *     * Redistributions of source code must retain the above copyright
- *       notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above copyright
- *       notice, this list of conditions and the following disclaimer in the
- *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the OpenSim Project nor the
- *       names of its contributors may be used to endorse or promote products
- *       derived from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE DEVELOPERS ``AS IS'' AND ANY
- * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE CONTRIBUTORS BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
-
-// #define DEBUGGING
+/// <summary>
+///     Copyright (c) Contributors, http://opensimulator.org/
+///     See CONTRIBUTORS.TXT for a full list of copyright holders.
+///     For an explanation of the license of each contributor and the content it 
+///     covers please see the Licenses directory.
+/// 
+///     Redistribution and use in source and binary forms, with or without
+///     modification, are permitted provided that the following conditions are met:
+///         * Redistributions of source code must retain the above copyright
+///         notice, this list of conditions and the following disclaimer.
+///         * Redistributions in binary form must reproduce the above copyright
+///         notice, this list of conditions and the following disclaimer in the
+///         documentation and/or other materials provided with the distribution.
+///         * Neither the name of the OpenSim Project nor the
+///         names of its contributors may be used to endorse or promote products
+///         derived from this software without specific prior written permission.
+/// 
+///     THIS SOFTWARE IS PROVIDED BY THE DEVELOPERS ``AS IS'' AND ANY
+///     EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+///     WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+///     DISCLAIMED. IN NO EVENT SHALL THE CONTRIBUTORS BE LIABLE FOR ANY
+///     DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+///     (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+///     LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+///     ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+///     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+///     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+/// </summary>
 
 using System;
 using System.Collections.Generic;
@@ -42,11 +42,11 @@ using HttpServer;
 namespace OpenSim.Framework.Servers.HttpServer
 {
     /// <summary>
-    /// An OSHttpRequestPump fetches incoming OSHttpRequest objects
-    /// from the OSHttpRequestQueue and feeds them to all subscribed
-    /// parties. Each OSHttpRequestPump encapsulates one thread to do
-    /// the work and there is a fixed number of pumps for each
-    /// OSHttpServer object.
+    ///     An OSHttpRequestPump fetches incoming OSHttpRequest objects
+    ///     from the OSHttpRequestQueue and feeds them to all subscribed
+    ///     parties. Each OSHttpRequestPump encapsulates one thread to do
+    ///     the work and there is a fixed number of pumps for each
+    ///     OSHttpServer object.
     /// </summary>
     public class OSHttpRequestPump
     {
@@ -80,6 +80,7 @@ namespace OpenSim.Framework.Servers.HttpServer
         public static OSHttpRequestPump[] Pumps(OSHttpServer server, OSHttpRequestQueue queue, int poolSize)
         {
             OSHttpRequestPump[] pumps = new OSHttpRequestPump[poolSize];
+
             for (int i = 0; i < pumps.Length; i++)
             {
                 pumps[i] = new OSHttpRequestPump(server, queue, i);
@@ -121,16 +122,23 @@ namespace OpenSim.Framework.Servers.HttpServer
                     // we are either out of handlers or get back a
                     // Pass or Done
                     OSHttpHandlerResult rc = OSHttpHandlerResult.Unprocessed;
+
                     foreach (OSHttpHandler h in handlers)
                     {
                         rc = h.Process(req);
 
                         // Pass: handler did not process the request,
                         // try next handler
-                        if (OSHttpHandlerResult.Pass == rc) continue;
+                        if (OSHttpHandlerResult.Pass == rc)
+                        {
+                            continue;
+                        }
 
                         // Handled: handler has processed the request
-                        if (OSHttpHandlerResult.Done == rc) break;
+                        if (OSHttpHandlerResult.Done == rc)
+                        {
+                            break;
+                        }
 
                         // hmm, something went wrong
                         throw new Exception(String.Format("[{0}] got unexpected OSHttpHandlerResult {1}", EngineID, rc));
@@ -171,6 +179,7 @@ namespace OpenSim.Framework.Servers.HttpServer
             Dictionary<OSHttpHandler, int> scoredHandlers = new Dictionary<OSHttpHandler, int>();
 
             _log.DebugFormat("[{0}] MatchHandlers for {1}", EngineID, req);
+
             foreach (OSHttpHandler h in handlers)
             {
                 // initial anchor
@@ -183,11 +192,12 @@ namespace OpenSim.Framework.Servers.HttpServer
                 {
                     // TODO: following code requires code changes to
                     // HttpServer.HttpRequest to become functional
-
                     IPEndPoint remote = req.RemoteIPEndPoint;
+
                     if (null != remote)
                     {
                         Match epm = h.IPEndPointWhitelist.Match(remote.ToString());
+
                         if (!epm.Success)
                         {
                             scoredHandlers.Remove(h);
@@ -199,11 +209,13 @@ namespace OpenSim.Framework.Servers.HttpServer
                 if (null != h.Method)
                 {
                     Match m = h.Method.Match(req.HttpMethod);
+
                     if (!m.Success)
                     {
                         scoredHandlers.Remove(h);
                         continue;
                     }
+
                     scoredHandlers[h]++;
                 }
 
@@ -211,11 +223,13 @@ namespace OpenSim.Framework.Servers.HttpServer
                 if (null != h.Path)
                 {
                     Match m = h.Path.Match(req.RawUrl);
+
                     if (!m.Success)
                     {
                         scoredHandlers.Remove(h);
                         continue;
                     }
+
                     scoredHandlers[h] += m.ToString().Length;
                 }
 
@@ -223,6 +237,7 @@ namespace OpenSim.Framework.Servers.HttpServer
                 if (null != h.Query)
                 {
                     int queriesMatch = MatchOnNameValueCollection(req.QueryString, h.Query);
+
                     if (0 == queriesMatch)
                     {
                         _log.DebugFormat("[{0}] request {1}", EngineID, req);
@@ -231,13 +246,15 @@ namespace OpenSim.Framework.Servers.HttpServer
                         scoredHandlers.Remove(h);
                         continue;
                     }
-                    scoredHandlers[h] +=  queriesMatch;
+
+                    scoredHandlers[h] += queriesMatch;
                 }
 
                 // whitelist, path, query string ok, now check headers
                 if (null != h.Headers)
                 {
                     int headersMatch = MatchOnNameValueCollection(req.Headers, h.Headers);
+
                     if (0 == headersMatch)
                     {
                         _log.DebugFormat("[{0}] request {1}", EngineID, req);
@@ -246,15 +263,17 @@ namespace OpenSim.Framework.Servers.HttpServer
                         scoredHandlers.Remove(h);
                         continue;
                     }
-                    scoredHandlers[h] +=  headersMatch;
+
+                    scoredHandlers[h] += headersMatch;
                 }
             }
 
             List<OSHttpHandler> matchingHandlers = new List<OSHttpHandler>(scoredHandlers.Keys);
-            matchingHandlers.Sort(delegate(OSHttpHandler x, OSHttpHandler y)
-                                  {
-                                      return scoredHandlers[x] - scoredHandlers[y];
-                                  });
+            matchingHandlers.Sort(delegate (OSHttpHandler x, OSHttpHandler y)
+            {
+                return scoredHandlers[x] - scoredHandlers[y];
+            });
+
             LogDumpHandlerList(matchingHandlers);
             return matchingHandlers;
         }
@@ -274,6 +293,7 @@ namespace OpenSim.Framework.Servers.HttpServer
                 // does the content of collection[tag] match
                 // the supplied regex?
                 Match cm = regexs[tag].Match(collection[tag]);
+
                 if (!cm.Success)
                 {
                     return 0;
@@ -291,8 +311,11 @@ namespace OpenSim.Framework.Servers.HttpServer
         private void LogDumpHandlerList(List<OSHttpHandler> l)
         {
             _log.DebugFormat("[{0}] OSHttpHandlerList dump:", EngineID);
+
             foreach (OSHttpHandler h in l)
+            {
                 _log.DebugFormat("    ", h.ToString());
+            }
         }
     }
 }

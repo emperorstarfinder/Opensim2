@@ -1,29 +1,31 @@
-/*
- * Copyright (c) Contributors, http://opensimulator.org/
- * See CONTRIBUTORS.TXT for a full list of copyright holders.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *     * Redistributions of source code must retain the above copyright
- *       notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above copyright
- *       notice, this list of conditions and the following disclaimer in the
- *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the OpenSim Project nor the
- *       names of its contributors may be used to endorse or promote products
- *       derived from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE DEVELOPERS ``AS IS'' AND ANY
- * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE CONTRIBUTORS BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+/// <summary>
+///     Copyright (c) Contributors, http://opensimulator.org/
+///     See CONTRIBUTORS.TXT for a full list of copyright holders.
+///     For an explanation of the license of each contributor and the content it 
+///     covers please see the Licenses directory.
+/// 
+///     Redistribution and use in source and binary forms, with or without
+///     modification, are permitted provided that the following conditions are met:
+///         * Redistributions of source code must retain the above copyright
+///         notice, this list of conditions and the following disclaimer.
+///         * Redistributions in binary form must reproduce the above copyright
+///         notice, this list of conditions and the following disclaimer in the
+///         documentation and/or other materials provided with the distribution.
+///         * Neither the name of the OpenSim Project nor the
+///         names of its contributors may be used to endorse or promote products
+///         derived from this software without specific prior written permission.
+/// 
+///     THIS SOFTWARE IS PROVIDED BY THE DEVELOPERS ``AS IS'' AND ANY
+///     EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+///     WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+///     DISCLAIMED. IN NO EVENT SHALL THE CONTRIBUTORS BE LIABLE FOR ANY
+///     DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+///     (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+///     LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+///     ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+///     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+///     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+/// </summary>
 
 using System;
 using System.IO;
@@ -31,17 +33,17 @@ using System.Text;
 using System.Xml;
 using OpenMetaverse;
 using OpenSim.Framework;
-    
+
 namespace OpenSim.Framework.Serialization.External
-{        
+{
     /// <summary>
-    /// Serialize and deserialize user inventory items as an external format.
+    ///     Serialize and deserialize user inventory items as an external format.
     /// </summary> 
     /// XXX: Please do not use yet.
     public class UserInventoryItemSerializer
     {
         /// <summary>
-        /// Deserialize item
+        ///     Deserialize item
         /// </summary>
         /// <param name="serializedSettings"></param>
         /// <returns></returns>
@@ -50,9 +52,9 @@ namespace OpenSim.Framework.Serialization.External
         {
             return Deserialize(Encoding.ASCII.GetString(serialization, 0, serialization.Length));
         }
-        
+
         /// <summary>
-        /// Deserialize settings
+        ///     Deserialize settings
         /// </summary>
         /// <param name="serializedSettings"></param>
         /// <returns></returns>
@@ -60,39 +62,39 @@ namespace OpenSim.Framework.Serialization.External
         public static InventoryItemBase Deserialize(string serialization)
         {
             InventoryItemBase item = new InventoryItemBase();
-            
+
             StringReader sr = new StringReader(serialization);
             XmlTextReader xtr = new XmlTextReader(sr);
-            
+
             xtr.ReadStartElement("InventoryItem");
-            
-            item.Name                   =                   xtr.ReadElementString("Name");
-            item.ID                     = UUID.Parse(       xtr.ReadElementString("ID"));
-            item.InvType                = Convert.ToInt32(  xtr.ReadElementString("InvType"));            
-            item.CreatorId              =                   xtr.ReadElementString("CreatorUUID");
-            item.CreationDate           = Convert.ToInt32(  xtr.ReadElementString("CreationDate"));
-            item.Owner                  = UUID.Parse(       xtr.ReadElementString("Owner"));
-            item.Description            =                   xtr.ReadElementString("Description");
-            item.AssetType              = Convert.ToInt32(  xtr.ReadElementString("AssetType"));
-            item.AssetID                = UUID.Parse(       xtr.ReadElementString("AssetID"));
-            item.SaleType               = Convert.ToByte(   xtr.ReadElementString("SaleType"));
-            item.SalePrice              = Convert.ToInt32(  xtr.ReadElementString("SalePrice"));
-            item.BasePermissions        = Convert.ToUInt32( xtr.ReadElementString("BasePermissions"));
-            item.CurrentPermissions     = Convert.ToUInt32( xtr.ReadElementString("CurrentPermissions"));
-            item.EveryOnePermissions    = Convert.ToUInt32( xtr.ReadElementString("EveryOnePermissions"));
-            item.NextPermissions        = Convert.ToUInt32( xtr.ReadElementString("NextPermissions"));
-            item.Flags                  = Convert.ToUInt32( xtr.ReadElementString("Flags"));
-            item.GroupID                = UUID.Parse(       xtr.ReadElementString("GroupID"));
-            item.GroupOwned             = Convert.ToBoolean(xtr.ReadElementString("GroupOwned"));
-            
+
+            item.Name = xtr.ReadElementString("Name");
+            item.ID = UUID.Parse(xtr.ReadElementString("ID"));
+            item.InvType = Convert.ToInt32(xtr.ReadElementString("InvType"));
+            item.CreatorId = xtr.ReadElementString("CreatorUUID");
+            item.CreationDate = Convert.ToInt32(xtr.ReadElementString("CreationDate"));
+            item.Owner = UUID.Parse(xtr.ReadElementString("Owner"));
+            item.Description = xtr.ReadElementString("Description");
+            item.AssetType = Convert.ToInt32(xtr.ReadElementString("AssetType"));
+            item.AssetID = UUID.Parse(xtr.ReadElementString("AssetID"));
+            item.SaleType = Convert.ToByte(xtr.ReadElementString("SaleType"));
+            item.SalePrice = Convert.ToInt32(xtr.ReadElementString("SalePrice"));
+            item.BasePermissions = Convert.ToUInt32(xtr.ReadElementString("BasePermissions"));
+            item.CurrentPermissions = Convert.ToUInt32(xtr.ReadElementString("CurrentPermissions"));
+            item.EveryOnePermissions = Convert.ToUInt32(xtr.ReadElementString("EveryOnePermissions"));
+            item.NextPermissions = Convert.ToUInt32(xtr.ReadElementString("NextPermissions"));
+            item.Flags = Convert.ToUInt32(xtr.ReadElementString("Flags"));
+            item.GroupID = UUID.Parse(xtr.ReadElementString("GroupID"));
+            item.GroupOwned = Convert.ToBoolean(xtr.ReadElementString("GroupOwned"));
+
             xtr.ReadEndElement();
-            
+
             xtr.Close();
             sr.Close();
-            
+
             return item;
-        }      
-        
+        }
+
         public static string Serialize(InventoryItemBase inventoryItem)
         {
             StringWriter sw = new StringWriter();
@@ -158,11 +160,11 @@ namespace OpenSim.Framework.Serialization.External
             writer.WriteEndElement();
 
             writer.WriteEndElement();
-            
+
             writer.Close();
             sw.Close();
-            
+
             return sw.ToString();
-        }        
+        }
     }
 }

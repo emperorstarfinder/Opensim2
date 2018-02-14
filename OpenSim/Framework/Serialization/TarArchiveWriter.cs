@@ -1,48 +1,51 @@
-/*
- * Copyright (c) Contributors, http://opensimulator.org/
- * See CONTRIBUTORS.TXT for a full list of copyright holders.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *     * Redistributions of source code must retain the above copyright
- *       notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above copyright
- *       notice, this list of conditions and the following disclaimer in the
- *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the OpenSim Project nor the
- *       names of its contributors may be used to endorse or promote products
- *       derived from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE DEVELOPERS ``AS IS'' AND ANY
- * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE CONTRIBUTORS BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+/// <summary>
+///     Copyright (c) Contributors, http://opensimulator.org/
+///     See CONTRIBUTORS.TXT for a full list of copyright holders.
+///     For an explanation of the license of each contributor and the content it 
+///     covers please see the Licenses directory.
+/// 
+///     Redistribution and use in source and binary forms, with or without
+///     modification, are permitted provided that the following conditions are met:
+///         * Redistributions of source code must retain the above copyright
+///         notice, this list of conditions and the following disclaimer.
+///         * Redistributions in binary form must reproduce the above copyright
+///         notice, this list of conditions and the following disclaimer in the
+///         documentation and/or other materials provided with the distribution.
+///         * Neither the name of the OpenSim Project nor the
+///         names of its contributors may be used to endorse or promote products
+///         derived from this software without specific prior written permission.
+/// 
+///     THIS SOFTWARE IS PROVIDED BY THE DEVELOPERS ``AS IS'' AND ANY
+///     EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+///     WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+///     DISCLAIMED. IN NO EVENT SHALL THE CONTRIBUTORS BE LIABLE FOR ANY
+///     DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+///     (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+///     LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+///     ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+///     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+///     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+/// </summary>
 
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using System.Text;
+using log4net;
 
 namespace OpenSim.Framework.Serialization
 {
     /// <summary>
-    /// Temporary code to produce a tar archive in tar v7 format
+    ///     Temporary code to produce a tar archive in tar v7 format
     /// </summary>
     public class TarArchiveWriter
     {
-        //private static readonly ILog m_log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
-
         protected static ASCIIEncoding m_asciiEncoding = new ASCIIEncoding();
+        protected static UTF8Encoding m_utf8Encoding = new UTF8Encoding();
 
         /// <summary>
-        /// Binary writer for the underlying stream
+        ///     Binary writer for the underlying stream
         /// </summary>
         protected BinaryWriter m_bw;
 
@@ -52,37 +55,41 @@ namespace OpenSim.Framework.Serialization
         }
 
         /// <summary>
-        /// Write a directory entry to the tar archive.  We can only handle one path level right now!
+        ///     Write a directory entry to the tar archive.  We can only handle one path level right now!
         /// </summary>
         /// <param name="dirName"></param>
         public void WriteDir(string dirName)
         {
             // Directories are signalled by a final /
             if (!dirName.EndsWith("/"))
+            {
                 dirName += "/";
+            }
 
             WriteFile(dirName, new byte[0]);
         }
 
         /// <summary>
-        /// Write a file to the tar archive
+        ///     Write a file to the tar archive
         /// </summary>
         /// <param name="filePath"></param>
         /// <param name="data"></param>
         public void WriteFile(string filePath, string data)
         {
-            WriteFile(filePath, m_asciiEncoding.GetBytes(data));
+            WriteFile(filePath, m_utf8Encoding.GetBytes(data));
         }
 
         /// <summary>
-        /// Write a file to the tar archive
+        ///     Write a file to the tar archive
         /// </summary>
         /// <param name="filePath"></param>
         /// <param name="data"></param>
         public void WriteFile(string filePath, byte[] data)
         {
             if (filePath.Length > 100)
+            {
                 WriteEntry("././@LongLink", m_asciiEncoding.GetBytes(filePath), 'L');
+            }
 
             char fileType;
 
@@ -99,21 +106,19 @@ namespace OpenSim.Framework.Serialization
         }
 
         /// <summary>
-        /// Finish writing the raw tar archive data to a stream.  The stream will be closed on completion.
+        ///     Finish writing the raw tar archive data to a stream.  The stream will be closed on completion.
         /// </summary>
         /// <param name="s">Stream to which to write the data</param>
         /// <returns></returns>
         public void Close()
         {
-            //m_log.Debug("[TAR ARCHIVE WRITER]: Writing final consecutive 0 blocks");
-
             // Write two consecutive 0 blocks to end the archive
             byte[] finalZeroPadding = new byte[1024];
 
             lock (m_bw)
             {
                 m_bw.Write(finalZeroPadding);
-    
+
                 m_bw.Flush();
                 m_bw.Close();
             }
@@ -140,7 +145,7 @@ namespace OpenSim.Framework.Serialization
         }
 
         /// <summary>
-        /// Write a particular entry
+        ///     Write a particular entry
         /// </summary>
         /// <param name="filePath"></param>
         /// <param name="data"></param>
@@ -168,7 +173,6 @@ namespace OpenSim.Framework.Serialization
 
             // file size in bytes (12)
             int fileSize = data.Length;
-            //m_log.DebugFormat("[TAR ARCHIVE WRITER]: File size of {0} is {1}", filePath, fileSize);
 
             byte[] fileSizeBytes = ConvertDecimalToPaddedOctalBytes(fileSize, 11);
 
@@ -188,12 +192,11 @@ namespace OpenSim.Framework.Serialization
             Array.Copy(m_asciiEncoding.GetBytes("        "), 0, header, 148, 8);
 
             int checksum = 0;
+
             foreach (byte b in header)
             {
                 checksum += b;
             }
-
-            //m_log.DebugFormat("[TAR ARCHIVE WRITER]: Decimal header checksum is {0}", checksum);
 
             byte[] checkSumBytes = ConvertDecimalToPaddedOctalBytes(checksum, 6);
 
@@ -205,16 +208,18 @@ namespace OpenSim.Framework.Serialization
             {
                 // Write out header
                 m_bw.Write(header);
-    
+
                 // Write out data
-                m_bw.Write(data);
-    
+                // An IOException occurs if we try to write out an empty array in Mono 2.6
+                if (data.Length > 0)
+                {
+                    m_bw.Write(data);
+                }
+
                 if (data.Length % 512 != 0)
                 {
                     int paddingRequired = 512 - (data.Length % 512);
-    
-                    //m_log.DebugFormat("[TAR ARCHIVE WRITER]: Padding data with {0} bytes", paddingRequired);
-    
+
                     byte[] padding = new byte[paddingRequired];
                     m_bw.Write(padding);
                 }

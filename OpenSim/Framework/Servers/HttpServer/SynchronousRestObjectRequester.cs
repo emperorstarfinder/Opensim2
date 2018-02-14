@@ -1,29 +1,31 @@
-/*
- * Copyright (c) Contributors, http://opensimulator.org/
- * See CONTRIBUTORS.TXT for a full list of copyright holders.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *     * Redistributions of source code must retain the above copyright
- *       notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above copyright
- *       notice, this list of conditions and the following disclaimer in the
- *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the OpenSim Project nor the
- *       names of its contributors may be used to endorse or promote products
- *       derived from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE DEVELOPERS ``AS IS'' AND ANY
- * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE CONTRIBUTORS BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+/// <summary>
+///     Copyright (c) Contributors, http://opensimulator.org/
+///     See CONTRIBUTORS.TXT for a full list of copyright holders.
+///     For an explanation of the license of each contributor and the content it 
+///     covers please see the Licenses directory.
+/// 
+///     Redistribution and use in source and binary forms, with or without
+///     modification, are permitted provided that the following conditions are met:
+///         * Redistributions of source code must retain the above copyright
+///         notice, this list of conditions and the following disclaimer.
+///         * Redistributions in binary form must reproduce the above copyright
+///         notice, this list of conditions and the following disclaimer in the
+///         documentation and/or other materials provided with the distribution.
+///         * Neither the name of the OpenSim Project nor the
+///         names of its contributors may be used to endorse or promote products
+///         derived from this software without specific prior written permission.
+/// 
+///     THIS SOFTWARE IS PROVIDED BY THE DEVELOPERS ``AS IS'' AND ANY
+///     EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+///     WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+///     DISCLAIMED. IN NO EVENT SHALL THE CONTRIBUTORS BE LIABLE FOR ANY
+///     DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+///     (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+///     LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+///     ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+///     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+///     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+/// </summary>
 
 using System;
 using System.IO;
@@ -46,23 +48,24 @@ namespace OpenSim.Framework.Servers.HttpServer
     public class SynchronousRestObjectRequester
     {
         /// <summary>
-        /// Perform a synchronous REST request.
+        ///     Perform a synchronous REST request.
         /// </summary>
         /// <param name="verb"></param>
         /// <param name="requestUrl"></param>
         /// <param name="obj"> </param>
-        /// <returns></returns>
-        ///
+        /// <returns>
+        /// </returns>
         /// <exception cref="System.Net.WebException">Thrown if we encounter a network issue while posting
         /// the request.  You'll want to make sure you deal with this as they're not uncommon</exception>
         public static TResponse MakeRequest<TRequest, TResponse>(string verb, string requestUrl, TRequest obj)
         {
-            Type type = typeof (TRequest);
+            Type type = typeof(TRequest);
+            TResponse deserial = default(TResponse);
 
             WebRequest request = WebRequest.Create(requestUrl);
             request.Method = verb;
 
-            if (verb == "POST")
+            if ((verb == "POST") || (verb == "PUT"))
             {
                 request.ContentType = "text/xml";
 
@@ -78,26 +81,47 @@ namespace OpenSim.Framework.Servers.HttpServer
                     writer.Flush();
                 }
 
-                int length = (int) buffer.Length;
+                int length = (int)buffer.Length;
                 request.ContentLength = length;
 
-                Stream requestStream = request.GetRequestStream();
-                requestStream.Write(buffer.ToArray(), 0, length);
+                Stream requestStream = null;
+
+                try
+                {
+                    requestStream = request.GetRequestStream();
+                    requestStream.Write(buffer.ToArray(), 0, length);
+                }
+                catch (Exception)
+                {
+                    return deserial;
+                }
+                finally
+                {
+                    if (requestStream != null)
+                    {
+                        requestStream.Close();
+                    }
+                }
             }
 
-            TResponse deserial = default(TResponse);
             try
             {
                 using (WebResponse resp = request.GetResponse())
                 {
-                    XmlSerializer deserializer = new XmlSerializer(typeof (TResponse));
-                    deserial = (TResponse) deserializer.Deserialize(resp.GetResponseStream());
+                    if (resp.ContentLength > 0)
+                    {
+                        Stream respStream = resp.GetResponseStream();
+                        XmlSerializer deserializer = new XmlSerializer(typeof(TResponse));
+                        deserial = (TResponse)deserializer.Deserialize(respStream);
+                        respStream.Close();
+                    }
                 }
             }
             catch (System.InvalidOperationException)
             {
                 // This is what happens when there is invalid XML
             }
+
             return deserial;
         }
     }

@@ -1,29 +1,31 @@
-/*
- * Copyright (c) Contributors, http://opensimulator.org/
- * See CONTRIBUTORS.TXT for a full list of copyright holders.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *     * Redistributions of source code must retain the above copyright
- *       notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above copyright
- *       notice, this list of conditions and the following disclaimer in the
- *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the OpenSimulator Project nor the
- *       names of its contributors may be used to endorse or promote products
- *       derived from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE DEVELOPERS ``AS IS'' AND ANY
- * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE CONTRIBUTORS BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+/// <summary>
+///     Copyright (c) Contributors, http://opensimulator.org/
+///     See CONTRIBUTORS.TXT for a full list of copyright holders.
+///     For an explanation of the license of each contributor and the content it 
+///     covers please see the Licenses directory.
+/// 
+///     Redistribution and use in source and binary forms, with or without
+///     modification, are permitted provided that the following conditions are met:
+///         * Redistributions of source code must retain the above copyright
+///         notice, this list of conditions and the following disclaimer.
+///         * Redistributions in binary form must reproduce the above copyright
+///         notice, this list of conditions and the following disclaimer in the
+///         documentation and/or other materials provided with the distribution.
+///         * Neither the name of the OpenSim Project nor the
+///         names of its contributors may be used to endorse or promote products
+///         derived from this software without specific prior written permission.
+/// 
+///     THIS SOFTWARE IS PROVIDED BY THE DEVELOPERS ``AS IS'' AND ANY
+///     EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+///     WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+///     DISCLAIMED. IN NO EVENT SHALL THE CONTRIBUTORS BE LIABLE FOR ANY
+///     DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+///     (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+///     LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+///     ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+///     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+///     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+/// </summary>
 
 namespace OpenSim.Framework
 {
@@ -36,20 +38,13 @@ namespace OpenSim.Framework
             get { return m_physicsEngine; }
             set { m_physicsEngine = value; }
         }
+
         private string m_meshEngineName;
 
         public string MeshEngineName
         {
             get { return m_meshEngineName; }
             set { m_meshEngineName = value; }
-        }
-
-        private bool m_standalone;
-
-        public bool Standalone
-        {
-            get { return m_standalone; }
-            set { m_standalone = value; }
         }
 
         private bool m_see_into_region_from_neighbor;
@@ -108,14 +103,6 @@ namespace OpenSim.Framework
             set { m_standaloneInventoryPlugin = value; }
         }
 
-        private string m_standaloneAssetPlugin;
-
-        public string StandaloneAssetPlugin
-        {
-            get { return m_standaloneAssetPlugin; }
-            set { m_standaloneAssetPlugin = value; }
-        }
-
         private string m_standaloneUserPlugin;
 
         public string StandaloneUserPlugin
@@ -132,14 +119,6 @@ namespace OpenSim.Framework
             set { m_standaloneInventorySource = value; }
         }
 
-        private string m_standaloneAssetSource;
-
-        public string StandaloneAssetSource
-        {
-            get { return m_standaloneAssetSource; }
-            set { m_standaloneAssetSource = value; }
-        }
-
         private string m_standaloneUserSource;
 
         public string StandaloneUserSource
@@ -148,79 +127,21 @@ namespace OpenSim.Framework
             set { m_standaloneUserSource = value; }
         }
 
-        private string m_assetStorage = "local";
-
-        public string AssetStorage
-        {
-            get { return m_assetStorage; }
-            set { m_assetStorage = value; }
-        }
-
-        private string m_assetCache;
-
-        public string AssetCache
-        {
-            get { return m_assetCache; }
-            set { m_assetCache = value; }
-        }
-
-        protected string m_storageConnectionString;
-
-        public string StorageConnectionString
-        {
-            get { return m_storageConnectionString; }
-            set { m_storageConnectionString = value; }
-        }
-
-        protected string m_estateConnectionString;
-
-        public string EstateConnectionString
-        {
-            get { return m_estateConnectionString; }
-            set { m_estateConnectionString = value; }
-        }
-
-        protected bool m_dumpAssetsToFile;
-
-        public bool DumpAssetsToFile
-        {
-            get { return m_dumpAssetsToFile; }
-            set { m_dumpAssetsToFile = value; }
-        }
-
         protected string m_librariesXMLFile;
+
         public string LibrariesXMLFile
         {
-            get
-            {
-                return m_librariesXMLFile;
-            }
-            set
-            {
-                m_librariesXMLFile = value;
-            }
-        }
-        protected string m_assetSetsXMLFile;
-        public string AssetSetsXMLFile
-        {
-            get
-            {
-                return m_assetSetsXMLFile;
-            }
-            set
-            {
-                m_assetSetsXMLFile = value;
-            }
+            get { return m_librariesXMLFile; }
+            set { m_librariesXMLFile = value; }
         }
 
         public const uint DefaultAssetServerHttpPort = 8003;
         public const uint DefaultRegionHttpPort = 9000;
-        public static uint DefaultRegionRemotingPort = 8895; // This is actually assigned to, but then again, the remoting is obsolete, right?
         public const uint DefaultUserServerHttpPort = 8002;
         public const bool DefaultUserServerHttpSSL = false;
         public const uint DefaultMessageServerHttpPort = 8006;
         public const bool DefaultMessageServerHttpSSL = false;
-        public const uint DefaultGridServerHttpPort = 8001;
-        public const uint DefaultInventoryServerHttpPort = 8004;
+        public const uint DefaultGridServerHttpPort = 8003;
+        public const uint DefaultInventoryServerHttpPort = 8003;
     }
 }

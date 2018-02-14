@@ -1,29 +1,31 @@
-/*
- * Copyright (c) Contributors, http://opensimulator.org/
- * See CONTRIBUTORS.TXT for a full list of copyright holders.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *     * Redistributions of source code must retain the above copyright
- *       notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above copyright
- *       notice, this list of conditions and the following disclaimer in the
- *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the OpenSim Project nor the
- *       names of its contributors may be used to endorse or promote products
- *       derived from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE DEVELOPERS ``AS IS'' AND ANY
- * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE CONTRIBUTORS BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+/// <summary>
+///     Copyright (c) Contributors, http://opensimulator.org/
+///     See CONTRIBUTORS.TXT for a full list of copyright holders.
+///     For an explanation of the license of each contributor and the content it 
+///     covers please see the Licenses directory.
+/// 
+///     Redistribution and use in source and binary forms, with or without
+///     modification, are permitted provided that the following conditions are met:
+///         * Redistributions of source code must retain the above copyright
+///         notice, this list of conditions and the following disclaimer.
+///         * Redistributions in binary form must reproduce the above copyright
+///         notice, this list of conditions and the following disclaimer in the
+///         documentation and/or other materials provided with the distribution.
+///         * Neither the name of the OpenSim Project nor the
+///         names of its contributors may be used to endorse or promote products
+///         derived from this software without specific prior written permission.
+/// 
+///     THIS SOFTWARE IS PROVIDED BY THE DEVELOPERS ``AS IS'' AND ANY
+///     EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+///     WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+///     DISCLAIMED. IN NO EVENT SHALL THE CONTRIBUTORS BE LIABLE FOR ANY
+///     DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+///     (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+///     LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+///     ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+///     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+///     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+/// </summary>
 
 using System;
 using System.Threading;
@@ -35,13 +37,13 @@ namespace OpenSim.Framework.Communications
         private readonly AsyncCallback m_callback;
 
         /// <summary>
-        /// Is process completed?
+        ///     Is process completed?
         /// </summary>
         /// <remarks>Should really be boolean, but VolatileRead has no boolean method</remarks>
         private byte m_completed;
 
         /// <summary>
-        /// Did process complete synchronously?
+        ///     Did process complete synchronously?
         /// </summary>
         /// <remarks>I have a hard time imagining a scenario where this is the case, again, same issue about
         /// booleans and VolatileRead as m_completed
@@ -75,6 +77,7 @@ namespace OpenSim.Framework.Communications
                 {
                     bool done = IsCompleted;
                     ManualResetEvent mre = new ManualResetEvent(done);
+
                     if (Interlocked.CompareExchange(ref m_waitHandle, mre, null) != null)
                     {
                         mre.Close();
@@ -87,11 +90,10 @@ namespace OpenSim.Framework.Communications
                         }
                     }
                 }
-                
+
                 return m_waitHandle;
             }
         }
-
 
         public bool CompletedSynchronously
         {
@@ -111,10 +113,15 @@ namespace OpenSim.Framework.Communications
         internal void SetAsCompleted(bool completedSynchronously)
         {
             m_completed = 1;
+
             if (completedSynchronously)
+            {
                 m_completedSynchronously = 1;
+            }
             else
+            {
                 m_completedSynchronously = 0;
+            }
 
             SignalCompletion();
         }
@@ -122,10 +129,16 @@ namespace OpenSim.Framework.Communications
         internal void HandleException(Exception e, bool completedSynchronously)
         {
             m_completed = 1;
+
             if (completedSynchronously)
+            {
                 m_completedSynchronously = 1;
+            }
             else
+            {
                 m_completedSynchronously = 0;
+            }
+
             m_exception = e;
 
             SignalCompletion();
@@ -133,9 +146,15 @@ namespace OpenSim.Framework.Communications
 
         private void SignalCompletion()
         {
-            if (m_waitHandle != null) m_waitHandle.Set();
+            if (m_waitHandle != null)
+            {
+                m_waitHandle.Set();
+            }
 
-            if (m_callback != null) m_callback(this);
+            if (m_callback != null)
+            {
+                m_callback(this);
+            }
         }
 
         public void EndInvoke()
@@ -146,11 +165,15 @@ namespace OpenSim.Framework.Communications
                 // If the operation isn't done, wait for it
                 AsyncWaitHandle.WaitOne();
                 AsyncWaitHandle.Close();
+                m_waitHandle.Close();
                 m_waitHandle = null; // Allow early GC
             }
 
             // Operation is done: if an exception occured, throw it
-            if (m_exception != null) throw m_exception;
+            if (m_exception != null)
+            {
+                throw m_exception;
+            }
         }
 
         #endregion
@@ -160,8 +183,7 @@ namespace OpenSim.Framework.Communications
     {
         private T m_result = default(T);
 
-        public AsyncResult(AsyncCallback asyncCallback, Object state) :
-            base(asyncCallback, state)
+        public AsyncResult(AsyncCallback asyncCallback, Object state) : base(asyncCallback, state)
         {
         }
 
