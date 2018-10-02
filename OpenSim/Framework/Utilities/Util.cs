@@ -43,10 +43,10 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml;
-using log4net;
 using Nini.Config;
 using Nwc.XmlRpc;
 using OpenMetaverse;
+using OpenSim.Framework.ConsoleFramework;
 using OpenSim.Framework.Utilities;
 
 namespace OpenSim.Framework.Utilities
@@ -56,11 +56,6 @@ namespace OpenSim.Framework.Utilities
     /// </summary>
     public class Util
     {
-        // This logger will not be needed once I get
-        // the new Console Framwork in place
-        // 29 Sept 2018 - Emperor Starfinder
-        private static readonly ILog m_log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
-
         private static uint nextXferID = 5000;
         private static Random randomClass = new Random();
 
@@ -549,7 +544,7 @@ namespace OpenSim.Framework.Utilities
             }
             catch (Exception e)
             {
-                m_log.ErrorFormat("[Util]: An error occurred while resolving {0}, {1}", dnsAddress, e);
+                MainConsole.Instance.ErrorFormat("[Util]: An error occurred while resolving {0}, {1}", dnsAddress, e);
 
                 // Still going to throw the exception on for now, since this was what was happening in the first place
                 throw e;
@@ -713,7 +708,6 @@ namespace OpenSim.Framework.Utilities
             {
                 //create new file
             }
-
 
             XmlConfigSource config = new XmlConfigSource(fileName);
             AddDataRowToConfig(config, row);
@@ -891,7 +885,7 @@ namespace OpenSim.Framework.Utilities
             }
             catch (Exception e)
             {
-                m_log.Error(e.ToString());
+                MainConsole.Instance.Error(e.ToString());
             }
             finally
             {
@@ -916,7 +910,7 @@ namespace OpenSim.Framework.Utilities
             }
             catch (Exception e)
             {
-                m_log.Error(e.ToString());
+                MainConsole.Instance.Error(e.ToString());
             }
             finally
             {
