@@ -42,9 +42,9 @@ using System.Reflections;
 /// </summary>
 
 // Do not provide AssemblyFileVersion and it will be kept in sync.
-[assembly: AssemblyVersion("1.0.01.*")]
+[assembly: AssemblyVersion("1.0.1.*")]
 
-namespace OpenSim.Framework.Utilities
+namespace OpenSim.Core.Framework.Utilities
 {
 	public class VersionInfo
     {

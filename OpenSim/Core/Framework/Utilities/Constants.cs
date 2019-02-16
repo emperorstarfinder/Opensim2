@@ -29,7 +29,7 @@
 
 using System;
 
-namespace OpenSim.Framework.Utilities
+namespace OpenSim.Core.Framework.Utilities
 {
     /// <summary>
     ///     Default Textures

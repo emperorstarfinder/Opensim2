@@ -39,11 +39,11 @@ using System.Runtime.InteropServices;
 ///     to modify the information associated with
 ///     an assembly
 /// </summary>
-[assembly: AssemblyTitle("OpenSim.Framework")]
+[assembly: AssemblyTitle("OpenSim.Core.Framework")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("http://opensimulator.org")]
-[assembly: AssemblyProduct("OpenSim.Framework")]
+[assembly: AssemblyProduct("OpenSim.Core.Framework")]
 [assembly: AssemblyCopyright("Copyright (c) OpenSimulator.org Developers 2007-2009")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]

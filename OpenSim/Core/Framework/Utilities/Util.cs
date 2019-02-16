@@ -46,10 +46,10 @@ using System.Xml;
 using Nini.Config;
 using Nwc.XmlRpc;
 using OpenMetaverse;
-using OpenSim.Framework.ConsoleFramework;
-using OpenSim.Framework.Utilities;
+using OpenSim.Core.Framework.ConsoleFramework;
+using OpenSim.Core.Framework.Utilities;
 
-namespace OpenSim.Framework.Utilities
+namespace OpenSim.Core.Framework.Utilities
 {
     /// <summary>
     ///     Miscellaneous Utility FUnctions
