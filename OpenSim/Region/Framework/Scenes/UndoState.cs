@@ -1,29 +1,31 @@
-/*
- * Copyright (c) Contributors, http://opensimulator.org/
- * See CONTRIBUTORS.TXT for a full list of copyright holders.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *     * Redistributions of source code must retain the above copyright
- *       notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above copyright
- *       notice, this list of conditions and the following disclaimer in the
- *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the OpenSimulator Project nor the
- *       names of its contributors may be used to endorse or promote products
- *       derived from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE DEVELOPERS ``AS IS'' AND ANY
- * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE CONTRIBUTORS BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+/// <license>
+///     Copyright (c) Contributors, http://opensimulator.org/
+///     See CONTRIBUTORS.TXT for a full list of copyright holders.
+///     For an explanation of the license of each contributor and the content it
+///     covers please see the Licenses directory.
+///
+///     Redistribution and use in source and binary forms, with or without
+///     modification, are permitted provided that the following conditions are met:
+///         * Redistributions of source code must retain the above copyright
+///         notice, this list of conditions and the following disclaimer.
+///         * Redistributions in binary form must reproduce the above copyright
+///         notice, this list of conditions and the following disclaimer in the
+///         documentation and/or other materials provided with the distribution.
+///         * Neither the name of the OpenSimulator Project nor the
+///         names of its contributors may be used to endorse or promote products
+///         derived from this software without specific prior written permission.
+///
+///     THIS SOFTWARE IS PROVIDED BY THE DEVELOPERS ``AS IS'' AND ANY
+///     EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+///     WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+///     DISCLAIMED. IN NO EVENT SHALL THE CONTRIBUTORS BE LIABLE FOR ANY
+///     DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+///     (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+///     LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+///     ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+///     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+///     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+/// </license>
 
 using System;
 using System.Reflection;
@@ -37,12 +39,20 @@ namespace OpenSim.Region.Framework.Scenes
 {
     public class UndoState
     {
-        const int UNDOEXPIRESECONDS = 300; // undo expire time   (nice to have it came from a ini later)
+        /// <summary>
+        ///     Undo expire time
+        ///     
+        ///     TODO:
+        ///     This could be better off coming from
+        ///     an ini file as opposed to being hard coded
+        /// </summary>
+        const int UNDOEXPIRESECONDS = 300;
 
         public ObjectChangeData data;
         public DateTime creationtime;
+        
         /// <summary>
-        /// Constructor.
+        ///     Constructor.
         /// </summary>
         /// <param name="part"></param>
         /// <param name="change">bit field with what is changed</param>
@@ -56,36 +66,56 @@ namespace OpenSim.Region.Framework.Scenes
             if (part.ParentGroup.RootPart == part)
             {
                 if ((change & ObjectChangeType.Position) != 0)
+                {
                     data.position = part.ParentGroup.AbsolutePosition;
+                }
+
                 if ((change & ObjectChangeType.Rotation) != 0)
+                {
                     data.rotation = part.RotationOffset;
+                }
+
                 if ((change & ObjectChangeType.Scale) != 0)
+                {
                     data.scale = part.Shape.Scale;
+                }
             }
             else
             {
                 if ((change & ObjectChangeType.Position) != 0)
+                {
                     data.position = part.OffsetPosition;
+                }
+
                 if ((change & ObjectChangeType.Rotation) != 0)
+                {
                     data.rotation = part.RotationOffset;
+                }
+
                 if ((change & ObjectChangeType.Scale) != 0)
+                {
                     data.scale = part.Shape.Scale;
+                }
             }
         }
-        /// <summary>
-        /// check if undo or redo is too old
-        /// </summary>
 
+        /// <summary>
+        ///     check if undo or redo is too old
+        /// </summary>
         public bool checkExpire()
         {
             TimeSpan t = DateTime.UtcNow - creationtime;
+
             if (t.Seconds > UNDOEXPIRESECONDS)
+            {
                 return true;
+            }
+
             return false;
         }
 
         /// <summary>
-        /// updates undo or redo creation time to now
+        ///     updates undo or redo creation time to now
         /// </summary>
         public void updateExpire()
         {
@@ -93,45 +123,60 @@ namespace OpenSim.Region.Framework.Scenes
         }
 
         /// <summary>
-        /// Compare the relevant state in the given part to this state.
+        ///     Compare the relevant state in
+        ///     the given part to this state.
         /// </summary>
         /// <param name="part"></param>
-        /// <returns>true what fiels and related data are equal, False otherwise.</returns>
-        ///
+        /// <returns>
+        ///     true what fiels and related data are
+        ///     equal, False otherwise.
+        /// </returns>
         public bool Compare(SceneObjectPart part, ObjectChangeType change)
         {
-            if (data.change != change) // if diferent targets, then they are diferent
+            // If different targets, then they are different
+            if (data.change != change)
+            {
                 return false;
+            }
 
             if (part != null)
             {
                 if (part.ParentID == 0)
                 {
                     if ((change & ObjectChangeType.Position) != 0 && data.position != part.ParentGroup.AbsolutePosition)
+                    {
                         return false;
+                    }
                 }
                 else
                 {
                     if ((change & ObjectChangeType.Position) != 0 && data.position != part.OffsetPosition)
+                    {
                         return false;
+                    }
                 }
 
                 if ((change & ObjectChangeType.Rotation) != 0 && data.rotation != part.RotationOffset)
+                {
                     return false;
+                }
+
                 if ((change & ObjectChangeType.Rotation) != 0 && data.scale == part.Shape.Scale)
+                {
                     return false;
+                }
+
                 return true;
 
             }
+
             return false;
         }
 
         /// <summary>
-        /// executes the undo or redo to a part or its group
+        ///     executes the undo or redo to a part or its group
         /// </summary>
         /// <param name="part"></param>
-        ///
-
         public void PlayState(SceneObjectPart part)
         {
             part.Undoing = true;
@@ -142,6 +187,7 @@ namespace OpenSim.Region.Framework.Scenes
             {
                 grp.doChangeObject(part, data);
             }
+
             part.Undoing = false;
         }
     }
@@ -153,40 +199,42 @@ namespace OpenSim.Region.Framework.Scenes
         public LinkedList<UndoState> m_undo = new LinkedList<UndoState>();
 
         /// <summary>
-        /// creates a new UndoRedoState with default states memory size
+        ///     creates a new UndoRedoState 
+        ///     with default states memory size
         /// </summary>
-
         public UndoRedoState()
         {
             size = 5;
         }
 
         /// <summary>
-        /// creates a new UndoRedoState with states memory having indicated size
+        ///     creates a new UndoRedoState with
+        ///     states memory having indicated size
         /// </summary>
         /// <param name="size"></param>
-
         public UndoRedoState(int _size)
         {
             if (_size < 3)
+            {
                 size = 3;
+            }
             else
+            {
                 size = _size;
+            }
         }
 
         /// <summary>
-        /// returns number of undo entries in memory
+        ///     returns number of undo entries in memory
         /// </summary>
-
         public int Count
         {
             get { return m_undo.Count; }
         }
 
         /// <summary>
-        /// clears all undo and redo entries
+        ///     clears all undo and redo entries
         /// </summary>
-
         public void Clear()
         {
             m_undo.Clear();
@@ -194,11 +242,11 @@ namespace OpenSim.Region.Framework.Scenes
         }
 
         /// <summary>
-        /// adds a new state undo to part or its group, with changes indicated by what bits
+        ///     adds a new state undo to part or its
+        ///     group, with changes indicated by what bits
         /// </summary>
         /// <param name="part"></param>
         /// <param name="change">bit field with what is changed</param>
-
         public void StoreUndo(SceneObjectPart part, ObjectChangeType change)
         {
             lock (m_undo)
@@ -214,22 +262,29 @@ namespace OpenSim.Region.Framework.Scenes
                 {
                     // check expired entry
                     last = m_undo.First.Value;
+
                     if (last != null && last.checkExpire())
+                    {
                         m_undo.Clear();
+                    }
                     else
                     {
                         // see if we actually have a change
                         if (last != null)
                         {
                             if (last.Compare(part, change))
+                            {
                                 return;
+                            }
                         }
                     }
                 }
 
                 // limite size
                 while (m_undo.Count >= size)
+                {
                     m_undo.RemoveLast();
+                }
 
                 UndoState nUndo = new UndoState(part, change);
                 m_undo.AddFirst(nUndo);
@@ -237,11 +292,10 @@ namespace OpenSim.Region.Framework.Scenes
         }
 
         /// <summary>
-        /// executes last state undo to part or its group
-        /// current state is pushed into redo
+        ///     executes last state undo to part or its group
+        ///     current state is pushed into redo
         /// </summary>
         /// <param name="part"></param>
-
         public void Undo(SceneObjectPart part)
         {
             lock (m_undo)
@@ -252,13 +306,17 @@ namespace OpenSim.Region.Framework.Scenes
                 if (m_redo.Count > 0)
                 {
                     nUndo = m_redo.First.Value;
+
                     if (nUndo != null && nUndo.checkExpire())
+                    {
                         m_redo.Clear();
+                    }
                 }
 
                 if (m_undo.Count > 0)
                 {
                     UndoState goback = m_undo.First.Value;
+                 
                     // check expired
                     if (goback != null && goback.checkExpire())
                     {
@@ -272,7 +330,9 @@ namespace OpenSim.Region.Framework.Scenes
 
                         // redo limite size
                         while (m_redo.Count >= size)
+                        {
                             m_redo.RemoveLast();
+                        }
 
                         nUndo = new UndoState(part, goback.data.change); // new value in part should it be full goback copy?
                         m_redo.AddFirst(nUndo);
@@ -284,11 +344,10 @@ namespace OpenSim.Region.Framework.Scenes
         }
 
         /// <summary>
-        /// executes last state redo to part or its group
-        /// current state is pushed into undo
+        ///     executes last state redo to part or its group
+        ///     current state is pushed into undo
         /// </summary>
         /// <param name="part"></param>
-
         public void Redo(SceneObjectPart part)
         {
             lock (m_undo)
@@ -299,13 +358,17 @@ namespace OpenSim.Region.Framework.Scenes
                 if (m_undo.Count > 0)
                 {
                     nUndo = m_undo.First.Value;
+
                     if (nUndo != null && nUndo.checkExpire())
+                    {
                         m_undo.Clear();
+                    }
                 }
 
                 if (m_redo.Count > 0)
                 {
                     UndoState gofwd = m_redo.First.Value;
+                 
                     // check expired
                     if (gofwd != null && gofwd.checkExpire())
                     {
@@ -319,7 +382,9 @@ namespace OpenSim.Region.Framework.Scenes
 
                         // limite undo size
                         while (m_undo.Count >= size)
+                        {
                             m_undo.RemoveLast();
+                        }
 
                         nUndo = new UndoState(part, gofwd.data.change);   // new value in part should it be full gofwd copy?
                         m_undo.AddFirst(nUndo);

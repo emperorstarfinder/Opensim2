@@ -1,29 +1,31 @@
-/*
- * Copyright (c) Contributors, http://opensimulator.org/
- * See CONTRIBUTORS.TXT for a full list of copyright holders.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *     * Redistributions of source code must retain the above copyright
- *       notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above copyright
- *       notice, this list of conditions and the following disclaimer in the
- *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the OpenSimulator Project nor the
- *       names of its contributors may be used to endorse or promote products
- *       derived from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE DEVELOPERS ``AS IS'' AND ANY
- * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE CONTRIBUTORS BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+/// <license>
+///     Copyright (c) Contributors, http://opensimulator.org/
+///     See CONTRIBUTORS.TXT for a full list of copyright holders.
+///     For an explanation of the license of each contributor and the content it
+///     covers please see the Licenses directory.
+///
+///     Redistribution and use in source and binary forms, with or without
+///     modification, are permitted provided that the following conditions are met:
+///         * Redistributions of source code must retain the above copyright
+///         notice, this list of conditions and the following disclaimer.
+///         * Redistributions in binary form must reproduce the above copyright
+///         notice, this list of conditions and the following disclaimer in the
+///         documentation and/or other materials provided with the distribution.
+///         * Neither the name of the OpenSimulator Project nor the
+///         names of its contributors may be used to endorse or promote products
+///         derived from this software without specific prior written permission.
+///
+///     THIS SOFTWARE IS PROVIDED BY THE DEVELOPERS ``AS IS'' AND ANY
+///     EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+///     WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+///     DISCLAIMED. IN NO EVENT SHALL THE CONTRIBUTORS BE LIABLE FOR ANY
+///     DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+///     (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+///     LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+///     ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+///     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+///     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+/// </license>
 
 using System;
 using System.Collections.Generic;
@@ -31,7 +33,6 @@ using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Timers;
-using Timer = System.Timers.Timer;
 using Nini.Config;
 using NUnit.Framework;
 using OpenMetaverse;
@@ -42,57 +43,23 @@ using OpenSim.Region.ClientStack.Linden;
 using OpenSim.Region.CoreModules.Framework.EntityTransfer;
 using OpenSim.Region.CoreModules.World.Serialiser;
 using OpenSim.Region.CoreModules.ServiceConnectorsOut.Simulation;
+using OpenSim.Services.Interfaces;
 using OpenSim.Tests.Common;
 using GridRegion = OpenSim.Services.Interfaces.GridRegion;
-using OpenSim.Services.Interfaces;
+using Timer = System.Timers.Timer;
 
 namespace OpenSim.Region.Framework.Scenes.Tests
 {
     /// <summary>
-    /// Scene presence tests
+    ///     Scene presence tests
     /// </summary>
     [TestFixture]
     public class ScenePresenceAgentTests : OpenSimTestCase
     {
-//        public Scene scene, scene2, scene3;
-//        public UUID agent1, agent2, agent3;
-//        public static Random random;
-//        public ulong region1, region2, region3;
-//        public AgentCircuitData acd1;
-//        public TestClient testclient;
-
-//        [TestFixtureSetUp]
-//        public void Init()
-//        {
-////            TestHelpers.InMethod();
-////
-////            SceneHelpers sh = new SceneHelpers();
-////
-////            scene = sh.SetupScene("Neighbour x", UUID.Random(), 1000, 1000);
-////            scene2 = sh.SetupScene("Neighbour x+1", UUID.Random(), 1001, 1000);
-////            scene3 = sh.SetupScene("Neighbour x-1", UUID.Random(), 999, 1000);
-////
-////            ISharedRegionModule interregionComms = new LocalSimulationConnectorModule();
-////            interregionComms.Initialise(new IniConfigSource());
-////            interregionComms.PostInitialise();
-////            SceneHelpers.SetupSceneModules(scene, new IniConfigSource(), interregionComms);
-////            SceneHelpers.SetupSceneModules(scene2, new IniConfigSource(), interregionComms);
-////            SceneHelpers.SetupSceneModules(scene3, new IniConfigSource(), interregionComms);
-//
-////            agent1 = UUID.Random();
-////            agent2 = UUID.Random();
-////            agent3 = UUID.Random();
-//
-////            region1 = scene.RegionInfo.RegionHandle;
-////            region2 = scene2.RegionInfo.RegionHandle;
-////            region3 = scene3.RegionInfo.RegionHandle;
-//        }
-
         [Test]
         public void TestCreateRootScenePresence()
         {
             TestHelpers.InMethod();
-//            TestHelpers.EnableLogging();
 
             UUID spUuid = TestHelpers.ParseTail(0x1);
 
@@ -111,17 +78,17 @@ namespace OpenSim.Region.Framework.Scenes.Tests
         }
 
         /// <summary>
-        /// Test that duplicate complete movement calls are ignored.
+        ///     Test that duplicate complete movement calls are ignored.
         /// </summary>
         /// <remarks>
-        /// If duplicate calls are not ignored then there is a risk of race conditions or other unexpected effects.
+        ///     If duplicate calls are not ignored then
+        ///     there is a risk of race conditions or other 
+        ///     unexpected effects.
         /// </remarks>
         [Test]
         public void TestDupeCompleteMovementCalls()
         {
             TestHelpers.InMethod();
-//            TestHelpers.EnableLogging();
-
             UUID spUuid = TestHelpers.ParseTail(0x1);
 
             TestScene scene = new SceneHelpers().SetupScene();
@@ -153,7 +120,6 @@ namespace OpenSim.Region.Framework.Scenes.Tests
         public void TestCreateDuplicateRootScenePresence()
         {
             TestHelpers.InMethod();
-//            TestHelpers.EnableLogging();
 
             UUID spUuid = TestHelpers.ParseTail(0x1);
 
@@ -187,7 +153,6 @@ namespace OpenSim.Region.Framework.Scenes.Tests
         public void TestCloseClient()
         {
             TestHelpers.InMethod();
-//            TestHelpers.EnableLogging();
 
             TestScene scene = new SceneHelpers().SetupScene();
             ScenePresence sp = SceneHelpers.AddScenePresence(scene, TestHelpers.ParseTail(0x1));
@@ -197,15 +162,12 @@ namespace OpenSim.Region.Framework.Scenes.Tests
             Assert.That(scene.GetScenePresence(sp.UUID), Is.Null);
             Assert.That(scene.AuthenticateHandler.GetAgentCircuitData(sp.UUID), Is.Null);
             Assert.That(scene.AuthenticateHandler.GetAgentCircuits().Count, Is.EqualTo(0));
-
-//            TestHelpers.DisableLogging();
         }
 
         [Test]
         public void TestCreateChildScenePresence()
         {
             TestHelpers.InMethod();
-//            log4net.Config.XmlConfigurator.Configure();
 
             LocalSimulationConnectorModule lsc = new LocalSimulationConnectorModule();
 
@@ -226,7 +188,7 @@ namespace OpenSim.Region.Framework.Scenes.Tests
 
             // *** This is the first stage, when a neighbouring region is told that a viewer is about to try and
             // establish a child scene presence.  We pass in the circuit code that the client has to connect with ***
-            // XXX: ViaLogin may not be correct here.
+            // ViaLogin may not be correct here.
             EntityTransferContext ctx = new EntityTransferContext();
             scene.SimulationService.CreateAgent(null, region, acd, (uint)TeleportFlags.ViaLogin, ctx, out reason);
 
@@ -251,19 +213,18 @@ namespace OpenSim.Region.Framework.Scenes.Tests
         }
 
         /// <summary>
-        /// Test that if a root agent logs into a region, a child agent is also established in the neighbouring region
+        ///     Test that if a root agent logs into a region,
+        ///     a child agent is also established in the neighbouring region
         /// </summary>
         /// <remarks>
-        /// Please note that unlike the other tests here, this doesn't rely on anything set up in the instance fields.
-        /// INCOMPLETE
+        ///     Please note that unlike the other tests here, 
+        ///     this doesn't rely on anything set up in the instance fields.
+        ///     INCOMPLETE
         /// </remarks>
         [Test]
         public void TestChildAgentEstablishedInNeighbour()
         {
             TestHelpers.InMethod();
-//            log4net.Config.XmlConfigurator.Configure();
-
-//            UUID agent1Id = UUID.Parse("00000000-0000-0000-0000-000000000001");
 
             TestScene myScene1 = new SceneHelpers().SetupScene("Neighbour y", UUID.Random(), 1000, 1000);
             TestScene myScene2 = new SceneHelpers().SetupScene("Neighbour y + 1", UUID.Random(), 1001, 1000);
@@ -279,13 +240,6 @@ namespace OpenSim.Region.Framework.Scenes.Tests
 
             EventQueueGetModule eqgm2 = new EventQueueGetModule();
             SceneHelpers.SetupSceneModules(myScene2, configSource, etm, eqgm2);
-
-//            SceneHelpers.AddScenePresence(myScene1, agent1Id);
-//            ScenePresence childPresence = myScene2.GetScenePresence(agent1);
-//
-//            // TODO: Need to do a fair amount of work to allow synchronous establishment of child agents
-//            Assert.That(childPresence, Is.Not.Null);
-//            Assert.That(childPresence.IsChildAgent, Is.True);
         }
     }
 }

@@ -1,37 +1,39 @@
-/*
- * Copyright (c) Contributors, http://opensimulator.org/
- * See CONTRIBUTORS.TXT for a full list of copyright holders.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *     * Redistributions of source code must retain the above copyright
- *       notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above copyright
- *       notice, this list of conditions and the following disclaimer in the
- *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the OpenSimulator Project nor the
- *       names of its contributors may be used to endorse or promote products
- *       derived from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE DEVELOPERS ``AS IS'' AND ANY
- * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE CONTRIBUTORS BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+/// <license>
+///     Copyright (c) Contributors, http://opensimulator.org/
+///     See CONTRIBUTORS.TXT for a full list of copyright holders.
+///     For an explanation of the license of each contributor and the content it
+///     covers please see the Licenses directory.
+///
+///     Redistribution and use in source and binary forms, with or without
+///     modification, are permitted provided that the following conditions are met:
+///         * Redistributions of source code must retain the above copyright
+///         notice, this list of conditions and the following disclaimer.
+///         * Redistributions in binary form must reproduce the above copyright
+///         notice, this list of conditions and the following disclaimer in the
+///         documentation and/or other materials provided with the distribution.
+///         * Neither the name of the OpenSimulator Project nor the
+///         names of its contributors may be used to endorse or promote products
+///         derived from this software without specific prior written permission.
+///
+///     THIS SOFTWARE IS PROVIDED BY THE DEVELOPERS ``AS IS'' AND ANY
+///     EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+///     WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+///     DISCLAIMED. IN NO EVENT SHALL THE CONTRIBUTORS BE LIABLE FOR ANY
+///     DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+///     (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+///     LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+///     ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+///     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+///     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+/// </license>
 
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Xml;
-using OpenMetaverse;
 using log4net;
+using OpenMetaverse;
 using OpenSim.Framework;
 using OpenSim.Region.Framework.Scenes;
 using OpenSim.Region.PhysicsModules.SharedBase;
@@ -39,13 +41,15 @@ using OpenSim.Region.PhysicsModules.SharedBase;
 namespace OpenSim.Region.Framework.Scenes.Serialization
 {
     /// <summary>
-    /// Static methods to serialize and deserialize scene objects to and from XML
+    ///     Static methods to serialize and deserialize
+    ///     scene objects to and from XML
     /// </summary>
     public class SceneXmlLoader
     {
         private static readonly ILog m_log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         #region old xml format
+
         public static void LoadPrimsFromXml(Scene scene, string fileName, bool newIDS, Vector3 loadOffset)
         {
             XmlDocument doc = new XmlDocument();
@@ -53,13 +57,15 @@ namespace OpenSim.Region.Framework.Scenes.Serialization
 
             if (fileName.StartsWith("http:") || File.Exists(fileName))
             {
-                using(XmlTextReader reader = new XmlTextReader(fileName))
+                using (XmlTextReader reader = new XmlTextReader(fileName))
                 {
                     reader.WhitespaceHandling = WhitespaceHandling.None;
 
                     doc.Load(reader);
                 }
+
                 rootNode = doc.FirstChild;
+
                 foreach (XmlNode aPrimNode in rootNode.ChildNodes)
                 {
                     SceneObjectGroup obj = SceneObjectSerializer.FromOriginalXmlFormat(aPrimNode.OuterXml);
@@ -68,8 +74,6 @@ namespace OpenSim.Region.Framework.Scenes.Serialization
                     {
                         obj.ResetIDs();
                     }
-                    //if we want this to be a import method then we need new uuids for the object to avoid any clashes
-                    //obj.RegenerateFullIDs();
 
                     scene.AddNewSceneObject(obj, true);
                     obj.InvalidateDeepEffectivePerms();
@@ -89,6 +93,7 @@ namespace OpenSim.Region.Framework.Scenes.Serialization
             stream.WriteLine("<scene>\n");
 
             EntityBase[] entityList = scene.GetEntities();
+
             foreach (EntityBase ent in entityList)
             {
                 if (ent is SceneObjectGroup)
@@ -97,6 +102,7 @@ namespace OpenSim.Region.Framework.Scenes.Serialization
                     primCount++;
                 }
             }
+
             stream.WriteLine("</scene>\n");
             stream.Close();
             file.Close();
@@ -109,7 +115,6 @@ namespace OpenSim.Region.Framework.Scenes.Serialization
         // Called by archives (save oar)
         public static string SaveGroupToXml2(SceneObjectGroup grp, Dictionary<string, object> options)
         {
-            //return SceneObjectSerializer.ToXml2Format(grp);
             using (MemoryStream mem = new MemoryStream())
             {
                 using (XmlTextWriter writer = new XmlTextWriter(mem, System.Text.Encoding.UTF8))
@@ -137,7 +142,7 @@ namespace OpenSim.Region.Framework.Scenes.Serialization
         public static void SaveNamedPrimsToXml2(Scene scene, string primName, string fileName)
         {
             m_log.InfoFormat(
-                "[SERIALISER]: Saving prims with name {0} in xml2 format for region {1} to {2}",
+                "[Serializer]: Saving prims with name {0} in xml2 format for region {1} to {2}",
                 primName, scene.RegionInfo.RegionName, fileName);
 
             EntityBase[] entityList = scene.GetEntities();
@@ -168,9 +173,11 @@ namespace OpenSim.Region.Framework.Scenes.Serialization
         public static void SavePrimListToXml2(EntityBase[] entityList, string fileName)
         {
             FileStream file = new FileStream(fileName, FileMode.Create);
+
             try
             {
                 StreamWriter stream = new StreamWriter(file);
+
                 try
                 {
                     SavePrimListToXml2(entityList, stream, Vector3.Zero, Vector3.Zero);
@@ -199,18 +206,23 @@ namespace OpenSim.Region.Framework.Scenes.Serialization
                 if (ent is SceneObjectGroup)
                 {
                     SceneObjectGroup g = (SceneObjectGroup)ent;
+
                     if (!min.Equals(Vector3.Zero) || !max.Equals(Vector3.Zero))
                     {
                         Vector3 pos = g.RootPart.GetWorldPosition();
+
                         if (min.X > pos.X || min.Y > pos.Y || min.Z > pos.Z)
+                        {
                             continue;
+                        }
+
                         if (max.X < pos.X || max.Y < pos.Y || max.Z < pos.Z)
+                        {
                             continue;
+                        }
                     }
 
-                    //stream.WriteLine(SceneObjectSerializer.ToXml2Format(g));
-                    SceneObjectSerializer.SOGToXml2(writer, (SceneObjectGroup)ent, new Dictionary<string,object>());
-//                    stream.WriteLine();
+                    SceneObjectSerializer.SOGToXml2(writer, (SceneObjectGroup)ent, new Dictionary<string, object>());
 
                     primCount++;
                 }
@@ -230,7 +242,7 @@ namespace OpenSim.Region.Framework.Scenes.Serialization
         }
 
         /// <summary>
-        /// Load prims from the xml2 format
+        ///     Load prims from the xml2 format
         /// </summary>
         /// <param name="scene"></param>
         /// <param name="fileName"></param>
@@ -240,7 +252,7 @@ namespace OpenSim.Region.Framework.Scenes.Serialization
         }
 
         /// <summary>
-        /// Load prims from the xml2 format
+        ///     Load prims from the xml2 format
         /// </summary>
         /// <param name="scene"></param>
         /// <param name="reader"></param>
@@ -251,7 +263,8 @@ namespace OpenSim.Region.Framework.Scenes.Serialization
         }
 
         /// <summary>
-        /// Load prims from the xml2 format.  This method will close the reader
+        ///     Load prims from the xml2 format. 
+        ///     This method will close the reader
         /// </summary>
         /// <param name="scene"></param>
         /// <param name="reader"></param>
@@ -265,18 +278,22 @@ namespace OpenSim.Region.Framework.Scenes.Serialization
             XmlNode rootNode = doc.FirstChild;
 
             ICollection<SceneObjectGroup> sceneObjects = new List<SceneObjectGroup>();
+
             foreach (XmlNode aPrimNode in rootNode.ChildNodes)
             {
                 SceneObjectGroup obj = DeserializeGroupFromXml2(aPrimNode.OuterXml);
                 scene.AddNewSceneObject(obj, true);
+
                 if (startScripts)
+                {
                     sceneObjects.Add(obj);
+                }
             }
 
             foreach (SceneObjectGroup sceneObject in sceneObjects)
             {
-                 sceneObject.CreateScriptInstances(0, true, scene.DefaultScriptEngine, 0);
-                 sceneObject.ResumeScripts();
+                sceneObject.CreateScriptInstances(0, true, scene.DefaultScriptEngine, 0);
+                sceneObject.ResumeScripts();
             }
         }
 

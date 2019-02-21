@@ -1,46 +1,46 @@
-/*
- * Copyright (c) Contributors, http://opensimulator.org/
- * See CONTRIBUTORS.TXT for a full list of copyright holders.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *     * Redistributions of source code must retain the above copyright
- *       notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above copyright
- *       notice, this list of conditions and the following disclaimer in the
- *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the OpenSimulator Project nor the
- *       names of its contributors may be used to endorse or promote products
- *       derived from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE DEVELOPERS ``AS IS'' AND ANY
- * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE CONTRIBUTORS BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+/// <license>
+///     Copyright (c) Contributors, http://opensimulator.org/
+///     See CONTRIBUTORS.TXT for a full list of copyright holders.
+///     For an explanation of the license of each contributor and the content it
+///     covers please see the Licenses directory.
+///
+///     Redistribution and use in source and binary forms, with or without
+///     modification, are permitted provided that the following conditions are met:
+///         * Redistributions of source code must retain the above copyright
+///         notice, this list of conditions and the following disclaimer.
+///         * Redistributions in binary form must reproduce the above copyright
+///         notice, this list of conditions and the following disclaimer in the
+///         documentation and/or other materials provided with the distribution.
+///         * Neither the name of the OpenSimulator Project nor the
+///         names of its contributors may be used to endorse or promote products
+///         derived from this software without specific prior written permission.
+///
+///     THIS SOFTWARE IS PROVIDED BY THE DEVELOPERS ``AS IS'' AND ANY
+///     EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+///     WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+///     DISCLAIMED. IN NO EVENT SHALL THE CONTRIBUTORS BE LIABLE FOR ANY
+///     DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+///     (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+///     LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+///     ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+///     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+///     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+/// </license>
 
-/* Freely adapted from the Aurora version of the terrain compressor.
- * Copyright (c) Contributors, http://aurora-sim.org/, http://opensimulator.org/
- * Aurora version created from libOpenMetaverse Library terrain compressor
- */
-
-// terrain patchs must be 16mx16m
+/// <summary>
+///     This was adapted from the Aurora version of the terrain compressor.
+///     See AuroraSim.license file in the Licenses directory.
+///     
+///     NOTE:
+///     Terrain patches must be 16mx16m
+/// </summary>
 
 using System;
 using System.Collections.Generic;
-
 using log4net;
-
-using OpenSim.Framework;
-
 using OpenMetaverse;
 using OpenMetaverse.Packets;
+using OpenSim.Framework;
 
 namespace OpenSim.Region.ClientStack.LindenUDP
 {
@@ -60,8 +60,10 @@ namespace OpenSim.Region.ClientStack.LindenUDP
 
         static OpenSimTerrainCompressor()
         {
-            if(Constants.TerrainPatchSize != 16)
+            if (Constants.TerrainPatchSize != 16)
+            {
                 throw new Exception("Terrain patch size must be 16m x 16m");
+            }
 
             // Initialize the decompression tables
             BuildDequantizeTable16();
@@ -84,7 +86,9 @@ namespace OpenSim.Region.ClientStack.LindenUDP
             bitpack.PackBits(type, 8);
 
             foreach (TerrainPatch t in patches)
+            {
                 CreatePatchtStandardSize(bitpack, t.Data, t.X, t.Y);
+            }
 
             bitpack.PackBits(END_OF_PATCHES, 8);
 
@@ -117,8 +121,16 @@ namespace OpenSim.Region.ClientStack.LindenUDP
             for (int i = 0; i < 256; i++)
             {
                 float val = patch[i];
-                if (val > zmax) zmax = val;
-                if (val < zmin) zmin = val;
+
+                if (val > zmax)
+                {
+                    zmax = val;
+                }
+
+                if (val < zmin)
+                {
+                    zmin = val;
+                }
             }
 
             header.DCOffset = zmin;
@@ -141,10 +153,13 @@ namespace OpenSim.Region.ClientStack.LindenUDP
             header.QuantWBits |= wordsize << 4;
 
             int k = 0;
+
             for (int j = 0; j < 16; j++)
             {
                 for (int i = 0; i < 16; i++)
+                {
                     block[k++] = (patchData[j * 16 + i] - sub) * premult;
+                }
             }
 
             wbits = (prequant >> 1);
@@ -167,10 +182,15 @@ namespace OpenSim.Region.ClientStack.LindenUDP
             LayerDataPacket layer = new LayerDataPacket();
 
             byte landPacketType;
+
             if (terrData.SizeX > Constants.RegionSize || terrData.SizeY > Constants.RegionSize)
+            {
                 landPacketType = (byte)TerrainPatch.LayerType.LandExtended;
+            }
             else
+            {
                 landPacketType = (byte)TerrainPatch.LayerType.Land;
+            }
 
             layer.LayerID.Type = landPacketType;
 
@@ -180,6 +200,7 @@ namespace OpenSim.Region.ClientStack.LindenUDP
             bitpack.PackBitsFromByte(landPacketType);
 
             int s;
+
             for (int i = 0; i < numberPatchs; i++)
             {
                 s = 2 * i;
@@ -222,6 +243,7 @@ namespace OpenSim.Region.ClientStack.LindenUDP
             header.QuantWBits = 130;
 
             bool largeRegion = false;
+            
             // If larger than legacy region size, pack patch X and Y info differently.
             if (terrData.SizeX > Constants.RegionSize || terrData.SizeY > Constants.RegionSize)
             {
@@ -242,10 +264,15 @@ namespace OpenSim.Region.ClientStack.LindenUDP
                 output.PackFloat(header.DCOffset - 0.5f);
                 output.PackBitsFromByte(1); //range low
                 output.PackBitsFromByte(0); //range high
+
                 if (largeRegion)
+                {
                     output.PackBits(header.PatchIDs, 32);
+                }
                 else
+                {
                     output.PackBits(header.PatchIDs, 10);
+                }
 
                 // and thats all
                 output.PackBits(ZERO_EOB, 2);
@@ -277,9 +304,13 @@ namespace OpenSim.Region.ClientStack.LindenUDP
         private static void EncodePatchHeader(BitPack output, TerrainPatch.Header header, bool largeRegion, ref int wbits)
         {
             if (wbits > 17)
+            {
                 wbits = 17;
+            }
             else if (wbits < 2)
+            {
                 wbits = 2;
+            }
 
             header.QuantWBits &= 0xf0;
             header.QuantWBits |= (wbits - 2);
@@ -287,10 +318,15 @@ namespace OpenSim.Region.ClientStack.LindenUDP
             output.PackBitsFromByte((byte)header.QuantWBits);
             output.PackFloat(header.DCOffset);
             output.PackBits(header.Range, 16);
+
             if (largeRegion)
+            {
                 output.PackBits(header.PatchIDs, 32);
+            }
             else
+            {
                 output.PackBits(header.PatchIDs, 10);
+            }
         }
 
         private unsafe static void EncodePatch(BitPack output, int[] _patch, int postquant, int wbits)
@@ -308,20 +344,27 @@ namespace OpenSim.Region.ClientStack.LindenUDP
             fixed(int * patch = _patch)
             {
                 if (lastZeroindx != 256)
+                {
                     patch[lastZeroindx] = 0;
+                }
 
                 int i = 0;
-                while(i < 256)
+
+                while (i < 256)
                 {
                     int temp = patch[i];
 
                     if (temp == 0)
                     {
                         int j = i + 1;
-                        while(j < lastZeroindx)
+
+                        while (j < lastZeroindx)
                         {
                             if (patch[j] != 0)
+                            {
                                 break;
+                            }
+
                             ++j;
                         }
 
@@ -332,13 +375,18 @@ namespace OpenSim.Region.ClientStack.LindenUDP
                         }
 
                         i = j - i;
-                        while(i > 8)
+
+                        while (i > 8)
                         {
                             output.PackBitsFromByte(ZERO_CODE);
                             i -= 8;
                         }
-                        if( i > 0)
+
+                        if (i > 0)
+                        {
                             output.PackBitsFromByte(ZERO_CODE, i);
+                        }
+
                         i = j;
                         continue;
                     }
@@ -346,8 +394,11 @@ namespace OpenSim.Region.ClientStack.LindenUDP
                     if (temp < 0)
                     {
                         temp *= -1;
+
                         if (temp > maxwbitssize)
+                        {
                             temp = maxwbitssize;
+                        }
 
                         output.PackBits(NEGATIVE_VALUE, 3);
                         output.PackBits(temp, wbits);
@@ -355,18 +406,20 @@ namespace OpenSim.Region.ClientStack.LindenUDP
                     else
                     {
                         if (temp > maxwbitssize)
+                        {
                             temp = maxwbitssize;
+                        }
 
                         output.PackBits(POSITIVE_VALUE, 3);
                         output.PackBits(temp, wbits);
                     }
+
                     ++i;
                 }
             }
         }
 
-        private static int[] CompressPatch(TerrainData terrData, int patchX, int patchY, TerrainPatch.Header header,
-                                                               int prequant, out int wbits)
+        private static int[] CompressPatch(TerrainData terrData, int patchX, int patchY, TerrainPatch.Header header, int prequant, out int wbits)
         {
             float[] block = new float[256];
             int[] iout = new int[256];
@@ -396,6 +449,7 @@ namespace OpenSim.Region.ClientStack.LindenUDP
             for (int j = 0; j < 16; j++)
             {
                 int c = j * 16;
+
                 for (int i = 0; i < 16; i++)
                 {
                     DequantizeTable16[c + i] = 1.0f + 2.0f * (i + j);
@@ -406,11 +460,13 @@ namespace OpenSim.Region.ClientStack.LindenUDP
         private unsafe static void BuildQuantizeTable16()
         {
             const float oosob = 2.0f / 16;
-            fixed(float* fQuantizeTable16 = QuantizeTable16)
+
+            fixed (float* fQuantizeTable16 = QuantizeTable16)
             {
                 for (int j = 0; j < 16; j++)
                 {
                     int c = j * 16;
+
                     for (int i = 0; i < 16; i++)
                     {
                         fQuantizeTable16[c + i] = oosob / (1.0f + 2.0f * (i + j));
@@ -437,16 +493,28 @@ namespace OpenSim.Region.ClientStack.LindenUDP
                     {
                         if (right)
                         {
-                            if (i < 15) i++;
-                            else j++;
+                            if (i < 15)
+                            {
+                                i++;
+                            }
+                            else
+                            {
+                                j++;
+                            }
 
                             right = false;
                             diag = true;
                         }
                         else
                         {
-                            if (j < 15 ) j++;
-                            else i++;
+                            if (j < 15)
+                            {
+                                j++;
+                            }
+                            else
+                            {
+                                i++;
+                            }
 
                             right = true;
                             diag = true;
@@ -475,32 +543,6 @@ namespace OpenSim.Region.ClientStack.LindenUDP
 
         #region DCT
 
-        /* DCT (Discrete Cosine Transform)
-        adaptation from
-        General Purpose 2D,3D FFT (Fast Fourier Transform) Package
-        by Takuya OOURA (email: ooura@kurims.kyoto-u.ac.jp)
-
-        -------- 16x16 DCT (Discrete Cosine Transform) / Inverse of DCT --------
-            [definition]
-                <case1> Normalized 16x16 IDCT
-                    C[k1 + k2] = (1/8) * sum_j1=0^15 sum_j2=0^15
-                                    tmp[j1 + j2] * s[j1] * s[j2] *
-                                    cos(pi*j1*(k1+1/2)/16) *
-                                    cos(pi*j2*(k2+1/2)/16), 0<=k1<16, 0<=k2<16
-                                    (s[0] = 1/sqrt(2), s[j] = 1, j > 0)
-                <case2> Normalized 16x16 DCT
-                    C[k1 + k2] = (1/8) * s[k1] * s[k2] * sum_j1=0^15 sum_j2=0^15
-                                    tmp[j1 + j2] *
-                                    cos(pi*(j1+1/2)*k1/16) *
-                                    cos(pi*(j2+1/2)*k2/16), 0<=k1<16, 0<=k2<16
-                                    (s[0] = 1/sqrt(2), s[j] = 1, j > 0)
-        */
-
-        /* Cn_kR = sqrt(2.0/n) * cos(pi/2*k/n) */
-        /* Cn_kI = sqrt(2.0/n) * sin(pi/2*k/n) */
-        /* Wn_kR = cos(pi/2*k/n) */
-        /* Wn_kI = sin(pi/2*k/n) */
-
         const float C16_1R = 0.35185093438159561476f * 2.82842712474619f;
         const float C16_1I = 0.03465429229977286565f * 2.82842712474619f;
         const float C16_2R = 0.34675996133053686546f * 2.82842712474619f;
@@ -520,7 +562,6 @@ namespace OpenSim.Region.ClientStack.LindenUDP
         const float W16_4I = 0.38268343236508977173f;
         const float W16_8R = 0.70710678118654752440f;
 
-
         unsafe static void dct16x16(float[] _a, int[] _iout, ref int wbits)
         {
             float[] _tmp = new float[256];
@@ -539,6 +580,7 @@ namespace OpenSim.Region.ClientStack.LindenUDP
             bool dowbits = wbits < 17;
 
             fixed (float* a = _a, tmp = _tmp, fQuantizeTable16 = QuantizeTable16)
+
             fixed (int* iout = _iout, fCopyMatrix16 = CopyMatrix16)
             {
                 for (j = 0, k = 0; j < 256; j += 16, k++)
@@ -646,18 +688,22 @@ namespace OpenSim.Region.ClientStack.LindenUDP
                     xr = x0r + x2r;
                     xi = x1r + x3r;
 
-                    //tmp[0 + k] = C16_8R * (xr + xi); //
                     ftmp = C16_8R * (xr + xi);
                     itmp = (int)(ftmp * fQuantizeTable16[k]);
                     iout[fCopyMatrix16[k]] = itmp;
 
                     if (dowbits)
                     {
-                        if (itmp < 0) itmp *= -1;
+                        if (itmp < 0)
+                        {
+                            itmp *= -1;
+                        }
+
                         while (itmp > wbitsMaxValue)
                         {
                             wbits++;
                             wbitsMaxValue = 1 << wbits;
+
                             if (wbits == maxwbits)
                             {
                                 dowbits = false;
@@ -666,7 +712,6 @@ namespace OpenSim.Region.ClientStack.LindenUDP
                         }
                     }
 
-                    //tmp[8 * Constants.TerrainPatchSize + k] = C16_8R * (xr - xi); //
                     ftmp = C16_8R * (xr - xi);
                     indx = 8 * 16 + k;
                     itmp = (int)(ftmp * fQuantizeTable16[indx]);
@@ -674,11 +719,16 @@ namespace OpenSim.Region.ClientStack.LindenUDP
 
                     if (dowbits)
                     {
-                        if (itmp < 0) itmp *= -1;
+                        if (itmp < 0)
+                        {
+                            itmp *= -1;
+                        }
+
                         while (itmp > wbitsMaxValue)
                         {
                             wbits++;
                             wbitsMaxValue = 1 << wbits;
+
                             if (wbits == maxwbits)
                             {
                                 dowbits = false;
@@ -690,7 +740,6 @@ namespace OpenSim.Region.ClientStack.LindenUDP
                     xr = x0r - x2r;
                     xi = x1r - x3r;
 
-                    //tmp[4 * Constants.TerrainPatchSize + k] = C16_4R * xr - C16_4I * xi; //
                     ftmp = C16_4R * xr - C16_4I * xi;
                     indx = 4 * 16 + k;
                     itmp = (int)(ftmp * fQuantizeTable16[indx]);
@@ -698,11 +747,16 @@ namespace OpenSim.Region.ClientStack.LindenUDP
 
                     if (dowbits)
                     {
-                        if (itmp < 0) itmp *= -1;
+                        if (itmp < 0)
+                        {
+                            itmp *= -1;
+                        }
+
                         while (itmp > wbitsMaxValue)
                         {
                             wbits++;
                             wbitsMaxValue = 1 << wbits;
+
                             if (wbits == maxwbits)
                             {
                                 dowbits = false;
@@ -711,7 +765,6 @@ namespace OpenSim.Region.ClientStack.LindenUDP
                         }
                     }
 
-                    //tmp[12 * Constants.TerrainPatchSize + k] = C16_4R * xi + C16_4I * xr;  //
                     ftmp = C16_4R * xi + C16_4I * xr;
                     indx = 12 * 16 + k;
                     itmp = (int)(ftmp * fQuantizeTable16[indx]);
@@ -719,11 +772,16 @@ namespace OpenSim.Region.ClientStack.LindenUDP
 
                     if (dowbits)
                     {
-                        if (itmp < 0) itmp *= -1;
+                        if (itmp < 0)
+                        {
+                            itmp *= -1;
+                        }
+
                         while (itmp > wbitsMaxValue)
                         {
                             wbits++;
                             wbitsMaxValue = 1 << wbits;
+
                             if (wbits == maxwbits)
                             {
                                 dowbits = false;
@@ -737,7 +795,6 @@ namespace OpenSim.Region.ClientStack.LindenUDP
                     xr = x0i + x0r;
                     xi = x2r + x2i;
 
-                    //tmp[2 * Constants.TerrainPatchSize + k] = C16_2R * xr - C16_2I * xi;  //
                     ftmp = C16_2R * xr - C16_2I * xi;
                     indx = 2 * 16 + k;
                     itmp = (int)(ftmp * fQuantizeTable16[indx]);
@@ -745,11 +802,16 @@ namespace OpenSim.Region.ClientStack.LindenUDP
 
                     if (dowbits)
                     {
-                        if (itmp < 0) itmp *= -1;
+                        if (itmp < 0)
+                        {
+                            itmp *= -1;
+                        }
+
                         while (itmp > wbitsMaxValue)
                         {
                             wbits++;
                             wbitsMaxValue = 1 << wbits;
+
                             if (wbits == maxwbits)
                             {
                                 dowbits = false;
@@ -758,7 +820,6 @@ namespace OpenSim.Region.ClientStack.LindenUDP
                         }
                     }
 
-                    //tmp[14 * Constants.TerrainPatchSize + k] = C16_2R * xi + C16_2I * xr;  //
                     ftmp = C16_2R * xi + C16_2I * xr;
                     indx = 14 * 16 + k;
                     itmp = (int)(ftmp * fQuantizeTable16[indx]);
@@ -766,11 +827,16 @@ namespace OpenSim.Region.ClientStack.LindenUDP
 
                     if (dowbits)
                     {
-                        if (itmp < 0) itmp *= -1;
+                        if (itmp < 0)
+                        {
+                            itmp *= -1;
+                        }
+
                         while (itmp > wbitsMaxValue)
                         {
                             wbits++;
                             wbitsMaxValue = 1 << wbits;
+
                             if (wbits == maxwbits)
                             {
                                 dowbits = false;
@@ -782,7 +848,6 @@ namespace OpenSim.Region.ClientStack.LindenUDP
                     xr = x0i - x0r;
                     xi = x2r - x2i;
 
-                    //tmp[6 * Constants.TerrainPatchSize + k] = C16_6R * xr - C16_6I * xi;  //
                     ftmp = C16_6R * xr - C16_6I * xi;
                     indx = 6 * 16 + k;
                     itmp = (int)(ftmp * fQuantizeTable16[indx]);
@@ -790,11 +855,16 @@ namespace OpenSim.Region.ClientStack.LindenUDP
 
                     if (dowbits)
                     {
-                        if (itmp < 0) itmp *= -1;
+                        if (itmp < 0)
+                        {
+                            itmp *= -1;
+                        }
+
                         while (itmp > wbitsMaxValue)
                         {
                             wbits++;
                             wbitsMaxValue = 1 << wbits;
+
                             if (wbits == maxwbits)
                             {
                                 dowbits = false;
@@ -803,7 +873,6 @@ namespace OpenSim.Region.ClientStack.LindenUDP
                         }
                     }
 
-                    //tmp[10 * Constants.TerrainPatchSize + k] = C16_6R * xi + C16_6I * xr; //
                     ftmp = C16_6R * xi + C16_6I * xr;
                     indx = 10 * 16 + k;
                     itmp = (int)(ftmp * fQuantizeTable16[indx]);
@@ -811,11 +880,16 @@ namespace OpenSim.Region.ClientStack.LindenUDP
 
                     if (dowbits)
                     {
-                        if (itmp < 0) itmp *= -1;
+                        if (itmp < 0)
+                        {
+                            itmp *= -1;
+                        }
+
                         while (itmp > wbitsMaxValue)
                         {
                             wbits++;
                             wbitsMaxValue = 1 << wbits;
+
                             if (wbits == maxwbits)
                             {
                                 dowbits = false;
@@ -841,7 +915,6 @@ namespace OpenSim.Region.ClientStack.LindenUDP
                     xr = x4r + x5r;
                     xi = x5i + x4i;
 
-                    //tmp[1 * Constants.TerrainPatchSize + k] = C16_1R * xr - C16_1I * xi;  //
                     ftmp = C16_1R * xr - C16_1I * xi;
                     indx = 16 + k;
                     itmp = (int)(ftmp * fQuantizeTable16[indx]);
@@ -849,11 +922,16 @@ namespace OpenSim.Region.ClientStack.LindenUDP
 
                     if (dowbits)
                     {
-                        if (itmp < 0) itmp *= -1;
+                        if (itmp < 0)
+                        {
+                            itmp *= -1;
+                        }
+
                         while (itmp > wbitsMaxValue)
                         {
                             wbits++;
                             wbitsMaxValue = 1 << wbits;
+
                             if (wbits == maxwbits)
                             {
                                 dowbits = false;
@@ -862,7 +940,6 @@ namespace OpenSim.Region.ClientStack.LindenUDP
                         }
                     }
 
-                    //tmp[15 * Constants.TerrainPatchSize + k] = C16_1R * xi + C16_1I * xr;  //
                     ftmp = C16_1R * xi + C16_1I * xr;
                     indx = 15 * 16 + k;
                     itmp = (int)(ftmp * fQuantizeTable16[indx]);
@@ -870,11 +947,16 @@ namespace OpenSim.Region.ClientStack.LindenUDP
 
                     if (dowbits)
                     {
-                        if (itmp < 0) itmp *= -1;
+                        if (itmp < 0)
+                        {
+                            itmp *= -1;
+                        }
+
                         while (itmp > wbitsMaxValue)
                         {
                             wbits++;
                             wbitsMaxValue = 1 << wbits;
+
                             if (wbits == maxwbits)
                             {
                                 dowbits = false;
@@ -886,7 +968,6 @@ namespace OpenSim.Region.ClientStack.LindenUDP
                     xr = x4r - x5r;
                     xi = x5i - x4i;
 
-                    //tmp[7 * Constants.TerrainPatchSize + k] = C16_7R * xr - C16_7I * xi;  //
                     ftmp = C16_7R * xr - C16_7I * xi;
                     indx = 7 * 16 + k;
                     itmp = (int)(ftmp * fQuantizeTable16[indx]);
@@ -894,11 +975,16 @@ namespace OpenSim.Region.ClientStack.LindenUDP
 
                     if (dowbits)
                     {
-                        if (itmp < 0) itmp *= -1;
+                        if (itmp < 0)
+                        {
+                            itmp *= -1;
+                        }
+
                         while (itmp > wbitsMaxValue)
                         {
                             wbits++;
                             wbitsMaxValue = 1 << wbits;
+
                             if (wbits == maxwbits)
                             {
                                 dowbits = false;
@@ -907,7 +993,6 @@ namespace OpenSim.Region.ClientStack.LindenUDP
                         }
                     }
 
-                    //tmp[9 * Constants.TerrainPatchSize + k] = C16_7R * xi + C16_7I * xr;  //
                     ftmp = C16_7R * xi + C16_7I * xr;
                     indx = 9 * 16 + k;
                     itmp = (int)(ftmp * fQuantizeTable16[indx]);
@@ -915,11 +1000,16 @@ namespace OpenSim.Region.ClientStack.LindenUDP
 
                     if (dowbits)
                     {
-                        if (itmp < 0) itmp *= -1;
+                        if (itmp < 0)
+                        {
+                            itmp *= -1;
+                        }
+
                         while (itmp > wbitsMaxValue)
                         {
                             wbits++;
                             wbitsMaxValue = 1 << wbits;
+
                             if (wbits == maxwbits)
                             {
                                 dowbits = false;
@@ -931,7 +1021,6 @@ namespace OpenSim.Region.ClientStack.LindenUDP
                     xr = x6r - x7i;
                     xi = x7r + x6i;
 
-                    //tmp[5 * Constants.TerrainPatchSize + k] = C16_5R * xr - C16_5I * xi;  //
                     ftmp = C16_5R * xr - C16_5I * xi;
                     indx = 5 * 16 + k;
                     itmp = (int)(ftmp * fQuantizeTable16[indx]);
@@ -939,11 +1028,16 @@ namespace OpenSim.Region.ClientStack.LindenUDP
 
                     if (dowbits)
                     {
-                        if (itmp < 0) itmp *= -1;
+                        if (itmp < 0)
+                        {
+                            itmp *= -1;
+                        }
+
                         while (itmp > wbitsMaxValue)
                         {
                             wbits++;
                             wbitsMaxValue = 1 << wbits;
+
                             if (wbits == maxwbits)
                             {
                                 dowbits = false;
@@ -952,7 +1046,6 @@ namespace OpenSim.Region.ClientStack.LindenUDP
                         }
                     }
 
-                    //tmp[11 * Constants.TerrainPatchSize + k] = C16_5R * xi + C16_5I * xr;  //
                     ftmp = C16_5R * xi + C16_5I * xr;
                     indx = 11 * 16 + k;
                     itmp = (int)(ftmp * fQuantizeTable16[indx]);
@@ -960,11 +1053,16 @@ namespace OpenSim.Region.ClientStack.LindenUDP
 
                     if (dowbits)
                     {
-                        if (itmp < 0) itmp *= -1;
+                        if (itmp < 0)
+                        {
+                            itmp *= -1;
+                        }
+
                         while (itmp > wbitsMaxValue)
                         {
                             wbits++;
                             wbitsMaxValue = 1 << wbits;
+
                             if (wbits == maxwbits)
                             {
                                 dowbits = false;
@@ -976,7 +1074,6 @@ namespace OpenSim.Region.ClientStack.LindenUDP
                     xr = x6r + x7i;
                     xi = x7r - x6i;
 
-                    //tmp[3 * Constants.TerrainPatchSize + k] = C16_3R * xr - C16_3I * xi;  //
                     ftmp = C16_3R * xr - C16_3I * xi;
                     indx = 3 * 16 + k;
                     itmp = (int)(ftmp * fQuantizeTable16[indx]);
@@ -984,11 +1081,16 @@ namespace OpenSim.Region.ClientStack.LindenUDP
 
                     if (dowbits)
                     {
-                        if (itmp < 0) itmp *= -1;
+                        if (itmp < 0)
+                        {
+                            itmp *= -1;
+                        }
+
                         while (itmp > wbitsMaxValue)
                         {
                             wbits++;
                             wbitsMaxValue = 1 << wbits;
+
                             if (wbits == maxwbits)
                             {
                                 dowbits = false;
@@ -997,7 +1099,6 @@ namespace OpenSim.Region.ClientStack.LindenUDP
                         }
                     }
 
-                    //tmp[13 * Constants.TerrainPatchSize + k] = C16_3R * xi + C16_3I * xr;  //
                     ftmp = C16_3R * xi + C16_3I * xr;
                     indx = 13 * 16 + k;
                     itmp = (int)(ftmp * fQuantizeTable16[indx]);
@@ -1005,11 +1106,16 @@ namespace OpenSim.Region.ClientStack.LindenUDP
 
                     if (dowbits)
                     {
-                        if (itmp < 0) itmp *= -1;
+                        if (itmp < 0)
+                        {
+                            itmp *= -1;
+                        }
+
                         while (itmp > wbitsMaxValue)
                         {
                             wbits++;
                             wbitsMaxValue = 1 << wbits;
+
                             if (wbits == maxwbits)
                             {
                                 dowbits = false;
@@ -1022,206 +1128,5 @@ namespace OpenSim.Region.ClientStack.LindenUDP
         }
 
         #endregion DCT
-
-        #region IDCT
-        /* not in use
-        private static void IDCTColumn16(float[] linein, float[] lineout, int column)
-        {
-            for (int n = 0; n < Constants.TerrainPatchSize; n++)
-            {
-                float total = OO_SQRT2 * linein[column];
-
-                for (int u = 1; u < Constants.TerrainPatchSize; u++)
-                {
-                    int usize = u * Constants.TerrainPatchSize;
-                    total += linein[usize + column] * CosineTable16[usize + n];
-                }
-
-                lineout[Constants.TerrainPatchSize * n + column] = total;
-            }
-        }
-
-        private static void IDCTLine16(float[] linein, float[] lineout, int line)
-        {
-            const float oosob = 2.0f / Constants.TerrainPatchSize;
-            int lineSize = line * Constants.TerrainPatchSize;
-
-            for (int n = 0; n < Constants.TerrainPatchSize; n++)
-            {
-                float total = OO_SQRT2 * linein[lineSize];
-
-                for (int u = 1; u < Constants.TerrainPatchSize; u++)
-                {
-                    total += linein[lineSize + u] * CosineTable16[u * Constants.TerrainPatchSize + n];
-                }
-
-                lineout[lineSize + n] = total * oosob;
-            }
-        }
-
-        //not in use, and still not fixed
-        /*
-                static void idct16x16(float[] a)
-                        {
-                            int j;
-                            float x0r, x0i, x1r, x1i, x2r, x2i, x3r, x3i;
-                            float x4r, x4i, x5r, x5i, x6r, x6i, x7r, x7i;
-                            float xr, xi;
-
-                            int fullSize = Constants.TerrainPatchSize * Constants.TerrainPatchSize;
-
-                            for (j = 0; j < fullSize; j += Constants.TerrainPatchSize)
-                            {
-                                x5r = C16_1R * tmp[1 + j] + C16_1I * tmp[15 + j];
-                                x5i = C16_1R * tmp[15 + j] - C16_1I * tmp[1 + j];
-                                xr = C16_7R * tmp[7 + j] + C16_7I * tmp[9 + j];
-                                xi = C16_7R * tmp[9 + j] - C16_7I * tmp[7 + j];
-                                x4r = x5r + xr;
-                                x4i = x5i - xi;
-                                x5r -= xr;
-                                x5i += xi;
-                                x7r = C16_5R * tmp[5 + j] + C16_5I * tmp[11 + j];
-                                x7i = C16_5R * tmp[11 + j] - C16_5I * tmp[5 + j];
-                                xr = C16_3R * tmp[3 + j] + C16_3I * tmp[13 + j];
-                                xi = C16_3R * tmp[13 + j] - C16_3I * tmp[3 + j];
-                                x6r = x7r + xr;
-                                x6i = x7i - xi;
-                                x7r -= xr;
-                                x7i += xi;
-                                xr = x4r - x6r;
-                                xi = x4i - x6i;
-                                x4r += x6r;
-                                x4i += x6i;
-                                x6r = W16_8R * (xi + xr);
-                                x6i = W16_8R * (xi - xr);
-                                xr = x5r + x7i;
-                                xi = x5i - x7r;
-                                x5r -= x7i;
-                                x5i += x7r;
-                                x7r = W16_4I * x5r + W16_4R * x5i;
-                                x7i = W16_4I * x5i - W16_4R * x5r;
-                                x5r = W16_4R * xr + W16_4I * xi;
-                                x5i = W16_4R * xi - W16_4I * xr;
-                                xr = C16_4R * tmp[4 + j] + C16_4I * tmp[12 + j];
-                                xi = C16_4R * tmp[12 + j] - C16_4I * tmp[4 + j];
-                                x2r = C16_8R * (tmp[0 + j] + tmp[8 + j]);
-                                x3r = C16_8R * (tmp[0 + j] - tmp[8 + j]);
-                                x0r = x2r + xr;
-                                x1r = x3r + xi;
-                                x2r -= xr;
-                                x3r -= xi;
-                                x0i = C16_2R * tmp[2 + j] + C16_2I * tmp[14 + j];
-                                x2i = C16_2R * tmp[14 + j] - C16_2I * tmp[2 + j];
-                                x1i = C16_6R * tmp[6 + j] + C16_6I * tmp[10 + j];
-                                x3i = C16_6R * tmp[10 + j] - C16_6I * tmp[6 + j];
-                                xr = x0i - x1i;
-                                xi = x2i + x3i;
-                                x0i += x1i;
-                                x2i -= x3i;
-                                x1i = W16_8R * (xi + xr);
-                                x3i = W16_8R * (xi - xr);
-                                xr = x0r + x0i;
-                                xi = x0r - x0i;
-                                tmp[0 + j] = xr + x4r;
-                                tmp[15 + j] = xr - x4r;
-                                tmp[8 + j] = xi + x4i;
-                                tmp[7 + j] = xi - x4i;
-                                xr = x1r + x1i;
-                                xi = x1r - x1i;
-                                tmp[2 + j] = xr + x5r;
-                                tmp[13 + j] = xr - x5r;
-                                tmp[10 + j] = xi + x5i;
-                                tmp[5 + j] = xi - x5i;
-                                xr = x2r + x2i;
-                                xi = x2r - x2i;
-                                tmp[4 + j] = xr + x6r;
-                                tmp[11 + j] = xr - x6r;
-                                tmp[12 + j] = xi + x6i;
-                                tmp[3 + j] = xi - x6i;
-                                xr = x3r + x3i;
-                                xi = x3r - x3i;
-                                tmp[6 + j] = xr + x7r;
-                                tmp[9 + j] = xr - x7r;
-                                tmp[14 + j] = xi + x7i;
-                                tmp[1 + j] = xi - x7i;
-                            }
-                            for (j = 0; j < fullSize; j += Constants.TerrainPatchSize)
-                            {
-                                x5r = C16_1R * tmp[j + 1] + C16_1I * tmp[j + 15];
-                                x5i = C16_1R * tmp[j + 15] - C16_1I * tmp[j + 1];
-                                xr = C16_7R * tmp[j + 7] + C16_7I * tmp[j + 9];
-                                xi = C16_7R * tmp[j + 9] - C16_7I * tmp[j + 7];
-                                x4r = x5r + xr;
-                                x4i = x5i - xi;
-                                x5r -= xr;
-                                x5i += xi;
-                                x7r = C16_5R * tmp[j + 5] + C16_5I * tmp[j + 11];
-                                x7i = C16_5R * tmp[j + 11] - C16_5I * tmp[j + 5];
-                                xr = C16_3R * tmp[j + 3] + C16_3I * tmp[j + 13];
-                                xi = C16_3R * tmp[j + 13] - C16_3I * tmp[j + 3];
-                                x6r = x7r + xr;
-                                x6i = x7i - xi;
-                                x7r -= xr;
-                                x7i += xi;
-                                xr = x4r - x6r;
-                                xi = x4i - x6i;
-                                x4r += x6r;
-                                x4i += x6i;
-                                x6r = W16_8R * (xi + xr);
-                                x6i = W16_8R * (xi - xr);
-                                xr = x5r + x7i;
-                                xi = x5i - x7r;
-                                x5r -= x7i;
-                                x5i += x7r;
-                                x7r = W16_4I * x5r + W16_4R * x5i;
-                                x7i = W16_4I * x5i - W16_4R * x5r;
-                                x5r = W16_4R * xr + W16_4I * xi;
-                                x5i = W16_4R * xi - W16_4I * xr;
-                                xr = C16_4R * tmp[j + 4] + C16_4I * tmp[j + 12];
-                                xi = C16_4R * tmp[j + 12] - C16_4I * tmp[j + 4];
-                                x2r = C16_8R * (tmp[j + 0] + tmp[j + 8]);
-                                x3r = C16_8R * (tmp[j + 0] - tmp[j + 8]);
-                                x0r = x2r + xr;
-                                x1r = x3r + xi;
-                                x2r -= xr;
-                                x3r -= xi;
-                                x0i = C16_2R * tmp[j + 2] + C16_2I * tmp[j + 14];
-                                x2i = C16_2R * tmp[j + 14] - C16_2I * tmp[j + 2];
-                                x1i = C16_6R * tmp[j + 6] + C16_6I * tmp[j + 10];
-                                x3i = C16_6R * tmp[j + 10] - C16_6I * tmp[j + 6];
-                                xr = x0i - x1i;
-                                xi = x2i + x3i;
-                                x0i += x1i;
-                                x2i -= x3i;
-                                x1i = W16_8R * (xi + xr);
-                                x3i = W16_8R * (xi - xr);
-                                xr = x0r + x0i;
-                                xi = x0r - x0i;
-                                tmp[j + 0] = xr + x4r;
-                                tmp[j + 15] = xr - x4r;
-                                tmp[j + 8] = xi + x4i;
-                                tmp[j + 7] = xi - x4i;
-                                xr = x1r + x1i;
-                                xi = x1r - x1i;
-                                tmp[j + 2] = xr + x5r;
-                                tmp[j + 13] = xr - x5r;
-                                tmp[j + 10] = xi + x5i;
-                                tmp[j + 5] = xi - x5i;
-                                xr = x2r + x2i;
-                                xi = x2r - x2i;
-                                tmp[j + 4] = xr + x6r;
-                                tmp[j + 11] = xr - x6r;
-                                tmp[j + 12] = xi + x6i;
-                                tmp[j + 3] = xi - x6i;
-                                xr = x3r + x3i;
-                                xi = x3r - x3i;
-                                tmp[j + 6] = xr + x7r;
-                                tmp[j + 9] = xr - x7r;
-                                tmp[j + 14] = xi + x7i;
-                                tmp[j + 1] = xi - x7i;
-                            }
-                        }
-                   */
-        #endregion IDCT
     }
 }

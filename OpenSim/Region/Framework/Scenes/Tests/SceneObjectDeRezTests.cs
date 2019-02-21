@@ -1,29 +1,31 @@
-/*
- * Copyright (c) Contributors, http://opensimulator.org/
- * See CONTRIBUTORS.TXT for a full list of copyright holders.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *     * Redistributions of source code must retain the above copyright
- *       notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above copyright
- *       notice, this list of conditions and the following disclaimer in the
- *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the OpenSimulator Project nor the
- *       names of its contributors may be used to endorse or promote products
- *       derived from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE DEVELOPERS ``AS IS'' AND ANY
- * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE CONTRIBUTORS BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+/// <license>
+///     Copyright (c) Contributors, http://opensimulator.org/
+///     See CONTRIBUTORS.TXT for a full list of copyright holders.
+///     For an explanation of the license of each contributor and the content it
+///     covers please see the Licenses directory.
+///
+///     Redistribution and use in source and binary forms, with or without
+///     modification, are permitted provided that the following conditions are met:
+///         * Redistributions of source code must retain the above copyright
+///         notice, this list of conditions and the following disclaimer.
+///         * Redistributions in binary form must reproduce the above copyright
+///         notice, this list of conditions and the following disclaimer in the
+///         documentation and/or other materials provided with the distribution.
+///         * Neither the name of the OpenSimulator Project nor the
+///         names of its contributors may be used to endorse or promote products
+///         derived from this software without specific prior written permission.
+///
+///     THIS SOFTWARE IS PROVIDED BY THE DEVELOPERS ``AS IS'' AND ANY
+///     EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+///     WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+///     DISCLAIMED. IN NO EVENT SHALL THE CONTRIBUTORS BE LIABLE FOR ANY
+///     DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+///     (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+///     LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+///     ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+///     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+///     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+/// </license>
 
 using System;
 using System.Collections.Generic;
@@ -43,11 +45,11 @@ using OpenSim.Tests.Common;
 namespace OpenSim.Region.Framework.Scenes.Tests
 {
     /// <summary>
-    /// Tests derez of scene objects.
+    ///     Tests derez of scene objects.
     /// </summary>
     /// <remarks>
-    /// This is at a level above the SceneObjectBasicTests, which act on the scene directly.
-    /// TODO: These tests are incomplete - need to test more kinds of derez (e.g. return object).
+    ///     This is at a level above the SceneObjectBasicTests, which act on the scene directly.
+    ///     TODO: These tests are incomplete - need to test more kinds of derez (e.g. return object).
     /// </remarks>
     [TestFixture]
     public class SceneObjectDeRezTests : OpenSimTestCase
@@ -71,7 +73,7 @@ namespace OpenSim.Region.Framework.Scenes.Tests
         }
 
         /// <summary>
-        /// Test deleting an object from a scene.
+        ///     Test deleting an object from a scene.
         /// </summary>
         [Test]
         public void TestDeRezSceneObject()
@@ -100,23 +102,18 @@ namespace OpenSim.Region.Framework.Scenes.Tests
 
             // Check that object isn't deleted until we crank the sogd handle.
             SceneObjectPart retrievedPart = scene.GetSceneObjectPart(so.LocalId);
-//            Assert.That(retrievedPart, Is.Not.Null);
-//            Assert.That(retrievedPart.ParentGroup.IsDeleted, Is.False);
-
             sogd.InventoryDeQueueAndDelete();
 
-//            SceneObjectPart retrievedPart2 = scene.GetSceneObjectPart(so.LocalId);
             Assert.That(retrievedPart, Is.Null);
         }
 
         /// <summary>
-        /// Test that child and root agents correctly receive KillObject notifications.
+        ///     Test that child and root agents correctly receive KillObject notifications.
         /// </summary>
         [Test]
         public void TestDeRezSceneObjectToAgents()
         {
             TestHelpers.InMethod();
-//            TestHelpers.EnableLogging();
 
             SceneHelpers sh = new SceneHelpers();
             TestScene sceneA = sh.SetupScene("sceneA", TestHelpers.ParseTail(0x100), 1000, 1000);
@@ -133,8 +130,6 @@ namespace OpenSim.Region.Framework.Scenes.Tests
             SceneHelpers.SetupSceneModules(sceneB, config, etmB);
 
             // We need this for derez
-            //SceneHelpers.SetupSceneModules(sceneA, new PermissionsModule());
-
             UserAccount uaA = UserAccountHelpers.CreateUserWithInventory(sceneA, "Andy", "AAA", 0x1, "");
             UserAccount uaB = UserAccountHelpers.CreateUserWithInventory(sceneA, "Brian", "BBB", 0x2, "");
 
@@ -156,17 +151,15 @@ namespace OpenSim.Region.Framework.Scenes.Tests
         }
 
         /// <summary>
-        /// Test deleting an object from a scene where the deleter is not the owner
+        ///     Test deleting an object from a scene where the deleter is not the owner
         /// </summary>
         /// <remarks>
-        /// This test assumes that the deleter is not a god.
+        ///     This test assumes that the deleter is not a god.
         /// </remarks>
         [Test]
         public void TestDeRezSceneObjectNotOwner()
         {
             TestHelpers.InMethod();
-//            log4net.Config.XmlConfigurator.Configure();
-
             UUID userId = UUID.Parse("10000000-0000-0000-0000-000000000001");
             UUID objectOwnerId = UUID.Parse("20000000-0000-0000-0000-000000000001");
 
@@ -181,8 +174,7 @@ namespace OpenSim.Region.Framework.Scenes.Tests
             AsyncSceneObjectGroupDeleter sogd = scene.SceneObjectGroupDeleter;
             sogd.Enabled = false;
 
-            SceneObjectPart part
-                = new SceneObjectPart(objectOwnerId, PrimitiveBaseShape.Default, Vector3.Zero, Quaternion.Identity, Vector3.Zero);
+            SceneObjectPart part = new SceneObjectPart(objectOwnerId, PrimitiveBaseShape.Default, Vector3.Zero, Quaternion.Identity, Vector3.Zero);
             part.Name = "obj1";
             scene.AddNewSceneObject(new SceneObjectGroup(part), false);
             List<uint> localIds = new List<uint>();
@@ -197,14 +189,12 @@ namespace OpenSim.Region.Framework.Scenes.Tests
         }
 
         /// <summary>
-        /// Test deleting an object asynchronously to user inventory.
+        ///     Test deleting an object asynchronously to user inventory.
         /// </summary>
         [Test]
         public void TestDeleteSceneObjectAsyncToUserInventory()
         {
             TestHelpers.InMethod();
-//            TestHelpers.EnableLogging();
-
             UUID agentId = UUID.Parse("00000000-0000-0000-0000-000000000001");
             string myObjectName = "Fred";
 
@@ -213,8 +203,7 @@ namespace OpenSim.Region.Framework.Scenes.Tests
             IConfigSource configSource = new IniConfigSource();
             IConfig config = configSource.AddConfig("Modules");
             config.Set("InventoryAccessModule", "BasicInventoryAccessModule");
-            SceneHelpers.SetupSceneModules(
-                scene, configSource, new object[] { new BasicInventoryAccessModule() });
+            SceneHelpers.SetupSceneModules(scene, configSource, new object[] { new BasicInventoryAccessModule() });
 
             SceneHelpers.SetupSceneModules(scene, new object[] { });
 
@@ -225,16 +214,10 @@ namespace OpenSim.Region.Framework.Scenes.Tests
             SceneObjectGroup so = SceneHelpers.AddSceneObject(scene, myObjectName, agentId);
 
             UserAccount ua = UserAccountHelpers.CreateUserWithInventory(scene, agentId);
-            InventoryFolderBase folder1
-                = UserInventoryHelpers.CreateInventoryFolder(scene.InventoryService, ua.PrincipalID, "folder1", false);
+            InventoryFolderBase folder1 = UserInventoryHelpers.CreateInventoryFolder(scene.InventoryService, ua.PrincipalID, "folder1", false);
 
             IClientAPI client = SceneHelpers.AddScenePresence(scene, agentId).ControllingClient;
             scene.DeRezObjects(client, new List<uint>() { so.LocalId }, UUID.Zero, DeRezAction.Take, folder1.ID);
-
-//            SceneObjectPart retrievedPart = scene.GetSceneObjectPart(so.LocalId);
-
-//            Assert.That(retrievedPart, Is.Not.Null);
-//            Assert.That(so.IsDeleted, Is.False);
 
             sogd.InventoryDeQueueAndDelete();
 
@@ -243,18 +226,12 @@ namespace OpenSim.Region.Framework.Scenes.Tests
             SceneObjectPart retrievedPart2 = scene.GetSceneObjectPart(so.LocalId);
             Assert.That(retrievedPart2, Is.Null);
 
-//            SceneSetupHelpers.DeleteSceneObjectAsync(scene, part, DeRezAction.Take, userInfo.RootFolder.ID, client);
-
             InventoryItemBase retrievedItem
                 = UserInventoryHelpers.GetInventoryItem(
                     scene.InventoryService, ua.PrincipalID, "folder1/" + myObjectName);
 
             // Check that we now have the taken part in our inventory
             Assert.That(retrievedItem, Is.Not.Null);
-
-            // Check that the taken part has actually disappeared
-//            SceneObjectPart retrievedPart = scene.GetSceneObjectPart(part.LocalId);
-//            Assert.That(retrievedPart, Is.Null);
         }
     }
 }

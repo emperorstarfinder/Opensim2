@@ -1,29 +1,31 @@
-/*
- * Copyright (c) Contributors, http://opensimulator.org/
- * See CONTRIBUTORS.TXT for a full list of copyright holders.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *     * Redistributions of source code must retain the above copyright
- *       notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above copyright
- *       notice, this list of conditions and the following disclaimer in the
- *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the OpenSimulator Project nor the
- *       names of its contributors may be used to endorse or promote products
- *       derived from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE DEVELOPERS ``AS IS'' AND ANY
- * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE CONTRIBUTORS BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+/// <license>
+///     Copyright (c) Contributors, http://opensimulator.org/
+///     See CONTRIBUTORS.TXT for a full list of copyright holders.
+///     For an explanation of the license of each contributor and the content it
+///     covers please see the Licenses directory.
+///
+///     Redistribution and use in source and binary forms, with or without
+///     modification, are permitted provided that the following conditions are met:
+///         * Redistributions of source code must retain the above copyright
+///         notice, this list of conditions and the following disclaimer.
+///         * Redistributions in binary form must reproduce the above copyright
+///         notice, this list of conditions and the following disclaimer in the
+///         documentation and/or other materials provided with the distribution.
+///         * Neither the name of the OpenSimulator Project nor the
+///         names of its contributors may be used to endorse or promote products
+///         derived from this software without specific prior written permission.
+///
+///     THIS SOFTWARE IS PROVIDED BY THE DEVELOPERS ``AS IS'' AND ANY
+///     EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+///     WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+///     DISCLAIMED. IN NO EVENT SHALL THE CONTRIBUTORS BE LIABLE FOR ANY
+///     DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+///     (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+///     LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+///     ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+///     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+///     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+/// </license>
 
 using System;
 using System.IO;
@@ -32,21 +34,21 @@ using OpenMetaverse;
 namespace OpenSim.Region.Framework.Scenes.Animation
 {
     /// <summary>
-    /// Written to decode and encode a binary animation asset.
-    /// The SecondLife Client reads in a BVH file and converts
-    /// it to the format described here.  This isn't
+    ///     Written to decode and encode a binary animation asset.
+    ///     The SecondLife Client reads in a BVH file and converts
+    ///     it to the format described here.  This isn't
     /// </summary>
     public class BinBVHAnimation
     {
         /// <summary>
-        /// Rotation Keyframe count (used internally)
-        /// Don't use this, use the rotationkeys.Length on each joint
+        ///     Rotation Keyframe count (used internally)
+        ///     Don't use this, use the rotationkeys.Length on each joint
         /// </summary>
         private int rotationkeys;
 
         /// <summary>
-        /// Position Keyframe count (used internally)
-        /// Don't use this, use the positionkeys.Length on each joint
+        ///     Position Keyframe count (used internally)
+        ///     Don't use this, use the positionkeys.Length on each joint
         /// </summary>
         private int positionkeys;
 
@@ -54,68 +56,68 @@ namespace OpenSim.Region.Framework.Scenes.Animation
         public UInt16 unknown1; // Always 0
 
         /// <summary>
-        /// Animation Priority
+        ///     Animation Priority
         /// </summary>
         public int Priority;
 
         /// <summary>
-        /// The animation length in seconds.
+        ///     The animation length in seconds.
         /// </summary>
         public Single Length;
 
         /// <summary>
-        /// Expression set in the client.  Null if [None] is selected
+        ///     Expression set in the client.  
+        ///     Null if [None] is selected
         /// </summary>
         public string ExpressionName; // "" (null)
 
         /// <summary>
-        /// The time in seconds to start the animation
+        ///     The time in seconds to start the animation
         /// </summary>
         public Single InPoint;
 
         /// <summary>
-        /// The time in seconds to end the animation
+        ///     The time in seconds to end the animation
         /// </summary>
         public Single OutPoint;
 
         /// <summary>
-        /// Loop the animation
+        ///     Loop the animation
         /// </summary>
         public bool Loop;
 
         /// <summary>
-        /// Meta data. Ease in Seconds.
+        ///     Meta data. Ease in Seconds.
         /// </summary>
         public Single EaseInTime;
 
         /// <summary>
-        /// Meta data. Ease out seconds.
+        ///     Meta data. Ease out seconds.
         /// </summary>
         public Single EaseOutTime;
 
         /// <summary>
-        /// Meta Data for the Hand Pose
+        ///     Meta Data for the Hand Pose
         /// </summary>
         public uint HandPose;
 
         /// <summary>
-        /// Number of joints defined in the animation
-        /// Don't use this..  use joints.Length
+        ///     Number of joints defined in the animation
+        ///     Don't use this..  use joints.Length
         /// </summary>
         private uint m_jointCount;
 
-
         /// <summary>
-        /// Contains an array of joints
+        ///     Contains an array of joints
         /// </summary>
         public binBVHJoint[] Joints;
-
 
         public byte[] ToBytes()
         {
             byte[] outputbytes;
 
             using (MemoryStream ms = new MemoryStream())
+
             using (BinaryWriter iostream = new BinaryWriter(ms))
             {
                 iostream.Write(BinBVHUtil.ES(Utils.UInt16ToBytes(unknown0)));
@@ -135,10 +137,13 @@ namespace OpenSim.Region.Framework.Scenes.Animation
                 {
                     Joints[i].WriteBytesToStream(iostream, InPoint, OutPoint);
                 }
+
                 iostream.Write(BinBVHUtil.ES(Utils.IntToBytes(0)));
 
                 using (MemoryStream ms2 = (MemoryStream)iostream.BaseStream)
+                {
                     outputbytes = ms2.ToArray();
+                }
             }
 
             return outputbytes;
@@ -180,13 +185,12 @@ namespace OpenSim.Region.Framework.Scenes.Animation
             Joints[0].positionkeys[0].key_element.X = ((float)rnd.NextDouble() * 2 - 1);
             Joints[0].positionkeys[0].key_element.Y = ((float)rnd.NextDouble() * 2 - 1);
             Joints[0].positionkeys[0].key_element.Z = ((float)rnd.NextDouble() * 2 - 1);
-
-
         }
 
         public BinBVHAnimation(byte[] animationdata)
         {
             int i = 0;
+
             if (!BitConverter.IsLittleEndian)
             {
                 unknown0 = Utils.BytesToUInt16(BinBVHUtil.EndianSwap(animationdata,i,2)); i += 2; // Always 1
@@ -201,7 +205,9 @@ namespace OpenSim.Region.Framework.Scenes.Animation
                 Priority = Utils.BytesToInt(animationdata, i); i += 4;
                 Length = Utils.BytesToFloat(animationdata, i); i += 4;
             }
+
             ExpressionName = ReadBytesUntilNull(animationdata, ref i);
+
             if (!BitConverter.IsLittleEndian)
             {
                 InPoint = Utils.BytesToFloat(BinBVHUtil.EndianSwap(animationdata, i, 4), 0); i += 4;
@@ -224,10 +230,14 @@ namespace OpenSim.Region.Framework.Scenes.Animation
 
                 m_jointCount = Utils.BytesToUInt(animationdata, i); i += 4; // Get Joint count
             }
+
             Joints = new binBVHJoint[m_jointCount];
 
-            // deserialize the number of joints in the animation.
-            // Joints are variable length blocks of binary data consisting of joint data and keyframes
+            /// <summary>
+            ///     Deserialize the number of joints in the animation.
+            ///     Joints are variable length blocks of binary data 
+            ///     consisting of joint data and keyframes.
+            /// </summary>
             for (int iter = 0; iter < m_jointCount; iter++)
             {
                 binBVHJoint joint = readJoint(animationdata, ref i);
@@ -235,11 +245,10 @@ namespace OpenSim.Region.Framework.Scenes.Animation
             }
         }
 
-
         /// <summary>
-        /// Variable length strings seem to be null terminated in the animation asset..    but..
-        /// use with caution, home grown.
-        /// advances the index.
+        ///     Variable length strings seem to be null
+        ///     terminated in the animation asset..    but..
+        ///     use with caution, home grown. advances the index.
         /// </summary>
         /// <param name="data">The animation asset byte array</param>
         /// <param name="i">The offset to start reading</param>
@@ -254,6 +263,7 @@ namespace OpenSim.Region.Framework.Scenes.Animation
             for (int j = i; j < data.Length; j++)
             {
                 char spot = Convert.ToChar(data[j]);
+
                 if (spot == nterm)
                 {
                     endpos = j;
@@ -270,14 +280,18 @@ namespace OpenSim.Region.Framework.Scenes.Animation
             }
             else
             {
-                // We found the end of the string
-                // append the bytes from the beginning of the string to the end of the string
-                // advance i
+                /// <summary>
+                ///     We found the end of the string
+                ///     Append the bytes from the beginning
+                ///     of the string to the end of the string
+                /// </summary>
                 byte[] interm = new byte[endpos-i];
+
                 for (; i<endpos; i++)
                 {
                     interm[i-startpos] = data[i];
                 }
+
                 i++;  // advance past the null character
 
                 return Utils.BytesToString(interm);
@@ -285,55 +299,21 @@ namespace OpenSim.Region.Framework.Scenes.Animation
         }
 
         /// <summary>
-        /// Read in a Joint from an animation asset byte array
-        /// Variable length Joint fields, yay!
-        /// Advances the index
+        ///     Read in a Joint from an animation asset byte array
+        ///     Variable length Joint fields, yay! Advances the index
         /// </summary>
         /// <param name="data">animation asset byte array</param>
         /// <param name="i">Byte Offset of the start of the joint</param>
         /// <returns>The Joint data serialized into the binBVHJoint structure</returns>
         private binBVHJoint readJoint(byte[] data, ref int i)
         {
-
             binBVHJointKey[] positions;
             binBVHJointKey[] rotations;
 
             binBVHJoint pJoint = new binBVHJoint();
 
-            /*
-                109
-                84
-                111
-                114
-                114
-                111
-                0 <--- Null terminator
-            */
-
             pJoint.Name = ReadBytesUntilNull(data, ref i); // Joint name
 
-            /*
-                 2 <- Priority Revisited
-                 0
-                 0
-                 0
-            */
-
-            /*
-                5 <-- 5 keyframes
-                0
-                0
-                0
-                ... 5 Keyframe data blocks
-            */
-
-            /*
-                2 <-- 2 keyframes
-                0
-                0
-                0
-                ..  2 Keyframe data blocks
-            */
             if (!BitConverter.IsLittleEndian)
             {
                 pJoint.Priority = Utils.BytesToInt(BinBVHUtil.EndianSwap(data, i, 4)); i += 4; // Joint Priority override?
@@ -345,16 +325,17 @@ namespace OpenSim.Region.Framework.Scenes.Animation
                 rotationkeys = Utils.BytesToInt(data, i); i += 4; // How many rotation keyframes
             }
 
-            // argh! floats into two bytes!..   bad bad bad bad
-            // After fighting with it for a while..  -1, to 1 seems to give the best results
+            /// <summary>
+            ///     Floats into two bytes.
+            /// </summary>
             rotations = readKeys(data, ref i, rotationkeys, -1f, 1f);
+
             for (int iter = 0; iter < rotations.Length; iter++)
             {
                 rotations[iter].W = 1f -
                     (rotations[iter].key_element.X + rotations[iter].key_element.Y +
                      rotations[iter].key_element.Z);
             }
-
 
             if (!BitConverter.IsLittleEndian)
             {
@@ -365,9 +346,9 @@ namespace OpenSim.Region.Framework.Scenes.Animation
                 positionkeys = Utils.BytesToInt(data, i); i += 4; // How many position keyframes
             }
 
-            // Read in position keyframes
-            // argh! more floats into two bytes!..  *head desk*
-            // After fighting with it for a while..  -5, to 5 seems to give the best results
+            /// <summary>
+            ///     Read in position keyframes
+            /// </summary>
             positions = readKeys(data, ref i, positionkeys, -5f, 5f);
 
             pJoint.rotationkeys = rotations;
@@ -377,8 +358,8 @@ namespace OpenSim.Region.Framework.Scenes.Animation
         }
 
         /// <summary>
-        /// Read Keyframes of a certain type
-        /// advance i
+        ///     Read Keyframes of a certain type
+        ///     advance i
         /// </summary>
         /// <param name="data">Animation Byte array</param>
         /// <param name="i">Offset in the Byte Array.  Will be advanced</param>
@@ -392,20 +373,8 @@ namespace OpenSim.Region.Framework.Scenes.Animation
             float y;
             float z;
 
-            /*
-                0.o, Float values in Two bytes.. this is just wrong >:(
-                17          255  <-- Time Code
-                17          255  <-- Time Code
-                255         255  <-- X
-                127         127  <-- X
-                255         255  <-- Y
-                127         127  <-- Y
-                213         213  <-- Z
-                142         142  <---Z
-
-            */
-
             binBVHJointKey[] m_keys = new binBVHJointKey[keycount];
+
             for (int j = 0; j < keycount; j++)
             {
                 binBVHJointKey pJKey = new binBVHJointKey();
@@ -417,50 +386,52 @@ namespace OpenSim.Region.Framework.Scenes.Animation
                 pJKey.key_element = new Vector3(x, y, z);
                 m_keys[j] = pJKey;
             }
+
             return m_keys;
         }
-
-
-
     }
+
     /// <summary>
-    /// A Joint and it's associated meta data and keyframes
+    ///     A Joint and it's associated meta data and keyframes
     /// </summary>
     public struct binBVHJoint
     {
         /// <summary>
-        /// Name of the Joint.  Matches the avatar_skeleton.xml in client distros
+        ///     Name of the Joint.  
+        ///     Matches the avatar_skeleton.xml in client distros
         /// </summary>
         public string Name;
 
         /// <summary>
-        /// Joint Animation Override?   Was the same as the Priority in testing..
+        ///     Joint Animation Override
+        ///     Was the same as the Priority in testing..
         /// </summary>
         public int Priority;
 
         /// <summary>
-        /// Array of Rotation Keyframes in order from earliest to latest
+        ///     Array of Rotation Keyframes in order from earliest to latest
         /// </summary>
         public binBVHJointKey[] rotationkeys;
 
         /// <summary>
-        /// Array of Position Keyframes in order from earliest to latest
-        /// This seems to only be for the Pelvis?
+        ///     Array of Position Keyframes in order from earliest to latest
+        ///     This seems to only be for the Pelvis?
         /// </summary>
         public binBVHJointKey[] positionkeys;
-
-
 
         public void WriteBytesToStream(BinaryWriter iostream, float InPoint, float OutPoint)
         {
             iostream.Write(BinBVHUtil.WriteNullTerminatedString(Name));
             iostream.Write(BinBVHUtil.ES(Utils.IntToBytes(Priority)));
             iostream.Write(BinBVHUtil.ES(Utils.IntToBytes(rotationkeys.Length)));
+
             for (int i=0;i<rotationkeys.Length;i++)
             {
                 rotationkeys[i].WriteBytesToStream(iostream, InPoint, OutPoint,  -1f, 1f);
             }
+
             iostream.Write(BinBVHUtil.ES(Utils.IntToBytes((positionkeys.Length))));
+
             for (int i = 0; i < positionkeys.Length; i++)
             {
                 positionkeys[i].WriteBytesToStream(iostream, InPoint, OutPoint, -256f, 256f);
@@ -469,7 +440,8 @@ namespace OpenSim.Region.Framework.Scenes.Animation
     }
 
     /// <summary>
-    /// A Joint Keyframe.  This is either a position or a rotation.
+    ///     A Joint Keyframe.
+    ///     This is either a position or a rotation.
     /// </summary>
     public struct binBVHJointKey
     {
@@ -477,7 +449,7 @@ namespace OpenSim.Region.Framework.Scenes.Animation
         public float time;
 
         /// <summary>
-        /// Either a Vector3 position or a Vector3 Euler rotation
+        ///     Either a Vector3 position or a Vector3 Euler rotation
         /// </summary>
         public Vector3 key_element;
 
@@ -493,7 +465,7 @@ namespace OpenSim.Region.Framework.Scenes.Animation
     }
 
     /// <summary>
-    /// Poses set in the animation metadata for the hands.
+    ///     Poses set in the animation metadata for the hands.
     /// </summary>
     public enum HandPose : uint
     {
@@ -511,6 +483,7 @@ namespace OpenSim.Region.Framework.Scenes.Animation
         Typing = 11,
         Peace_Right = 12
     }
+
     public static class BinBVHUtil
     {
         public const float ONE_OVER_U16_MAX = 1.0f / UInt16.MaxValue;
@@ -518,10 +491,7 @@ namespace OpenSim.Region.Framework.Scenes.Animation
         public static UInt16 FloatToUInt16(float val, float lower, float upper)
         {
             UInt16 uival = 0;
-            //m_parentGroup.GetTimeDilation() * (float)ushort.MaxValue
-            //0-1
 
-//            float difference = upper - lower;
             // we're trying to get a zero lower and modify all values equally so we get a percentage position
             if (lower > 0)
             {
@@ -539,7 +509,9 @@ namespace OpenSim.Region.Framework.Scenes.Animation
             }
 
             if (upper == 0)
+            {
                 val = 0;
+            }
             else
             {
                 val /= upper;
@@ -550,19 +522,22 @@ namespace OpenSim.Region.Framework.Scenes.Animation
             return uival;
         }
 
-
         /// <summary>
-        /// Endian Swap
-        /// Swaps endianness if necessary
+        ///     Endian Swap
+        ///     Swaps endianness if necessary
         /// </summary>
         /// <param name="arr">Input array</param>
         /// <returns></returns>
         public static byte[] ES(byte[] arr)
         {
             if (!BitConverter.IsLittleEndian)
+            {
                 Array.Reverse(arr);
+            }
+
             return arr;
         }
+
         public static byte[] EndianSwap(byte[] arr, int offset, int len)
         {
             byte[] bendian = new byte[offset + len];
@@ -576,62 +551,14 @@ namespace OpenSim.Region.Framework.Scenes.Animation
             byte[] output = new byte[str.Length + 1];
             Char[] chr = str.ToCharArray();
             int i = 0;
+
             for (i = 0; i < chr.Length; i++)
             {
                 output[i] = Convert.ToByte(chr[i]);
-
             }
 
             output[i] = Convert.ToByte('\0');
             return output;
         }
-
     }
 }
-/*
-switch (jointname)
-                {
-                    case "mPelvis":
-                    case "mTorso":
-                    case "mNeck":
-                    case "mHead":
-                    case "mChest":
-                    case "mHipLeft":
-                    case "mHipRight":
-                    case "mKneeLeft":
-                    case "mKneeRight":
-                        // XYZ->ZXY
-                        t = x;
-                        x = y;
-                        y = t;
-                        break;
-                    case "mCollarLeft":
-                    case "mCollarRight":
-                    case "mElbowLeft":
-                    case "mElbowRight":
-                        // YZX ->ZXY
-                        t = z;
-                        z = x;
-                        x = y;
-                        y = t;
-                        break;
-                    case "mWristLeft":
-                    case "mWristRight":
-                    case "mShoulderLeft":
-                    case "mShoulderRight":
-                        // ZYX->ZXY
-                        t = y;
-                        y = z;
-                        z = t;
-
-                        break;
-                    case "mAnkleLeft":
-                    case "mAnkleRight":
-                        // XYZ ->ZXY
-                        t = x;
-                        x = z;
-                        z = y;
-                        y = t;
-                        break;
-                }
-*/

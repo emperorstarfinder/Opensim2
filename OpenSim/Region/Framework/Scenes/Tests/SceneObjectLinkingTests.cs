@@ -1,39 +1,41 @@
-/*
- * Copyright (c) Contributors, http://opensimulator.org/
- * See CONTRIBUTORS.TXT for a full list of copyright holders.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *     * Redistributions of source code must retain the above copyright
- *       notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above copyright
- *       notice, this list of conditions and the following disclaimer in the
- *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the OpenSimulator Project nor the
- *       names of its contributors may be used to endorse or promote products
- *       derived from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE DEVELOPERS ``AS IS'' AND ANY
- * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE CONTRIBUTORS BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+/// <license>
+///     Copyright (c) Contributors, http://opensimulator.org/
+///     See CONTRIBUTORS.TXT for a full list of copyright holders.
+///     For an explanation of the license of each contributor and the content it
+///     covers please see the Licenses directory.
+///
+///     Redistribution and use in source and binary forms, with or without
+///     modification, are permitted provided that the following conditions are met:
+///         * Redistributions of source code must retain the above copyright
+///         notice, this list of conditions and the following disclaimer.
+///         * Redistributions in binary form must reproduce the above copyright
+///         notice, this list of conditions and the following disclaimer in the
+///         documentation and/or other materials provided with the distribution.
+///         * Neither the name of the OpenSimulator Project nor the
+///         names of its contributors may be used to endorse or promote products
+///         derived from this software without specific prior written permission.
+///
+///     THIS SOFTWARE IS PROVIDED BY THE DEVELOPERS ``AS IS'' AND ANY
+///     EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+///     WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+///     DISCLAIMED. IN NO EVENT SHALL THE CONTRIBUTORS BE LIABLE FOR ANY
+///     DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+///     (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+///     LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+///     ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+///     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+///     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+/// </license>
 
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using log4net;
 using NUnit.Framework;
 using OpenMetaverse;
 using OpenSim.Framework;
 using OpenSim.Region.Framework.Scenes;
 using OpenSim.Tests.Common;
-using log4net;
 
 namespace OpenSim.Region.Framework.Scenes.Tests
 {
@@ -43,7 +45,7 @@ namespace OpenSim.Region.Framework.Scenes.Tests
         private static readonly ILog m_log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         /// <summary>
-        /// Links to self should be ignored.
+        ///     Links to self should be ignored.
         /// </summary>
         [Test]
         public void TestLinkToSelf()
@@ -57,7 +59,6 @@ namespace OpenSim.Region.Framework.Scenes.Tests
             SceneObjectGroup sog1 = SceneHelpers.CreateSceneObject(nParts, ownerId, "TestLinkToSelf_", 0x10);
             scene.AddSceneObject(sog1);
             scene.LinkObjects(ownerId, sog1.LocalId, new List<uint>() { sog1.Parts[1].LocalId });
-//            sog1.LinkToGroup(sog1);
 
             Assert.That(sog1.Parts.Length, Is.EqualTo(nParts));
         }
@@ -77,9 +78,6 @@ namespace OpenSim.Region.Framework.Scenes.Tests
 
             grp1.AbsolutePosition = new Vector3(10, 10, 10);
             grp2.AbsolutePosition = Vector3.Zero;
-
-            // <90,0,0>
-//            grp1.UpdateGroupRotationR(Quaternion.CreateFromEulers(90 * Utils.DEG_TO_RAD, 0, 0));
 
             // <180,0,0>
             grp2.UpdateGroupRotationR(Quaternion.CreateFromEulers(180 * Utils.DEG_TO_RAD, 0, 0));
@@ -105,9 +103,9 @@ namespace OpenSim.Region.Framework.Scenes.Tests
             if (debugtest)
             {
                 m_log.Debug("parts: " + grp1.Parts.Length);
-                m_log.Debug("Group1: Pos:"+grp1.AbsolutePosition+", Rot:"+grp1.GroupRotation);
-                m_log.Debug("Group1: Prim1: OffsetPosition:"+ part1.OffsetPosition+", OffsetRotation:"+part1.RotationOffset);
-                m_log.Debug("Group1: Prim2: OffsetPosition:"+part2.OffsetPosition+", OffsetRotation:"+part2.RotationOffset);
+                m_log.Debug("Group1: Pos:" + grp1.AbsolutePosition + ", Rot:" + grp1.GroupRotation);
+                m_log.Debug("Group1: Prim1: OffsetPosition:" + part1.OffsetPosition + ", OffsetRotation:" + part1.RotationOffset);
+                m_log.Debug("Group1: Prim2: OffsetPosition:" + part2.OffsetPosition + ", OffsetRotation:" + part2.RotationOffset);
             }
 
             // root part should have no offset position or rotation
@@ -127,13 +125,17 @@ namespace OpenSim.Region.Framework.Scenes.Tests
             Vector3 rotEuler1 = new Vector3(roll * Utils.RAD_TO_DEG, pitch * Utils.RAD_TO_DEG, yaw * Utils.RAD_TO_DEG);
 
             if (debugtest)
+            {
                 m_log.Debug(rotEuler1);
+            }
 
             part2.RotationOffset.GetEulerAngles(out roll, out pitch, out yaw);
             Vector3 rotEuler2 = new Vector3(roll * Utils.RAD_TO_DEG, pitch * Utils.RAD_TO_DEG, yaw * Utils.RAD_TO_DEG);
 
             if (debugtest)
+            {
                 m_log.Debug(rotEuler2);
+            }
 
             Assert.That(rotEuler2.ApproxEquals(new Vector3(-180, 0, 0), 0.001f) || rotEuler2.ApproxEquals(new Vector3(180, 0, 0), 0.001f),
                 "Not exactly sure what this is asserting...");
@@ -142,7 +144,9 @@ namespace OpenSim.Region.Framework.Scenes.Tests
             SceneObjectGroup grp3 = grp1.DelinkFromGroup(part2.LocalId);
 
             if (debugtest)
+            {
                 m_log.Debug("Group2: Prim2: OffsetPosition:" + part2.AbsolutePosition + ", OffsetRotation:" + part2.RotationOffset);
+            }
 
             Assert.That(grp1.Parts.Length, Is.EqualTo(1), "Group 1 still contained part2 after delink.");
             Assert.That(part2.AbsolutePosition == Vector3.Zero, "The absolute position should be zero");
@@ -171,14 +175,8 @@ namespace OpenSim.Region.Framework.Scenes.Tests
             grp3.AbsolutePosition = new Vector3(20, 20, 20);
             grp4.AbsolutePosition = new Vector3(40, 40, 40);
 
-            // <90,0,0>
-//            grp1.UpdateGroupRotationR(Quaternion.CreateFromEulers(90 * Utils.DEG_TO_RAD, 0, 0));
-
             // <180,0,0>
             grp2.UpdateGroupRotationR(Quaternion.CreateFromEulers(180 * Utils.DEG_TO_RAD, 0, 0));
-
-            // <270,0,0>
-//            grp3.UpdateGroupRotationR(Quaternion.CreateFromEulers(270 * Utils.DEG_TO_RAD, 0, 0));
 
             // <0,90,0>
             grp4.UpdateGroupRotationR(Quaternion.CreateFromEulers(0, 90 * Utils.DEG_TO_RAD, 0));
@@ -207,14 +205,14 @@ namespace OpenSim.Region.Framework.Scenes.Tests
             {
                 m_log.Debug("--------After Link-------");
                 m_log.Debug("Group1: parts:" + grp1.Parts.Length);
-                m_log.Debug("Group1: Pos:"+grp1.AbsolutePosition+", Rot:"+grp1.GroupRotation);
+                m_log.Debug("Group1: Pos:" + grp1.AbsolutePosition + ", Rot:" + grp1.GroupRotation);
                 m_log.Debug("Group1: Prim1: OffsetPosition:" + part1.OffsetPosition + ", OffsetRotation:" + part1.RotationOffset);
-                m_log.Debug("Group1: Prim2: OffsetPosition:"+part2.OffsetPosition+", OffsetRotation:"+ part2.RotationOffset);
+                m_log.Debug("Group1: Prim2: OffsetPosition:" + part2.OffsetPosition + ", OffsetRotation:" + part2.RotationOffset);
 
                 m_log.Debug("Group3: parts:" + grp3.Parts.Length);
-                m_log.Debug("Group3: Pos:"+grp3.AbsolutePosition+", Rot:"+grp3.GroupRotation);
-                m_log.Debug("Group3: Prim1: OffsetPosition:"+part3.OffsetPosition+", OffsetRotation:"+part3.RotationOffset);
-                m_log.Debug("Group3: Prim2: OffsetPosition:"+part4.OffsetPosition+", OffsetRotation:"+part4.RotationOffset);
+                m_log.Debug("Group3: Pos:" + grp3.AbsolutePosition + ", Rot:" + grp3.GroupRotation);
+                m_log.Debug("Group3: Prim1: OffsetPosition:" + part3.OffsetPosition + ", OffsetRotation:" + part3.RotationOffset);
+                m_log.Debug("Group3: Prim2: OffsetPosition:" + part4.OffsetPosition + ", OffsetRotation:" + part4.RotationOffset);
             }
 
             // Required for linking
@@ -238,13 +236,17 @@ namespace OpenSim.Region.Framework.Scenes.Tests
             Vector3 rotEuler1 = new Vector3(roll * Utils.RAD_TO_DEG, pitch * Utils.RAD_TO_DEG, yaw * Utils.RAD_TO_DEG);
 
             if (debugtest)
+            {
                 m_log.Debug(rotEuler1);
+            }
 
             part2.RotationOffset.GetEulerAngles(out roll, out pitch, out yaw);
             Vector3 rotEuler2 = new Vector3(roll * Utils.RAD_TO_DEG, pitch * Utils.RAD_TO_DEG, yaw * Utils.RAD_TO_DEG);
 
             if (debugtest)
+            {
                 m_log.Debug(rotEuler2);
+            }
 
             Assert.That(rotEuler2.ApproxEquals(new Vector3(-180, 0, 0), 0.001f) || rotEuler2.ApproxEquals(new Vector3(180, 0, 0), 0.001f),
                 "Not sure what this assertion is all about...");
@@ -281,14 +283,13 @@ namespace OpenSim.Region.Framework.Scenes.Tests
         }
 
         /// <summary>
-        /// Test that a new scene object which is already linked is correctly persisted to the persistence layer.
+        ///     Test that a new scene object which is already
+        ///     linked is correctly persisted to the persistence layer.
         /// </summary>
         [Test]
         public void TestNewSceneObjectLinkPersistence()
         {
             TestHelpers.InMethod();
-            //log4net.Config.XmlConfigurator.Configure();
-
             TestScene scene = new SceneHelpers().SetupScene();
 
             string rootPartName = "rootpart";
@@ -298,10 +299,11 @@ namespace OpenSim.Region.Framework.Scenes.Tests
 
             SceneObjectPart rootPart
                 = new SceneObjectPart(UUID.Zero, PrimitiveBaseShape.Default, Vector3.Zero, Quaternion.Identity, Vector3.Zero)
-                    { Name = rootPartName, UUID = rootPartUuid };
+                { Name = rootPartName, UUID = rootPartUuid };
+
             SceneObjectPart linkPart
                 = new SceneObjectPart(UUID.Zero, PrimitiveBaseShape.Default, Vector3.Zero, Quaternion.Identity, Vector3.Zero)
-                    { Name = linkPartName, UUID = linkPartUuid };
+                { Name = linkPartName, UUID = linkPartUuid };
 
             SceneObjectGroup sog = new SceneObjectGroup(rootPart);
             sog.AddPart(linkPart);
@@ -320,14 +322,13 @@ namespace OpenSim.Region.Framework.Scenes.Tests
         }
 
         /// <summary>
-        /// Test that a delink of a previously linked object is correctly persisted to the database
+        ///     Test that a delink of a previously linked
+        ///     object is correctly persisted to the database
         /// </summary>
         [Test]
         public void TestDelinkPersistence()
         {
             TestHelpers.InMethod();
-            //log4net.Config.XmlConfigurator.Configure();
-
             TestScene scene = new SceneHelpers().SetupScene();
 
             string rootPartName = "rootpart";
@@ -337,11 +338,12 @@ namespace OpenSim.Region.Framework.Scenes.Tests
 
             SceneObjectPart rootPart
                 = new SceneObjectPart(UUID.Zero, PrimitiveBaseShape.Default, Vector3.Zero, Quaternion.Identity, Vector3.Zero)
-                    { Name = rootPartName, UUID = rootPartUuid };
+                { Name = rootPartName, UUID = rootPartUuid };
 
             SceneObjectPart linkPart
                 = new SceneObjectPart(UUID.Zero, PrimitiveBaseShape.Default, Vector3.Zero, Quaternion.Identity, Vector3.Zero)
-                    { Name = linkPartName, UUID = linkPartUuid };
+                { Name = linkPartName, UUID = linkPartUuid };
+
             SceneObjectGroup linkGroup = new SceneObjectGroup(linkPart);
             scene.AddNewSceneObject(linkGroup, true);
 
@@ -358,16 +360,6 @@ namespace OpenSim.Region.Framework.Scenes.Tests
             // These changes should occur immediately without waiting for a backup pass
             SceneObjectGroup groupToDelete = sog.DelinkFromGroup(linkPart, false);
             Assert.IsFalse(groupToDelete.GroupContainsForeignPrims);
-
-/* backup is async
-            scene.DeleteSceneObject(groupToDelete, false);
-
-            List<SceneObjectGroup> storedObjects = scene.SimulationDataService.LoadObjects(scene.RegionInfo.RegionID);
-
-            Assert.AreEqual(1, storedObjects.Count);
-            Assert.AreEqual(1, storedObjects[0].Parts.Length);
-            Assert.IsTrue(storedObjects[0].ContainsPart(rootPartUuid));
-*/
         }
     }
 }
