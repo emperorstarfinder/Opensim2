@@ -157,6 +157,7 @@ namespace OpenSim.Region.Framework.Scenes
         protected internal void Close()
         {
             bool entered = false;
+
             try
             {
                 try
@@ -666,7 +667,9 @@ namespace OpenSim.Region.Framework.Scenes
                 }
 
                 if (nphysparts > 0)
+                {
                     RemovePhysicalPrim(nphysparts);
+                }
             }
 
             bool ret = false;

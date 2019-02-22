@@ -156,7 +156,10 @@ namespace OpenSim.Region.Framework.Scenes
                     break;
                 case 1: // selected sound
                     if (soundID == part.invalidCollisionSoundUUID)
+                    {
                         return;
+                    }
+
                     HaveSound = true;
                     break;
                 case 2: // default sounds with volume set by script
