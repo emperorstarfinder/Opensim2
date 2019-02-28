@@ -1,29 +1,31 @@
-/*
- * Copyright (c) Contributors, http://opensimulator.org/
- * See CONTRIBUTORS.TXT for a full list of copyright holders.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *     * Redistributions of source code must retain the above copyright
- *       notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above copyright
- *       notice, this list of conditions and the following disclaimer in the
- *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the OpenSimulator Project nor the
- *       names of its contributors may be used to endorse or promote products
- *       derived from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE DEVELOPERS ``AS IS'' AND ANY
- * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE CONTRIBUTORS BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+/// <license>
+///     Copyright (c) Contributors, http://opensimulator.org/
+///     See CONTRIBUTORS.TXT for a full list of copyright holders.
+///     For an explanation of the license of each contributor and the content it
+///     covers please see the Licenses directory.
+///
+///     Redistribution and use in source and binary forms, with or without
+///     modification, are permitted provided that the following conditions are met:
+///         * Redistributions of source code must retain the above copyright
+///         notice, this list of conditions and the following disclaimer.
+///         * Redistributions in binary form must reproduce the above copyright
+///         notice, this list of conditions and the following disclaimer in the
+///         documentation and/or other materials provided with the distribution.
+///         * Neither the name of the OpenSimulator Project nor the
+///         names of its contributors may be used to endorse or promote products
+///         derived from this software without specific prior written permission.
+///
+///     THIS SOFTWARE IS PROVIDED BY THE DEVELOPERS ``AS IS'' AND ANY
+///     EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+///     WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+///     DISCLAIMED. IN NO EVENT SHALL THE CONTRIBUTORS BE LIABLE FOR ANY
+///     DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+///     (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+///     LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+///     ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+///     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+///     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+/// </license>
 
 using System;
 using System.Collections;
@@ -32,8 +34,8 @@ using System.Reflection;
 using System.Text;
 using log4net;
 using OpenMetaverse;
-using OpenSim.Framework;
 using OpenSim.Data;
+using OpenSim.Framework;
 
 namespace OpenSim.Data.Null
 {
@@ -47,9 +49,6 @@ namespace OpenSim.Data.Null
 
         public NullUserAccountData(string connectionString, string realm)
         {
-//            m_log.DebugFormat(
-//                "[NULL USER ACCOUNT DATA]: Initializing new NullUserAccountData with connectionString [{0}], realm [{1}]",
-//                connectionString, realm);
         }
 
         /// <summary>
@@ -62,13 +61,6 @@ namespace OpenSim.Data.Null
         /// <returns></returns>
         public UserAccountData[] Get(string[] fields, string[] values)
         {
-//            if (m_log.IsDebugEnabled)
-//            {
-//                m_log.DebugFormat(
-//                    "[NULL USER ACCOUNT DATA]: Called Get with fields [{0}], values [{1}]",
-//                    string.Join(", ", fields), string.Join(", ", values));
-//            }
-
             UserAccountData[] userAccounts = new UserAccountData[0];
 
             List<string> fieldsLst = new List<string>(fields);
@@ -96,16 +88,6 @@ namespace OpenSim.Data.Null
                     userAccounts = new UserAccountData[] { m_DataByEmail[values[i]] };
             }
 
-//            if (m_log.IsDebugEnabled)
-//            {
-//                StringBuilder sb = new StringBuilder();
-//                foreach (UserAccountData uad in userAccounts)
-//                    sb.AppendFormat("({0} {1} {2}) ", uad.FirstName, uad.LastName, uad.PrincipalID);
-//
-//                m_log.DebugFormat(
-//                    "[NULL USER ACCOUNT DATA]: Returning {0} user accounts out of {1}: [{2}]", userAccounts.Length, m_DataByName.Count, sb);
-//            }
-
             return userAccounts;
         }
 
@@ -123,16 +105,11 @@ namespace OpenSim.Data.Null
             if (data.Data.ContainsKey("Email") && data.Data["Email"] != null && data.Data["Email"] != string.Empty)
                 m_DataByEmail[data.Data["Email"]] = data;
 
-//            m_log.DebugFormat("m_DataByUUID count is {0}, m_DataByName count is {1}", m_DataByUUID.Count, m_DataByName.Count);
-
             return true;
         }
 
         public UserAccountData[] GetUsers(UUID scopeID, string query)
         {
-//            m_log.DebugFormat(
-//                "[NULL USER ACCOUNT DATA]: Called GetUsers with scope [{0}], query [{1}]", scopeID, query);
-
             string[] words = query.Split(new char[] { ' ' });
 
             for (int i = 0; i < words.Length; i++)
