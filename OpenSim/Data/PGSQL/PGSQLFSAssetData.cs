@@ -52,7 +52,7 @@ namespace OpenSim.Data.PGSQL
         {
         }
 
-        public void Initialise(string connect, string realm, int UpdateAccessTime)
+        public void Initialize(string connect, string realm, int UpdateAccessTime)
         {
             DaysBetweenAccessTimeUpdates = UpdateAccessTime;
 
@@ -65,7 +65,7 @@ namespace OpenSim.Data.PGSQL
             m_database.CheckMigration(_migrationStore);
         }
 
-        public void Initialise()
+        public void Initialize()
         {
             throw new NotImplementedException();
         }

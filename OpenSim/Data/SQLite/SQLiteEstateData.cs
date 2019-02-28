@@ -64,10 +64,10 @@ namespace OpenSim.Data.SQLite
 
         public SQLiteEstateStore(string connectionString)
         {
-            Initialise(connectionString);
+            Initialize(connectionString);
         }
 
-        public void Initialise(string connectionString)
+        public void Initialize(string connectionString)
         {
             if (Util.IsWindows())
                 Util.LoadArchSpecificWindowsDll("sqlite3.dll");

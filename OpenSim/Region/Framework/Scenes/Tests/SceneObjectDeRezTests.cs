@@ -145,7 +145,7 @@ namespace OpenSim.Region.Framework.Scenes.Tests
             AgentCircuitData acd = SceneHelpers.GenerateAgentData(uaB);
             TestClient clientB = new TestClient(acd, sceneB);
             List<TestClient> childClientsB = new List<TestClient>();
-            EntityTransferHelpers.SetupInformClientOfNeighbourTriggersNeighbourClientCreate(clientB, childClientsB);
+            EntityTransferHelpers.SetupInformClientOfNeighborTriggersNeighborClientCreate(clientB, childClientsB);
 
             SceneHelpers.AddScenePresence(sceneB, clientB, acd);
 

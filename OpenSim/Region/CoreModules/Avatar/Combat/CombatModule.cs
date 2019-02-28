@@ -58,7 +58,7 @@ namespace OpenSim.Region.CoreModules.Avatar.Combat.CombatModule
         /// </summary>
         /// <param name="scene"></param>
         /// <param name="config"></param>
-        public void Initialise(IConfigSource config)
+        public void Initialize(IConfigSource config)
         {
         }
 
@@ -91,7 +91,7 @@ namespace OpenSim.Region.CoreModules.Avatar.Combat.CombatModule
         {
         }
 
-        public void PostInitialise()
+        public void PostInitialize()
         {
         }
 

@@ -183,15 +183,15 @@ namespace OpenSim.Region.ScriptEngine.Yengine
             }
         }
 
-        public void Initialise(IConfigSource config)
+        public void Initialize(IConfigSource config)
         {
             TraceCalls("[YEngine]: Initialize entry");
             m_ConfigSource = config;
 
             ////foreach (IConfig icfg in config.Configs) {
-            ////    m_log.Debug("[YEngine]: Initialise: configs[" + icfg.Name + "]");
+            ////    m_log.Debug("[YEngine]: Initialize: configs[" + icfg.Name + "]");
             ////    foreach (string key in icfg.GetKeys ()) {
-            ////        m_log.Debug("[YEngine]: Initialise:     " + key + "=" + icfg.GetExpanded (key));
+            ////        m_log.Debug("[YEngine]: Initialize:     " + key + "=" + icfg.GetExpanded (key));
             ////    }
             ////}
 

@@ -60,10 +60,10 @@ namespace OpenSim.Services.Connectors
 
         public PresenceServicesConnector(IConfigSource source)
         {
-            Initialise(source);
+            Initialize(source);
         }
 
-        public virtual void Initialise(IConfigSource source)
+        public virtual void Initialize(IConfigSource source)
         {
             IConfig gridConfig = source.Configs["PresenceService"];
             if (gridConfig == null)
@@ -82,7 +82,7 @@ namespace OpenSim.Services.Connectors
             }
             m_ServerURI = serviceURI;
 
-            base.Initialise(source, "PresenceService");
+            base.Initialize(source, "PresenceService");
         }
 
 

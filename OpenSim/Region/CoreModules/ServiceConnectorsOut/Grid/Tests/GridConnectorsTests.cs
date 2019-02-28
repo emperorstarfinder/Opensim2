@@ -146,19 +146,19 @@ namespace OpenSim.Region.CoreModules.ServiceConnectorsOut.Grid.Tests
             Assert.IsNotNull(result, "Retrieved GetRegionByPosition is null");
             Assert.That(result.RegionLocX, Is.EqualTo(1000 * (int)Constants.RegionSize), "Retrieved region's position does not match");
 
-            List<GridRegion> results = m_LocalConnector.GetNeighbours(UUID.Zero, new UUID(1));
-            Assert.IsNotNull(results, "Retrieved neighbours list is null");
-            Assert.That(results.Count, Is.EqualTo(1), "Retrieved neighbour collection is greater than expected");
+            List<GridRegion> results = m_LocalConnector.GetNeighbors(UUID.Zero, new UUID(1));
+            Assert.IsNotNull(results, "Retrieved neighbors list is null");
+            Assert.That(results.Count, Is.EqualTo(1), "Retrieved neighbor collection is greater than expected");
             Assert.That(results[0].RegionID, Is.EqualTo(new UUID(2)), "Retrieved region's UUID does not match");
 
             results = m_LocalConnector.GetRegionsByName(UUID.Zero, "Test", 10);
             Assert.IsNotNull(results, "Retrieved GetRegionsByName collection is null");
-            Assert.That(results.Count, Is.EqualTo(3), "Retrieved neighbour collection is less than expected");
+            Assert.That(results.Count, Is.EqualTo(3), "Retrieved neighbor collection is less than expected");
 
             results = m_LocalConnector.GetRegionRange(UUID.Zero, 900 * (int)Constants.RegionSize, 1002 * (int)Constants.RegionSize,
                 900 * (int)Constants.RegionSize, 1100 * (int)Constants.RegionSize);
             Assert.IsNotNull(results, "Retrieved GetRegionRange collection is null");
-            Assert.That(results.Count, Is.EqualTo(2), "Retrieved neighbour collection is not the number expected");
+            Assert.That(results.Count, Is.EqualTo(2), "Retrieved neighbor collection is not the number expected");
 
             results = m_LocalConnector.GetDefaultRegions(UUID.Zero);
             Assert.IsNotNull(results, "Retrieved GetDefaultRegions collection is null");

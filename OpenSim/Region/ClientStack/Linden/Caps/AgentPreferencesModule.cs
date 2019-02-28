@@ -52,7 +52,7 @@ namespace OpenSim.Region.ClientStack.LindenCaps
 
         private List<Scene> m_scenes = new List<Scene>();
 
-        public void Initialise(IConfigSource source)
+        public void Initialize(IConfigSource source)
         {
 
         }
@@ -79,7 +79,7 @@ namespace OpenSim.Region.ClientStack.LindenCaps
             };
         }
 
-        public void PostInitialise() {}
+        public void PostInitialize() {}
 
         public void Close() {}
 

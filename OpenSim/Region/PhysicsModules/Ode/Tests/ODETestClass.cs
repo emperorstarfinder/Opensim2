@@ -69,14 +69,14 @@ namespace OpenSim.Region.PhysicsModule.ODE.Tests
 
             //IMesher mesher = new OpenSim.Region.PhysicsModule.Meshing.Meshmerizer();
             //INonSharedRegionModule mod = mesher as INonSharedRegionModule;
-            //mod.Initialise(openSimINI);
+            //mod.Initialize(openSimINI);
             //mod.AddRegion(scene);
             //mod.RegionLoaded(scene);
 
             //            pScene = new OdeScene();
             odemodule = new OpenSim.Region.PhysicsModule.ODE.OdeModule();
             Console.WriteLine("HERE " + (odemodule == null ? "Null" : "Not null"));
-            odemodule.Initialise(openSimINI);
+            odemodule.Initialize(openSimINI);
             odemodule.AddRegion(scene);
             odemodule.RegionLoaded(scene);
 
@@ -85,7 +85,7 @@ namespace OpenSim.Region.PhysicsModule.ODE.Tests
             // Getting Physics Scene
             //ps = cbt.GetScene("test");
             // Initializing Physics Scene.
-            //ps.Initialise(imp.GetMesher(TopConfig), null, Vector3.Zero);
+            //ps.Initialize(imp.GetMesher(TopConfig), null, Vector3.Zero);
             float[] _heightmap = new float[(int)Constants.RegionSize * (int)Constants.RegionSize];
             for (int i = 0; i < ((int)Constants.RegionSize * (int)Constants.RegionSize); i++)
             {

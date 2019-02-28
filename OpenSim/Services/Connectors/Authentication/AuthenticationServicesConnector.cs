@@ -59,10 +59,10 @@ namespace OpenSim.Services.Connectors
         public AuthenticationServicesConnector(IConfigSource source)
             : base(source, "AuthenticationService")
         {
-            Initialise(source);
+            Initialize(source);
         }
 
-        public virtual void Initialise(IConfigSource source)
+        public virtual void Initialize(IConfigSource source)
         {
             IConfig assetConfig = source.Configs["AuthenticationService"];
             if (assetConfig == null)
@@ -81,7 +81,7 @@ namespace OpenSim.Services.Connectors
             }
             m_ServerURI = serviceURI;
 
-            base.Initialise(source, "AuthenticationService");
+            base.Initialize(source, "AuthenticationService");
         }
 
         public string Authenticate(UUID principalID, string password, int lifetime, out UUID realID)

@@ -71,7 +71,7 @@ namespace OpenSim.Region.PhysicsModule.BasicPhysics
             get { return null; }
         }
 
-        public void Initialise(IConfigSource source)
+        public void Initialize(IConfigSource source)
         {
             // TODO: Move this out of Startup
             IConfig config = source.Configs["Startup"];
@@ -99,8 +99,8 @@ namespace OpenSim.Region.PhysicsModule.BasicPhysics
 
             scene.RegisterModuleInterface<PhysicsScene>(this);
             m_regionExtent = new Vector3(scene.RegionInfo.RegionSizeX, scene.RegionInfo.RegionSizeY, scene.RegionInfo.RegionSizeZ);
-            base.Initialise(scene.PhysicsRequestAsset,
-                (scene.Heightmap != null ? scene.Heightmap.GetFloatsSerialised() : new float[scene.RegionInfo.RegionSizeX * scene.RegionInfo.RegionSizeY]),
+            base.Initialize(scene.PhysicsRequestAsset,
+                (scene.Heightmap != null ? scene.Heightmap.GetFloatsSerialized() : new float[scene.RegionInfo.RegionSizeX * scene.RegionInfo.RegionSizeY]),
                 (float)scene.RegionInfo.RegionSettings.WaterHeight);
 
         }

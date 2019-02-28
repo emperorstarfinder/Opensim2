@@ -44,14 +44,14 @@ using Nini.Config;
 using log4net;
 
 
-namespace OpenSim.Server.Handlers.Neighbour
+namespace OpenSim.Server.Handlers.Neighbor
 {
-    public class NeighbourGetHandler : BaseStreamHandler
+    public class NeighborGetHandler : BaseStreamHandler
     {
         // TODO: unused: private ISimulationService m_SimulationService;
         // TODO: unused: private IAuthenticationService m_AuthenticationService;
 
-        public NeighbourGetHandler(INeighbourService service, IAuthenticationService authentication) :
+        public NeighborGetHandler(INeighborService service, IAuthenticationService authentication) :
                 base("GET", "/region")
         {
             // TODO: unused: m_SimulationService = service;
@@ -68,17 +68,17 @@ namespace OpenSim.Server.Handlers.Neighbour
         }
     }
 
-    public class NeighbourPostHandler : BaseStreamHandler
+    public class NeighborPostHandler : BaseStreamHandler
     {
         private static readonly ILog m_log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
-        private INeighbourService m_NeighbourService;
+        private INeighborService m_NeighborService;
         private IAuthenticationService m_AuthenticationService;
         // TODO: unused: private bool m_AllowForeignGuests;
 
-        public NeighbourPostHandler(INeighbourService service, IAuthenticationService authentication) :
+        public NeighborPostHandler(INeighborService service, IAuthenticationService authentication) :
             base("POST", "/region")
         {
-            m_NeighbourService = service;
+            m_NeighborService = service;
             m_AuthenticationService = authentication;
             // TODO: unused: m_AllowForeignGuests = foreignGuests;
         }
@@ -93,9 +93,9 @@ namespace OpenSim.Server.Handlers.Neighbour
             ulong regionHandle;
             if (RestHandlerUtils.GetParams(path, out regionID, out regionHandle, out action))
             {
-                m_log.InfoFormat("[RegionPostHandler]: Invalid parameters for neighbour message {0}", path);
+                m_log.InfoFormat("[RegionPostHandler]: Invalid parameters for neighbor message {0}", path);
                 httpResponse.StatusCode = (int)HttpStatusCode.BadRequest;
-                httpResponse.StatusDescription = "Invalid parameters for neighbour message " + path;
+                httpResponse.StatusDescription = "Invalid parameters for neighbor message " + path;
 
                 return result;
             }
@@ -107,14 +107,14 @@ namespace OpenSim.Server.Handlers.Neighbour
                 string authToken = string.Empty;
                 if (!RestHandlerUtils.GetAuthentication(httpRequest, out authority, out authToken))
                 {
-                    m_log.InfoFormat("[RegionPostHandler]: Authentication failed for neighbour message {0}", path);
+                    m_log.InfoFormat("[RegionPostHandler]: Authentication failed for neighbor message {0}", path);
                     httpResponse.StatusCode = (int)HttpStatusCode.Unauthorized;
                     return result;
                 }
                 // TODO: Rethink this
                 //if (!m_AuthenticationService.VerifyKey(regionID, authToken))
                 //{
-                //    m_log.InfoFormat("[RegionPostHandler]: Authentication failed for neighbour message {0}", path);
+                //    m_log.InfoFormat("[RegionPostHandler]: Authentication failed for neighbor message {0}", path);
                 //    httpResponse.StatusCode = (int)HttpStatusCode.Forbidden;
                 //    return result;
                 //}
@@ -149,7 +149,7 @@ namespace OpenSim.Server.Handlers.Neighbour
             }
 
             // Finally!
-            GridRegion thisRegion = m_NeighbourService.HelloNeighbour(regionhandle, aRegion);
+            GridRegion thisRegion = m_NeighborService.HelloNeighbor(regionhandle, aRegion);
 
             OSDMap resp = new OSDMap(1);
 
@@ -164,12 +164,12 @@ namespace OpenSim.Server.Handlers.Neighbour
         }
     }
 
-    public class NeighbourPutHandler : BaseStreamHandler
+    public class NeighborPutHandler : BaseStreamHandler
     {
         // TODO: unused: private ISimulationService m_SimulationService;
         // TODO: unused: private IAuthenticationService m_AuthenticationService;
 
-        public NeighbourPutHandler(INeighbourService service, IAuthenticationService authentication) :
+        public NeighborPutHandler(INeighborService service, IAuthenticationService authentication) :
             base("PUT", "/region")
         {
             // TODO: unused: m_SimulationService = service;
@@ -185,12 +185,12 @@ namespace OpenSim.Server.Handlers.Neighbour
         }
     }
 
-    public class NeighbourDeleteHandler : BaseStreamHandler
+    public class NeighborDeleteHandler : BaseStreamHandler
     {
         // TODO: unused: private ISimulationService m_SimulationService;
         // TODO: unused: private IAuthenticationService m_AuthenticationService;
 
-        public NeighbourDeleteHandler(INeighbourService service, IAuthenticationService authentication) :
+        public NeighborDeleteHandler(INeighborService service, IAuthenticationService authentication) :
             base("DELETE", "/region")
         {
             // TODO: unused: m_SimulationService = service;

@@ -65,11 +65,11 @@ namespace OpenSim.Framework.Capabilities
                 return new byte[0];
 
             TRequest llsdRequest = new TRequest();
-            LLSDHelpers.DeserialiseOSDMap(hash, llsdRequest);
+            LLSDHelpers.DeserializeOSDMap(hash, llsdRequest);
 
             TResponse response = m_method(llsdRequest);
 
-            return Util.UTF8NoBomEncoding.GetBytes(LLSDHelpers.SerialiseLLSDReply(response));
+            return Util.UTF8NoBomEncoding.GetBytes(LLSDHelpers.SerializeLLSDReply(response));
         }
     }
 }

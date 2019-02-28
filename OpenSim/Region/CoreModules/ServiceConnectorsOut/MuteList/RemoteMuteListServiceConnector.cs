@@ -62,7 +62,7 @@ namespace OpenSim.Region.CoreModules.ServiceConnectorsOut.MuteList
             get { return "RemoteMuteListServicesConnector"; }
         }
 
-        public void Initialise(IConfigSource source)
+        public void Initialize(IConfigSource source)
         {
            // only active for core mute lists module
             IConfig moduleConfig = source.Configs["Messaging"];
@@ -84,7 +84,7 @@ namespace OpenSim.Region.CoreModules.ServiceConnectorsOut.MuteList
             }
         }
 
-        public void PostInitialise()
+        public void PostInitialize()
         {
         }
 

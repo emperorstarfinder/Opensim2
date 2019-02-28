@@ -123,7 +123,7 @@ namespace OpenSim.Region.Framework.Scenes
         // This one dimensional version is ordered so height = map[y*sizeX+x];
         // DEPRECATED: don't use this function as it does not retain the dimensions of the terrain
         //     and the caller will probably do the wrong thing if the terrain is not the legacy 256x256.
-        public float[] GetFloatsSerialised()
+        public float[] GetFloatsSerialized()
         {
             return m_terrainData.GetFloatsSerialized();
         }
@@ -465,7 +465,7 @@ namespace OpenSim.Region.Framework.Scenes
         // Write legacy terrain map. Presumed to be 256x256 of data encoded as floats in a byte array.
         private void ToXml(XmlWriter xmlWriter)
         {
-            float[] mapData = GetFloatsSerialised();
+            float[] mapData = GetFloatsSerialized();
             byte[] buffer = new byte[mapData.Length * 4];
             for (int i = 0; i < mapData.Length; i++)
             {

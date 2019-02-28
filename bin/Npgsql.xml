@@ -11,7 +11,7 @@
             are treated as multi-dimensional arrays (in much the same manner as an array of arrays
             is used to emulate multi-dimensional arrays in languages that lack native support for them).
             If such an enumeration of enumerations is "jagged" (as opposed to rectangular, cuboid,
-            hypercuboid, hyperhypercuboid, etc) then this class will "correctly" serialise it, but pg
+            hypercuboid, hyperhypercuboid, etc) then this class will "correctly" serialize it, but pg
             will raise an error as it doesn't allow jagged arrays.
             </summary>
         </member>
@@ -19,11 +19,11 @@
             <summary>
             Create an ArrayNativeToBackendTypeConverter with the element converter passed
             </summary>
-            <param name="elementConverter">The <see cref="T:NpgsqlTypes.NpgsqlNativeTypeInfo"/> that would be used to serialise the element type.</param>
+            <param name="elementConverter">The <see cref="T:NpgsqlTypes.NpgsqlNativeTypeInfo"/> that would be used to serialize the element type.</param>
         </member>
         <member name="M:NpgsqlTypes.ArrayNativeToBackendTypeConverter.ArrayToArrayText(NpgsqlTypes.NpgsqlNativeTypeInfo,System.Object,System.Boolean,NpgsqlTypes.NativeToBackendTypeConverterOptions,System.Boolean)">
             <summary>
-            Serialise the enumeration or array.
+            Serialize the enumeration or array.
             </summary>
         </member>
         <member name="M:NpgsqlTypes.ArrayNativeToBackendTypeConverter.ArrayToArrayBinary(NpgsqlTypes.NpgsqlNativeTypeInfo,System.Object,NpgsqlTypes.NativeToBackendTypeConverterOptions)">

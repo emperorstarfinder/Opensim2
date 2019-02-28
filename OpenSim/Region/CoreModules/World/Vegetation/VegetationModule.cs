@@ -47,7 +47,7 @@ namespace OpenSim.Region.CoreModules.World.Vegetation
         protected static readonly PCode[] creationCapabilities = new PCode[] { PCode.Grass, PCode.NewTree, PCode.Tree };
         public PCode[] CreationCapabilities { get { return creationCapabilities; } }
 
-        public void Initialise(IConfigSource source)
+        public void Initialize(IConfigSource source)
         {
         }
 

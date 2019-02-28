@@ -223,7 +223,7 @@ namespace OpenSim.Region.PhysicsModule.BulletS
             get { return null; }
         }
 
-        public void Initialise(IConfigSource source)
+        public void Initialize(IConfigSource source)
         {
             // TODO: Move this out of Startup
             IConfig config = source.Configs["Startup"];
@@ -255,10 +255,10 @@ namespace OpenSim.Region.PhysicsModule.BulletS
 
             scene.RegisterModuleInterface<PhysicsScene>(this);
             Vector3 extent = new Vector3(scene.RegionInfo.RegionSizeX, scene.RegionInfo.RegionSizeY, scene.RegionInfo.RegionSizeZ);
-            Initialise(m_Config, extent);
+            Initialize(m_Config, extent);
 
-            base.Initialise(scene.PhysicsRequestAsset,
-                (scene.Heightmap != null ? scene.Heightmap.GetFloatsSerialised() : new float[scene.RegionInfo.RegionSizeX * scene.RegionInfo.RegionSizeY]),
+            base.Initialize(scene.PhysicsRequestAsset,
+                (scene.Heightmap != null ? scene.Heightmap.GetFloatsSerialized() : new float[scene.RegionInfo.RegionSizeX * scene.RegionInfo.RegionSizeY]),
                 (float)scene.RegionInfo.RegionSettings.WaterHeight);
 
         }
@@ -284,7 +284,7 @@ namespace OpenSim.Region.PhysicsModule.BulletS
 
         #region Initialization
 
-        private void Initialise(IConfigSource config, Vector3 regionExtent)
+        private void Initialize(IConfigSource config, Vector3 regionExtent)
         {
             _taintOperations = new List<TaintCallbackEntry>();
             _postTaintOperations = new Dictionary<string, TaintCallbackEntry>();

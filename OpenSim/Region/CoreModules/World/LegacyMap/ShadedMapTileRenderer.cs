@@ -45,7 +45,7 @@ namespace OpenSim.Region.CoreModules.World.LegacyMap
         private IConfigSource m_config;
         private Color m_color_water;
 
-        public void Initialise(Scene scene, IConfigSource config)
+        public void Initialize(Scene scene, IConfigSource config)
         {
             m_scene = scene;
             m_config = config;

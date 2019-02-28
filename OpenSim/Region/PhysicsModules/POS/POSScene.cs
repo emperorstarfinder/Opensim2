@@ -64,7 +64,7 @@ namespace OpenSim.Region.PhysicsModule.POS
             get { return null; }
         }
 
-        public void Initialise(IConfigSource source)
+        public void Initialize(IConfigSource source)
         {
             // TODO: Move this out of Startup
             IConfig config = source.Configs["Startup"];
@@ -91,8 +91,8 @@ namespace OpenSim.Region.PhysicsModule.POS
             EngineName = Name + " " + Version;
 
             scene.RegisterModuleInterface<PhysicsScene>(this);
-            base.Initialise(scene.PhysicsRequestAsset,
-                (scene.Heightmap != null ? scene.Heightmap.GetFloatsSerialised() : new float[Constants.RegionSize * Constants.RegionSize]),
+            base.Initialize(scene.PhysicsRequestAsset,
+                (scene.Heightmap != null ? scene.Heightmap.GetFloatsSerialized() : new float[Constants.RegionSize * Constants.RegionSize]),
                 (float)scene.RegionInfo.RegionSettings.WaterHeight);
 
         }

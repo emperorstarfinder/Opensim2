@@ -60,7 +60,7 @@ namespace OpenSim.Tests.Common
         /// </remarks>
         public event Action<UUID, EventParams> PostEventHook;
 
-        public void Initialise(IConfigSource source)
+        public void Initialize(IConfigSource source)
         {
             ConfigSource = source;
 

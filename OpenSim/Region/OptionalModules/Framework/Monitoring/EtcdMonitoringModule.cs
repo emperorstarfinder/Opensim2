@@ -69,7 +69,7 @@ namespace OpenSim.Region.OptionalModules.Framework.Monitoring
             get { return null; }
         }
 
-        public void Initialise(IConfigSource source)
+        public void Initialize(IConfigSource source)
         {
             if (source.Configs["Etcd"] == null)
                 return;

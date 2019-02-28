@@ -60,10 +60,10 @@ namespace OpenSim.Services.Connectors.Friends
 
         public FriendsServicesConnector(IConfigSource source)
         {
-            Initialise(source);
+            Initialize(source);
         }
 
-        public virtual void Initialise(IConfigSource source)
+        public virtual void Initialize(IConfigSource source)
         {
             IConfig gridConfig = source.Configs["FriendsService"];
             if (gridConfig == null)
@@ -81,7 +81,7 @@ namespace OpenSim.Services.Connectors.Friends
                 throw new Exception("Friends connector init error");
             }
             m_ServerURI = serviceURI;
-            base.Initialise(source, "FriendsService");
+            base.Initialize(source, "FriendsService");
         }
 
 
@@ -128,7 +128,7 @@ namespace OpenSim.Services.Connectors.Friends
 
                         List<FriendInfo> finfos = new List<FriendInfo>();
                         Dictionary<string, object>.ValueCollection finfosList = replyData.Values;
-                        //m_log.DebugFormat("[FRIENDS SERVICE CONNECTOR]: get neighbours returned {0} elements", rinfosList.Count);
+                        //m_log.DebugFormat("[FRIENDS SERVICE CONNECTOR]: get neighbors returned {0} elements", rinfosList.Count);
                         foreach (object f in finfosList)
                         {
                             if (f is Dictionary<string, object>)

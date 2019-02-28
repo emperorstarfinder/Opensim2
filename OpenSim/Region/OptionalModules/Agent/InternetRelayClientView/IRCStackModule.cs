@@ -50,7 +50,7 @@ namespace OpenSim.Region.OptionalModules.Agent.InternetRelayClientView
 
         #region Implementation of INonSharedRegionModule
 
-        public void Initialise(IConfigSource source)
+        public void Initialize(IConfigSource source)
         {
             if (null != source.Configs["IRCd"] &&
                 source.Configs["IRCd"].GetBoolean("Enabled", false))

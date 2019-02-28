@@ -55,7 +55,7 @@ namespace OpenSim.Region.CoreModules.World
         private object cloudlock = new object();
 
 
-        public void Initialise(IConfigSource config)
+        public void Initialize(IConfigSource config)
         {
             IConfig cloudConfig = config.Configs["Cloud"];
 
@@ -107,7 +107,7 @@ namespace OpenSim.Region.CoreModules.World
         {
         }
 
-        public void PostInitialise()
+        public void PostInitialize()
         {
         }
 

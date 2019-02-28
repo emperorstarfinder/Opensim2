@@ -78,7 +78,7 @@ namespace OpenSim.Region.PhysicsModule.BulletS
 
         public string Name { get { return this.GetType().Name; } }
 
-        public void Initialise(IConfigSource config)
+        public void Initialize(IConfigSource config)
         {
             BaseScene = null;
             Enabled = false;

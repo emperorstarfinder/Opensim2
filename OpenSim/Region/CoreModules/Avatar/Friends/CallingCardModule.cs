@@ -47,7 +47,7 @@ namespace OpenSim.Region.CoreModules.Avatar.Friends
         protected List<Scene> m_Scenes = new List<Scene>();
         protected bool m_Enabled = true;
 
-        public void Initialise(IConfigSource source)
+        public void Initialize(IConfigSource source)
         {
             IConfig ccConfig = source.Configs["XCallingCard"];
             if (ccConfig != null)
@@ -85,7 +85,7 @@ namespace OpenSim.Region.CoreModules.Avatar.Friends
             scene.EventManager.OnNewClient += OnNewClient;
         }
 
-        public void PostInitialise()
+        public void PostInitialize()
         {
         }
 

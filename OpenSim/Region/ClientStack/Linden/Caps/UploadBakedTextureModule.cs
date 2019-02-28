@@ -66,7 +66,7 @@ namespace OpenSim.Region.ClientStack.Linden
 
         private string m_URL;
 
-        public void Initialise(IConfigSource source)
+        public void Initialize(IConfigSource source)
         {
             IConfig config = source.Configs["ClientStack.LindenCaps"];
             if (config == null)
@@ -105,7 +105,7 @@ namespace OpenSim.Region.ClientStack.Linden
         {
         }
 
-        public void PostInitialise()
+        public void PostInitialize()
         {
         }
 

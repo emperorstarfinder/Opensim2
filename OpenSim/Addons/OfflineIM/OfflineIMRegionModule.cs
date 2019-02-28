@@ -52,7 +52,7 @@ namespace OpenSim.OfflineIM
 
         private IOfflineIMService m_OfflineIMService;
 
-        public void Initialise(IConfigSource config)
+        public void Initialize(IConfigSource config)
         {
             IConfig cnf = config.Configs["Messaging"];
             if (cnf == null)
@@ -117,7 +117,7 @@ namespace OpenSim.OfflineIM
             });
         }
 
-        public void PostInitialise()
+        public void PostInitialize()
         {
         }
 

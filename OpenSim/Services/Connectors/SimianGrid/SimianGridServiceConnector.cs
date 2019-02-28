@@ -71,7 +71,7 @@ namespace OpenSim.Services.Connectors.SimianGrid
             CommonInit(source);
         }
 
-        public void Initialise(IConfigSource source)
+        public void Initialize(IConfigSource source)
         {
             CommonInit(source);
         }
@@ -165,7 +165,7 @@ namespace OpenSim.Services.Connectors.SimianGrid
             return success;
         }
 
-        public List<GridRegion> GetNeighbours(UUID scopeID, UUID regionID)
+        public List<GridRegion> GetNeighbors(UUID scopeID, UUID regionID)
         {
             GridRegion region = GetRegionByUUID(scopeID, regionID);
 

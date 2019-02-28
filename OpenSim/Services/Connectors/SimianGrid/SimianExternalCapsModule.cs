@@ -63,7 +63,7 @@ namespace OpenSim.Services.Connectors.SimianGrid
             get { return this.GetType().Name; }
         }
 
-        public void Initialise(IConfigSource config)
+        public void Initialize(IConfigSource config)
         {
             try
             {
@@ -93,7 +93,7 @@ namespace OpenSim.Services.Connectors.SimianGrid
             }
         }
 
-        public void PostInitialise() { }
+        public void PostInitialize() { }
         public void Close() { }
 
         public void AddRegion(Scene scene)

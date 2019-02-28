@@ -67,7 +67,7 @@ namespace OpenSim.Region.CoreModules.Avatar.InstantMessage
             }
         }
 
-        public virtual void Initialise(IConfigSource config)
+        public virtual void Initialize(IConfigSource config)
         {
             IConfig cnf = config.Configs["Messaging"];
             if (cnf != null)
@@ -97,7 +97,7 @@ namespace OpenSim.Region.CoreModules.Avatar.InstantMessage
             }
         }
 
-        public virtual void PostInitialise()
+        public virtual void PostInitialize()
         {
             if (!m_Enabled)
                 return;

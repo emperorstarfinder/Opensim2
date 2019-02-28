@@ -68,7 +68,7 @@ namespace OpenSim.Region.OptionalModules.Scripting.RegionReady
             get { return null; }
         }
 
-        public void Initialise(IConfigSource config)
+        public void Initialize(IConfigSource config)
         {
             m_config = config.Configs["RegionReady"];
             if (m_config != null)
@@ -236,7 +236,7 @@ namespace OpenSim.Region.OptionalModules.Scripting.RegionReady
             }
 
             m_scene.SceneGridService.InformNeighborsThatRegionisUp(
-                m_scene.RequestModuleInterface<INeighbourService>(), m_scene.RegionInfo);
+                m_scene.RequestModuleInterface<INeighborService>(), m_scene.RegionInfo);
 
             if (m_uri != string.Empty)
             {

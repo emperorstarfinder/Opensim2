@@ -59,7 +59,7 @@ namespace OpenSim.Region.CoreModules.ServiceConnectorsOut.Presence.Tests
             config.Configs["PresenceService"].Set("StorageProvider", "OpenSim.Data.Null.dll");
 
             m_LocalConnector = new LocalPresenceServicesConnector();
-            m_LocalConnector.Initialise(config);
+            m_LocalConnector.Initialize(config);
 
             // Let's stick in a test presence
             m_LocalConnector.m_PresenceService.LoginAgent(UUID.Zero.ToString(), UUID.Zero, UUID.Zero);

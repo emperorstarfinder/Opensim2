@@ -65,7 +65,7 @@ namespace OpenSim.Region.CoreModules.ServiceConnectorsOut.Grid
 
         public RemoteGridServicesConnector(IConfigSource source)
         {
-            InitialiseServices(source);
+            InitializeServices(source);
         }
 
         #region ISharedRegionmodule
@@ -80,7 +80,7 @@ namespace OpenSim.Region.CoreModules.ServiceConnectorsOut.Grid
             get { return "RemoteGridServicesConnector"; }
         }
 
-        public void Initialise(IConfigSource source)
+        public void Initialize(IConfigSource source)
         {
             IConfig moduleConfig = source.Configs["Modules"];
             if (moduleConfig != null)
@@ -88,7 +88,7 @@ namespace OpenSim.Region.CoreModules.ServiceConnectorsOut.Grid
                 string name = moduleConfig.GetString("GridServices", "");
                 if (name == Name)
                 {
-                    if(InitialiseServices(source))
+                    if(InitializeServices(source))
                     {
                         m_Enabled = true;
                         m_log.Info("[REMOTE GRID CONNECTOR]: Remote grid enabled");
@@ -97,7 +97,7 @@ namespace OpenSim.Region.CoreModules.ServiceConnectorsOut.Grid
             }
         }
 
-        private bool InitialiseServices(IConfigSource source)
+        private bool InitializeServices(IConfigSource source)
         {
             IConfig gridConfig = source.Configs["GridService"];
             if (gridConfig == null)
@@ -136,10 +136,10 @@ namespace OpenSim.Region.CoreModules.ServiceConnectorsOut.Grid
             return true;
         }
 
-        public void PostInitialise()
+        public void PostInitialize()
         {
             if (m_Enabled)
-                ((ISharedRegionModule)m_LocalGridService).PostInitialise();
+                ((ISharedRegionModule)m_LocalGridService).PostInitialize();
         }
 
         public void Close()
@@ -187,9 +187,9 @@ namespace OpenSim.Region.CoreModules.ServiceConnectorsOut.Grid
             return false;
         }
 
-        public List<GridRegion> GetNeighbours(UUID scopeID, UUID regionID)
+        public List<GridRegion> GetNeighbors(UUID scopeID, UUID regionID)
         {
-            return m_RemoteGridService.GetNeighbours(scopeID, regionID);
+            return m_RemoteGridService.GetNeighbors(scopeID, regionID);
         }
 
         public GridRegion GetRegionByUUID(UUID scopeID, UUID regionID)

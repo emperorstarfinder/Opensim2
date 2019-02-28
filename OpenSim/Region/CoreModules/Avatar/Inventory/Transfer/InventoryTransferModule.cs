@@ -53,7 +53,7 @@ namespace OpenSim.Region.CoreModules.Avatar.Inventory.Transfer
 
         #region Region Module interface
 
-        public void Initialise(IConfigSource config)
+        public void Initialize(IConfigSource config)
         {
             if (config.Configs["Messaging"] != null)
             {
@@ -106,7 +106,7 @@ namespace OpenSim.Region.CoreModules.Avatar.Inventory.Transfer
             m_Scenelist.Remove(scene);
         }
 
-        public void PostInitialise()
+        public void PostInitialize()
         {
         }
 

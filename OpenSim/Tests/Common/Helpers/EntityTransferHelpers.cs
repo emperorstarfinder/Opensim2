@@ -51,46 +51,46 @@ namespace OpenSim.Tests.Common
         private static readonly ILog m_log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         /// <summary>
-        /// Set up correct handling of the InformClientOfNeighbour call from the source region that triggers the
+        /// Set up correct handling of the InformClientOfNeighbor call from the source region that triggers the
         /// viewer to setup a connection with the destination region.
         /// </summary>
         /// <param name='tc'></param>
-        /// <param name='neighbourTcs'>
+        /// <param name='neighborTcs'>
         /// A list that will be populated with any TestClients set up in response to
         /// being informed about a destination region.
         /// </param>
-        public static void SetupInformClientOfNeighbourTriggersNeighbourClientCreate(
-            TestClient tc, List<TestClient> neighbourTcs)
+        public static void SetupInformClientOfNeighborTriggersNeighborClientCreate(
+            TestClient tc, List<TestClient> neighborTcs)
         {
-            // XXX: Confusingly, this is also used for non-neighbour notification (as in teleports that do not use the
+            // XXX: Confusingly, this is also used for non-neighbor notification (as in teleports that do not use the
             // event queue).
 
-            tc.OnTestClientInformClientOfNeighbour += (neighbourHandle, neighbourExternalEndPoint) =>
+            tc.OnTestClientInformClientOfNeighbor += (neighborHandle, neighborExternalEndPoint) =>
             {
                 uint x, y;
-                Util.RegionHandleToRegionLoc(neighbourHandle, out x, out y);
+                Util.RegionHandleToRegionLoc(neighborHandle, out x, out y);
 
                 m_log.DebugFormat(
-                    "[TEST CLIENT]: Processing inform client of neighbour located at {0},{1} at {2}",
-                    x, y, neighbourExternalEndPoint);
+                    "[TEST CLIENT]: Processing inform client of neighbor located at {0},{1} at {2}",
+                    x, y, neighborExternalEndPoint);
 
                 AgentCircuitData newAgent = tc.RequestClientInfo();
 
-                Scene neighbourScene;
-                SceneManager.Instance.TryGetScene(x, y, out neighbourScene);
+                Scene neighborScene;
+                SceneManager.Instance.TryGetScene(x, y, out neighborScene);
 
-                TestClient neighbourTc = new TestClient(newAgent, neighbourScene);
-                neighbourTcs.Add(neighbourTc);
-                neighbourScene.AddNewAgent(neighbourTc, PresenceType.User);
+                TestClient neighborTc = new TestClient(newAgent, neighborScene);
+                neighborTcs.Add(neighborTc);
+                neighborScene.AddNewAgent(neighborTc, PresenceType.User);
             };
         }
 
         /// <summary>
-        /// Set up correct handling of the InformClientOfNeighbour call from the source region that triggers the
+        /// Set up correct handling of the InformClientOfNeighbor call from the source region that triggers the
         /// viewer to setup a connection with the destination region.
         /// </summary>
         /// <param name='tc'></param>
-        /// <param name='neighbourTcs'>
+        /// <param name='neighborTcs'>
         /// A list that will be populated with any TestClients set up in response to
         /// being informed about a destination region.
         /// </param>

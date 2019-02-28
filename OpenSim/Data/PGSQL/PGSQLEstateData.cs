@@ -57,7 +57,7 @@ namespace OpenSim.Data.PGSQL
 
         public PGSQLEstateStore(string connectionString)
         {
-            Initialise(connectionString);
+            Initialize(connectionString);
         }
 
         protected virtual Assembly Assembly
@@ -66,10 +66,10 @@ namespace OpenSim.Data.PGSQL
         }
 
         /// <summary>
-        /// Initialises the estatedata class.
+        /// Initializes the estatedata class.
         /// </summary>
         /// <param name="connectionString">connectionString.</param>
-        public void Initialise(string connectionString)
+        public void Initialize(string connectionString)
         {
             if (!string.IsNullOrEmpty(connectionString))
             {

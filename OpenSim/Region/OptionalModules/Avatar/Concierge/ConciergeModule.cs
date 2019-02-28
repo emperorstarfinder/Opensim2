@@ -75,7 +75,7 @@ namespace OpenSim.Region.OptionalModules.Avatar.Concierge
         internal new bool m_enabled = false;
 
         #region ISharedRegionModule Members
-        public override void Initialise(IConfigSource configSource)
+        public override void Initialize(IConfigSource configSource)
         {
             IConfig config = configSource.Configs["Concierge"];
 
@@ -199,7 +199,7 @@ namespace OpenSim.Region.OptionalModules.Avatar.Concierge
             m_log.InfoFormat("[Concierge]: removed {0}", scene.RegionInfo.RegionName);
         }
 
-        public override void PostInitialise()
+        public override void PostInitialize()
         {
         }
 

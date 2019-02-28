@@ -144,7 +144,7 @@ namespace OpenSim.Region.OptionalModules.World.AutoBackup
         /// Called once in the lifetime of the module at startup.
         /// </summary>
         /// <param name="source">The input config source for OpenSim.ini.</param>
-        public void Initialise(IConfigSource source)
+        public void Initialize(IConfigSource source)
         {
             // Determine if we have been enabled at all in OpenSim.ini -- this is part and parcel of being an optional module
             m_configSource = source;
@@ -258,7 +258,7 @@ namespace OpenSim.Region.OptionalModules.World.AutoBackup
         /// <summary>
         /// Currently a no-op.
         /// </summary>
-        public void PostInitialise()
+        public void PostInitialize()
         {
         }
 

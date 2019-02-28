@@ -39,7 +39,7 @@ namespace OpenSim.Framework.Capabilities
 //        private static readonly log4net.ILog m_log
 //            = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-        public static string SerialiseLLSDReply(object obj)
+        public static string SerializeLLSDReply(object obj)
         {
             using(StringWriter sw = new StringWriter())
             using(XmlTextWriter writer = new XmlTextWriter(sw))
@@ -55,7 +55,7 @@ namespace OpenSim.Framework.Capabilities
             }
         }
 
-        public static string SerialiseLLSDReplyNoHeader(object obj)
+        public static string SerializeLLSDReplyNoHeader(object obj)
         {
             using(StringWriter sw = new StringWriter())
             using(XmlTextWriter writer = new XmlTextWriter(sw))
@@ -141,7 +141,7 @@ namespace OpenSim.Framework.Capabilities
             }
         }
 
-        public static object DeserialiseOSDMap(Hashtable llsd, object obj)
+        public static object DeserializeOSDMap(Hashtable llsd, object obj)
         {
             Type myType = obj.GetType();
             LLSDType[] llsdattributes = (LLSDType[]) myType.GetCustomAttributes(typeof (LLSDType), false);
@@ -162,16 +162,16 @@ namespace OpenSim.Framework.Capabilities
                                 if (enumerator.Value is Hashtable)
                                 {
                                     object fieldValue = field.GetValue(obj);
-                                    DeserialiseOSDMap((Hashtable) enumerator.Value, fieldValue);
-                                    //  DeserialiseOSDMap((OpenMetaverse.StructuredData.OSDMap) enumerator.Value, fieldValue);
+                                    DeserializeOSDMap((Hashtable) enumerator.Value, fieldValue);
+                                    //  DeserializeOSDMap((OpenMetaverse.StructuredData.OSDMap) enumerator.Value, fieldValue);
                                 }
                                 else if (enumerator.Value is ArrayList)
                                 {
                                     object fieldValue = field.GetValue(obj);
                                     fieldValue.GetType().GetField("Array").SetValue(fieldValue, enumerator.Value);
                                     //TODO
-                                    // the LLSD map/array types in the array need to be deserialised
-                                    // but first we need to know the right class to deserialise them into.
+                                    // the LLSD map/array types in the array need to be deserialized
+                                    // but first we need to know the right class to deserialize them into.
                                 }
                                 else if(enumerator.Value is Boolean && field.FieldType == typeof(int) )
                                 {

@@ -137,7 +137,7 @@ namespace OpenSim.Region.CoreModules.World.Land
             get { return null; }
         }
 
-        public void Initialise(IConfigSource source)
+        public void Initialize(IConfigSource source)
         {
             shouldLimitParcelLayerInfoToViewDistance = true;
             parcelLayerViewDistance = 128;
@@ -1875,7 +1875,7 @@ namespace OpenSim.Region.CoreModules.World.Land
             if (!m_scene.TryGetClient(agentID, out client))
             {
                 m_log.WarnFormat("[LAND MANAGEMENT MODULE]: Unable to retrieve IClientAPI for {0}", agentID);
-                return LLSDHelpers.SerialiseLLSDReply(new LLSDEmpty());
+                return LLSDHelpers.SerializeLLSDReply(new LLSDEmpty());
             }
 
             ParcelPropertiesUpdateMessage properties = new ParcelPropertiesUpdateMessage();

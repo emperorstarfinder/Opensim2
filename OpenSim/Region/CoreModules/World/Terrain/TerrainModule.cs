@@ -208,11 +208,11 @@ namespace OpenSim.Region.CoreModules.World.Terrain
         #region INonSharedRegionModule Members
 
         /// <summary>
-        /// Creates and initialises a terrain module for a region
+        /// Creates and initializes a terrain module for a region
         /// </summary>
         /// <param name="scene">Region initialising</param>
         /// <param name="config">Config for the region</param>
-        public void Initialise(IConfigSource config)
+        public void Initialize(IConfigSource config)
         {
             IConfig terrainConfig = config.Configs["Terrain"];
             if (terrainConfig != null)
@@ -885,7 +885,7 @@ namespace OpenSim.Region.CoreModules.World.Terrain
             if (m_tainted)
             {
                 m_tainted = false;
-                m_scene.PhysicsScene.SetTerrain(m_channel.GetFloatsSerialised());
+                m_scene.PhysicsScene.SetTerrain(m_channel.GetFloatsSerialized());
                 m_scene.SaveTerrain();
 
                 // Clients who look at the map will never see changes after they looked at the map, so i've commented this out.
@@ -1037,7 +1037,7 @@ namespace OpenSim.Region.CoreModules.World.Terrain
         /// <summary>
         /// Sends a copy of the current terrain to the scenes clients
         /// </summary>
-        /// <param name="serialised">A copy of the terrain as a 1D float array of size w*h</param>
+        /// <param name="serialized">A copy of the terrain as a 1D float array of size w*h</param>
         /// <param name="x">The patch corner to send</param>
         /// <param name="y">The patch corner to send</param>
         private void SendToClients(TerrainData terrData, int x, int y)

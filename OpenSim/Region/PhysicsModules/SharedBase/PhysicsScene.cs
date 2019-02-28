@@ -125,7 +125,7 @@ namespace OpenSim.Region.PhysicsModules.SharedBase
 
         public RequestAssetDelegate RequestAssetMethod { get; set; }
 
-        protected void Initialise(RequestAssetDelegate m, float[] terrain, float waterHeight)
+        protected void Initialize(RequestAssetDelegate m, float[] terrain, float waterHeight)
         {
             RequestAssetMethod = m;
             SetTerrain(terrain);

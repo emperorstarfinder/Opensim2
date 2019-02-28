@@ -61,10 +61,10 @@ namespace OpenSim.Services.Connectors
         public AvatarServicesConnector(IConfigSource source)
             : base(source, "AvatarService")
         {
-            Initialise(source);
+            Initialize(source);
         }
 
-        public virtual void Initialise(IConfigSource source)
+        public virtual void Initialize(IConfigSource source)
         {
             IConfig gridConfig = source.Configs["AvatarService"];
             if (gridConfig == null)
@@ -83,7 +83,7 @@ namespace OpenSim.Services.Connectors
             }
             m_ServerURI = serviceURI;
 
-            base.Initialise(source, "AvatarService");
+            base.Initialize(source, "AvatarService");
         }
 
 

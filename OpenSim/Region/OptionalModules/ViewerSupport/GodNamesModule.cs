@@ -50,7 +50,7 @@ namespace OpenSim.Region.OptionalModules.ViewerSupport
         private static List<String> m_lastNames = new List<String>();
         private static List<String> m_fullNames = new List<String>();
 
-        public void Initialise(IConfigSource config)
+        public void Initialize(IConfigSource config)
         {
             IConfig moduleConfig = config.Configs["GodNames"];
 
@@ -88,7 +88,7 @@ namespace OpenSim.Region.OptionalModules.ViewerSupport
             /*no op*/
         }
 
-        public void PostInitialise() {
+        public void PostInitialize() {
             /*no op*/
         }
 

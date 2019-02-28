@@ -69,10 +69,10 @@ namespace OpenSim.Data.Null
 
         public NullEstateStore(string connectionString)
         {
-            Initialise(connectionString);
+            Initialize(connectionString);
         }
 
-        public void Initialise(string connectionString)
+        public void Initialize(string connectionString)
         {
 //            m_connectionString = connectionString;
         }

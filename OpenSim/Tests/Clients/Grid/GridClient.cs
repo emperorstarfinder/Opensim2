@@ -98,19 +98,19 @@ namespace OpenSim.Tests.Clients.GridClient
             else
                 Console.WriteLine("[GRID CLIENT]: region 3 failed to register");
 
-            Console.WriteLine("[GRID CLIENT]: *** GetNeighbours of region 1");
-            List<GridRegion> regions = m_Connector.GetNeighbours(UUID.Zero, r1.RegionID);
+            Console.WriteLine("[GRID CLIENT]: *** GetNeighbors of region 1");
+            List<GridRegion> regions = m_Connector.GetNeighbors(UUID.Zero, r1.RegionID);
             if (regions == null)
-                Console.WriteLine("[GRID CLIENT]: GetNeighbours of region 1 failed");
+                Console.WriteLine("[GRID CLIENT]: GetNeighbors of region 1 failed");
             else if (regions.Count > 0)
             {
                 if (regions.Count != 1)
-                    Console.WriteLine("[GRID CLIENT]: GetNeighbours of region 1 returned more neighbours than expected: " + regions.Count);
+                    Console.WriteLine("[GRID CLIENT]: GetNeighbors of region 1 returned more neighbors than expected: " + regions.Count);
                 else
-                    Console.WriteLine("[GRID CLIENT]: GetNeighbours of region 1 returned the right neighbour " + regions[0].RegionName);
+                    Console.WriteLine("[GRID CLIENT]: GetNeighbors of region 1 returned the right neighbor " + regions[0].RegionName);
             }
             else
-                Console.WriteLine("[GRID CLIENT]: GetNeighbours of region 1 returned 0 neighbours");
+                Console.WriteLine("[GRID CLIENT]: GetNeighbors of region 1 returned 0 neighbors");
 
 
             Console.WriteLine("[GRID CLIENT]: *** GetRegionByUUID of region 2 (this should succeed)");

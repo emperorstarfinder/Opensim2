@@ -60,7 +60,7 @@ namespace OpenSim.Tests.Common
 
         // Test client specific events - for use by tests to implement some IClientAPI behaviour.
         public event Action<RegionInfo, Vector3, Vector3> OnReceivedMoveAgentIntoRegion;
-        public event Action<ulong, IPEndPoint> OnTestClientInformClientOfNeighbour;
+        public event Action<ulong, IPEndPoint> OnTestClientInformClientOfNeighbor;
         public event TestClientOnSendRegionTeleportDelegate OnTestClientSendRegionTeleport;
 
         public event Action<ISceneEntity, PrimUpdateFlags> OnReceivedEntityUpdate;
@@ -692,10 +692,10 @@ namespace OpenSim.Tests.Common
             return agentData;
         }
 
-        public virtual void InformClientOfNeighbour(ulong neighbourHandle, IPEndPoint neighbourExternalEndPoint)
+        public virtual void InformClientOfNeighbor(ulong neighborHandle, IPEndPoint neighborExternalEndPoint)
         {
-            if (OnTestClientInformClientOfNeighbour != null)
-                OnTestClientInformClientOfNeighbour(neighbourHandle, neighbourExternalEndPoint);
+            if (OnTestClientInformClientOfNeighbor != null)
+                OnTestClientInformClientOfNeighbor(neighborHandle, neighborExternalEndPoint);
         }
 
         public virtual void SendRegionTeleport(

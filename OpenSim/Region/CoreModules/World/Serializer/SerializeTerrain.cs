@@ -25,44 +25,30 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-using System;
-using System.Collections.Generic;
-using System.Reflection;
-using log4net;
-using Nini.Config;
-using OpenSim.Server.Base;
-using OpenSim.Services.Interfaces;
-using OpenSim.Framework;
-using OpenSim.Framework.Servers.HttpServer;
-using OpenSim.Server.Handlers.Base;
+using OpenSim.Region.CoreModules.World.Terrain;
+using OpenSim.Region.CoreModules.World.Terrain.FileLoaders;
+using OpenSim.Region.Framework.Scenes;
+using System.IO;
 
-namespace OpenSim.Server.Handlers.Neighbour
+namespace OpenSim.Region.CoreModules.World.Serializer
 {
-    public class NeighbourServiceInConnector : ServiceConnector
+    internal class SerializeTerrain : IFileSerializer
     {
-        private static readonly ILog m_log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+        #region IFileSerializer Members
 
-        private INeighbourService m_NeighbourService;
-        private IAuthenticationService m_AuthenticationService = null;
-
-        public NeighbourServiceInConnector(IConfigSource source, IHttpServer server, INeighbourService nService, IScene scene) :
-                base(source, server, String.Empty)
+        public string WriteToFile(Scene scene, string dir)
         {
+            ITerrainLoader fileSystemExporter = new RAW32();
+            string targetFileName = Path.Combine(dir, "heightmap.r32");
 
-            m_NeighbourService = nService;
-            if (m_NeighbourService == null)
+            lock (scene.Heightmap)
             {
-                m_log.Error("[NEIGHBOUR IN CONNECTOR]: neighbour service was not provided");
-                return;
+                fileSystemExporter.SaveFile(targetFileName, scene.Heightmap);
             }
 
-            //bool authentication = neighbourConfig.GetBoolean("RequireAuthentication", false);
-            //if (authentication)
-            //    m_AuthenticationService = scene.RequestModuleInterface<IAuthenticationService>();
-
-
-            server.AddStreamHandler(new NeighbourPostHandler(m_NeighbourService, m_AuthenticationService));
-            server.AddStreamHandler(new NeighbourGetHandler(m_NeighbourService, m_AuthenticationService));
+            return "heightmap.r32";
         }
+
+        #endregion
     }
 }

@@ -59,7 +59,7 @@ namespace OpenSim.Tests.Common
             get { return null; }
         }
 
-        public void Initialise(IConfigSource config)
+        public void Initialize(IConfigSource config)
         {
         }
 
@@ -81,7 +81,7 @@ namespace OpenSim.Tests.Common
         {
         }
 
-        public void PostInitialise()
+        public void PostInitialize()
         {
         }
 

@@ -509,12 +509,12 @@ namespace OpenSim.Region.PhysicsModule.ODE
 
             pscene.RegisterModuleInterface<PhysicsScene>(this);
             Vector3 extent = new Vector3(pscene.RegionInfo.RegionSizeX, pscene.RegionInfo.RegionSizeY, pscene.RegionInfo.RegionSizeZ);
-            Initialise(extent);
-            InitialiseFromConfig(m_config);
+            Initialize(extent);
+            InitializeFromConfig(m_config);
 
             // This may not be that good since terrain may not be avaiable at this point
-            base.Initialise(pscene.PhysicsRequestAsset,
-                (pscene.Heightmap != null ? pscene.Heightmap.GetFloatsSerialised() : new float[(int)(extent.X * extent.Y)]),
+            base.Initialize(pscene.PhysicsRequestAsset,
+                (pscene.Heightmap != null ? pscene.Heightmap.GetFloatsSerialized() : new float[(int)(extent.X * extent.Y)]),
                 (float)pscene.RegionInfo.RegionSettings.WaterHeight);
 
         }
@@ -533,7 +533,7 @@ namespace OpenSim.Region.PhysicsModule.ODE
         /// Sets many properties that ODE requires to be stable
         /// These settings need to be tweaked 'exactly' right or weird stuff happens.
         /// </summary>
-        private void Initialise(Vector3 regionExtent)
+        private void Initialize(Vector3 regionExtent)
         {
             WorldExtents.X = regionExtent.X;
             m_regionWidth = (uint)regionExtent.X;
@@ -552,7 +552,7 @@ namespace OpenSim.Region.PhysicsModule.ODE
         }
 
         // Initialize from configs
-        private void InitialiseFromConfig(IConfigSource config)
+        private void InitializeFromConfig(IConfigSource config)
         {
             InitializeExtraStats();
 

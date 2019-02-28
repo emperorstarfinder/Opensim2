@@ -34,10 +34,10 @@ namespace OpenSim.Data
     public interface IEstateDataStore
     {
         /// <summary>
-        /// Initialise the data store.
+        /// Initialize the data store.
         /// </summary>
         /// <param name="connectstring"></param>
-        void Initialise(string connectstring);
+        void Initialize(string connectstring);
 
         /// <summary>
         /// Load estate settings for a region.

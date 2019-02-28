@@ -70,17 +70,17 @@ namespace OpenSim.Data.PGSQL
         public string Version { get { return "1.0.0.0"; } }
 
         /// <summary>
-        /// <para>Initialises Asset interface</para>
+        /// <para>Initializes Asset interface</para>
         /// <para>
         /// <list type="bullet">
-        /// <item>Loads and initialises the PGSQL storage plugin.</item>
+        /// <item>Loads and initializes the PGSQL storage plugin.</item>
         /// <item>Warns and uses the obsolete pgsql_connection.ini if connect string is empty.</item>
         /// <item>Check for migration</item>
         /// </list>
         /// </para>
         /// </summary>
         /// <param name="connect">connect string</param>
-        public void Initialise(string connect)
+        public void Initialize(string connect)
         {
             m_log.ErrorFormat("[PGSQL XASSETDATA]: ***********************************************************");
             m_log.ErrorFormat("[PGSQL XASSETDATA]: ***********************************************************");
@@ -103,7 +103,7 @@ namespace OpenSim.Data.PGSQL
             }
         }
 
-        public void Initialise()
+        public void Initialize()
         {
             throw new NotImplementedException();
         }

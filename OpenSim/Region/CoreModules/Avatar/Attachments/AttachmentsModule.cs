@@ -68,7 +68,7 @@ namespace OpenSim.Region.CoreModules.Avatar.Attachments
         public string Name { get { return "Attachments Module"; } }
         public Type ReplaceableInterface { get { return null; } }
 
-        public void Initialise(IConfigSource source)
+        public void Initialize(IConfigSource source)
         {
             IConfig config = source.Configs["Attachments"];
             if (config != null)

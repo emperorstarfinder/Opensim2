@@ -60,10 +60,10 @@ namespace OpenSim.Services.Connectors
 
         public GridUserServicesConnector(IConfigSource source)
         {
-            Initialise(source);
+            Initialize(source);
         }
 
-        public virtual void Initialise(IConfigSource source)
+        public virtual void Initialize(IConfigSource source)
         {
             IConfig gridConfig = source.Configs["GridUserService"];
             if (gridConfig == null)
@@ -81,7 +81,7 @@ namespace OpenSim.Services.Connectors
                 throw new Exception("GridUser connector init error");
             }
             m_ServerURI = serviceURI;
-            base.Initialise(source, "GridUserService");
+            base.Initialize(source, "GridUserService");
         }
 
 

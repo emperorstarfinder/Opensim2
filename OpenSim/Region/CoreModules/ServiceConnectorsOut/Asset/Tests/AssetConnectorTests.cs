@@ -58,7 +58,7 @@ namespace OpenSim.Region.CoreModules.ServiceConnectorsOut.Asset.Tests
             config.Configs["AssetService"].Set("StorageProvider", "OpenSim.Tests.Common.dll");
 
             LocalAssetServicesConnector lasc = new LocalAssetServicesConnector();
-            lasc.Initialise(config);
+            lasc.Initialize(config);
 
             AssetBase a1 = AssetHelpers.CreateNotecardAsset();
             lasc.Store(a1);
@@ -90,7 +90,7 @@ namespace OpenSim.Region.CoreModules.ServiceConnectorsOut.Asset.Tests
             config.Configs["AssetService"].Set("StorageProvider", "OpenSim.Tests.Common.dll");
 
             LocalAssetServicesConnector lasc = new LocalAssetServicesConnector();
-            lasc.Initialise(config);
+            lasc.Initialize(config);
 
             // If it is remote, it should be stored
             AssetBase a2 = AssetHelpers.CreateNotecardAsset();
@@ -127,7 +127,7 @@ namespace OpenSim.Region.CoreModules.ServiceConnectorsOut.Asset.Tests
             config.Configs["AssetService"].Set("StorageProvider", "OpenSim.Tests.Common.dll");
 
             LocalAssetServicesConnector lasc = new LocalAssetServicesConnector();
-            lasc.Initialise(config);
+            lasc.Initialize(config);
 
             AssetBase a1 = AssetHelpers.CreateNotecardAsset();
             a1.Local = true;
@@ -155,7 +155,7 @@ namespace OpenSim.Region.CoreModules.ServiceConnectorsOut.Asset.Tests
             config.Configs["AssetService"].Set("StorageProvider", "OpenSim.Tests.Common.dll");
 
             LocalAssetServicesConnector lasc = new LocalAssetServicesConnector();
-            lasc.Initialise(config);
+            lasc.Initialize(config);
 
             // If it is local, it should not be stored
             AssetBase a1 = AssetHelpers.CreateNotecardAsset();

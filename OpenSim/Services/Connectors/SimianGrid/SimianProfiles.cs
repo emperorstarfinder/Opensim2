@@ -99,10 +99,10 @@ namespace OpenSim.Services.Connectors.SimianGrid
 
         public SimianProfiles(IConfigSource source)
         {
-            Initialise(source);
+            Initialize(source);
         }
 
-        public void Initialise(IConfigSource source)
+        public void Initialize(IConfigSource source)
         {
             IConfig profileConfig = source.Configs["Profiles"];
             if (profileConfig == null)

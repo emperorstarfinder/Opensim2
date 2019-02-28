@@ -62,55 +62,55 @@ namespace OpenSim.Region.Framework.Scenes
             m_regionInfo = s.RegionInfo;
         }
 
-        public delegate void InformNeighbourThatRegionUpDelegate(INeighbourService nService, RegionInfo region, ulong regionhandle);
+        public delegate void InformNeighborThatRegionUpDelegate(INeighborService nService, RegionInfo region, ulong regionhandle);
 
         private void InformNeighborsThatRegionisUpCompleted(IAsyncResult iar)
         {
-            InformNeighbourThatRegionUpDelegate icon = (InformNeighbourThatRegionUpDelegate)iar.AsyncState;
+            InformNeighborThatRegionUpDelegate icon = (InformNeighborThatRegionUpDelegate)iar.AsyncState;
             icon.EndInvoke(iar);
         }
 
         /// <summary>
-        /// Asynchronous call to information neighbouring regions that this region is up
+        /// Asynchronous call to information neighboring regions that this region is up
         /// </summary>
         /// <param name="region"></param>
         /// <param name="regionhandle"></param>
-        private void InformNeighboursThatRegionIsUpAsync(INeighbourService neighbourService, RegionInfo region, ulong regionhandle)
+        private void InformNeighborsThatRegionIsUpAsync(INeighborService neighborService, RegionInfo region, ulong regionhandle)
         {
             uint x = 0, y = 0;
             Utils.LongToUInts(regionhandle, out x, out y);
 
-            GridRegion neighbour = null;
-            if (neighbourService != null)
-                neighbour = neighbourService.HelloNeighbour(regionhandle, region);
+            GridRegion neighbor = null;
+            if (neighborService != null)
+                neighbor = neighborService.HelloNeighbor(regionhandle, region);
             else
-                m_log.ErrorFormat("{0} No neighbour service provided for region {1} to inform neigbhours of status", LogHeader, m_scene.Name);
+                m_log.ErrorFormat("{0} No neighbor service provided for region {1} to inform neigbhours of status", LogHeader, m_scene.Name);
 
-            if (neighbour != null)
+            if (neighbor != null)
             {
-                m_log.DebugFormat("{0} Region {1} successfully informed neighbour {2} at {3}-{4} that it is up",
-                    LogHeader, m_scene.Name, neighbour.RegionName, Util.WorldToRegionLoc(x), Util.WorldToRegionLoc(y));
+                m_log.DebugFormat("{0} Region {1} successfully informed neighbor {2} at {3}-{4} that it is up",
+                    LogHeader, m_scene.Name, neighbor.RegionName, Util.WorldToRegionLoc(x), Util.WorldToRegionLoc(y));
 
-                m_scene.EventManager.TriggerOnRegionUp(neighbour);
+                m_scene.EventManager.TriggerOnRegionUp(neighbor);
             }
             else
             {
                 m_log.WarnFormat(
-                    "[SCENE COMMUNICATION SERVICE]: Region {0} failed to inform neighbour at {1}-{2} that it is up.",
+                    "[SCENE COMMUNICATION SERVICE]: Region {0} failed to inform neighbor at {1}-{2} that it is up.",
                     m_scene.Name, Util.WorldToRegionLoc(x), Util.WorldToRegionLoc(y));
             }
         }
 
-        public void InformNeighborsThatRegionisUp(INeighbourService neighbourService, RegionInfo region)
+        public void InformNeighborsThatRegionisUp(INeighborService neighborService, RegionInfo region)
         {
             //m_log.Info("[INTER]: " + debugRegionName + ": SceneCommunicationService: Sending InterRegion Notification that region is up " + region.RegionName);
 
-            List<GridRegion> neighbours
-                = m_scene.GridService.GetNeighbours(m_scene.RegionInfo.ScopeID, m_scene.RegionInfo.RegionID);
+            List<GridRegion> neighbors
+                = m_scene.GridService.GetNeighbors(m_scene.RegionInfo.ScopeID, m_scene.RegionInfo.RegionID);
 
-            List<GridRegion> onlineNeighbours = new List<GridRegion>();
+            List<GridRegion> onlineNeighbors = new List<GridRegion>();
 
-            foreach (GridRegion n in neighbours)
+            foreach (GridRegion n in neighbors)
             {
                 OpenSim.Framework.RegionFlags? regionFlags = n.RegionFlags;
 
@@ -119,26 +119,26 @@ namespace OpenSim.Region.Framework.Scenes
                 //                    LogHeader, n.RegionName, m_scene.Name, regionFlags != null ? regionFlags.ToString() : "not present");
 
                 // Robust services before 2015-01-14 do not return the regionFlags information.  In this case, we could
-                // make a separate RegionFlags call but this would involve a network call for each neighbour.
+                // make a separate RegionFlags call but this would involve a network call for each neighbor.
                 if (regionFlags != null)
                 {
                     if ((regionFlags & OpenSim.Framework.RegionFlags.RegionOnline) != 0)
-                        onlineNeighbours.Add(n);
+                        onlineNeighbors.Add(n);
                 }
                 else
                 {
-                    onlineNeighbours.Add(n);
+                    onlineNeighbors.Add(n);
                 }
             }
 
             m_log.DebugFormat(
-                "{0} Informing {1} neighbours that region {2} is up",
-                LogHeader, onlineNeighbours.Count, m_scene.Name);
+                "{0} Informing {1} neighbors that region {2} is up",
+                LogHeader, onlineNeighbors.Count, m_scene.Name);
 
-            foreach (GridRegion n in onlineNeighbours)
+            foreach (GridRegion n in onlineNeighbors)
             {
-                InformNeighbourThatRegionUpDelegate d = InformNeighboursThatRegionIsUpAsync;
-                d.BeginInvoke(neighbourService, region, n.RegionHandle,
+                InformNeighborThatRegionUpDelegate d = InformNeighborsThatRegionIsUpAsync;
+                d.BeginInvoke(neighborService, region, n.RegionHandle,
                               InformNeighborsThatRegionisUpCompleted,
                               d);
             }
@@ -226,7 +226,7 @@ namespace OpenSim.Region.Framework.Scenes
         /// </summary>
         protected void SendCloseChildAgent(UUID agentID, ulong regionHandle, string auth_token)
         {
-            // let's do our best, but there's not much we can do if the neighbour doesn't accept.
+            // let's do our best, but there's not much we can do if the neighbor doesn't accept.
 
             //m_commsProvider.InterRegion.TellRegionToCloseChildConnection(regionHandle, agentID);
             uint x = 0, y = 0;

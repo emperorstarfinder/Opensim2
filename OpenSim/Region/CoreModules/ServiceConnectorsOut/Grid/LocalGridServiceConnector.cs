@@ -64,13 +64,13 @@ namespace OpenSim.Region.CoreModules.ServiceConnectorsOut.Grid
         public LocalGridServicesConnector(IConfigSource source)
         {
             m_log.DebugFormat("{0} LocalGridServicesConnector instantiated directly.", LogHeader);
-            InitialiseService(source, null);
+            InitializeService(source, null);
         }
 
         public LocalGridServicesConnector(IConfigSource source, RegionInfoCache regionInfoCache)
         {
             m_log.DebugFormat("{0} LocalGridServicesConnector instantiated directly with cache.", LogHeader);
-            InitialiseService(source, regionInfoCache);
+            InitializeService(source, regionInfoCache);
         }
 
         #region ISharedRegionModule
@@ -85,7 +85,7 @@ namespace OpenSim.Region.CoreModules.ServiceConnectorsOut.Grid
             get { return "LocalGridServicesConnector"; }
         }
 
-        public void Initialise(IConfigSource source)
+        public void Initialize(IConfigSource source)
         {
             IConfig moduleConfig = source.Configs["Modules"];
             if (moduleConfig != null)
@@ -93,13 +93,13 @@ namespace OpenSim.Region.CoreModules.ServiceConnectorsOut.Grid
                 string name = moduleConfig.GetString("GridServices", "");
                 if (name == Name)
                 {
-                    if(InitialiseService(source, null))
+                    if(InitializeService(source, null))
                         m_log.Info("[LOCAL GRID SERVICE CONNECTOR]: Local grid connector enabled");
                 }
             }
         }
 
-        private bool InitialiseService(IConfigSource source, RegionInfoCache ric)
+        private bool InitializeService(IConfigSource source, RegionInfoCache ric)
         {
             if(ric == null && m_RegionInfoCache == null)
                 m_RegionInfoCache = new RegionInfoCache();
@@ -136,7 +136,7 @@ namespace OpenSim.Region.CoreModules.ServiceConnectorsOut.Grid
             return true;
         }
 
-        public void PostInitialise()
+        public void PostInitialize()
         {
         }
 
@@ -191,7 +191,7 @@ namespace OpenSim.Region.CoreModules.ServiceConnectorsOut.Grid
             if (region == null)
                 return;
 
-            m_RegionInfoCache.CacheNearNeighbour(region.ScopeID, region);
+            m_RegionInfoCache.CacheNearNeighbor(region.ScopeID, region);
         }
 
         public string RegisterRegion(UUID scopeID, GridRegion regionInfo)
@@ -204,9 +204,9 @@ namespace OpenSim.Region.CoreModules.ServiceConnectorsOut.Grid
             return m_GridService.DeregisterRegion(regionID);
         }
 
-        public List<GridRegion> GetNeighbours(UUID scopeID, UUID regionID)
+        public List<GridRegion> GetNeighbors(UUID scopeID, UUID regionID)
         {
-            return m_GridService.GetNeighbours(scopeID, regionID);
+            return m_GridService.GetNeighbors(scopeID, regionID);
         }
 
         public GridRegion GetRegionByUUID(UUID scopeID, UUID regionID)

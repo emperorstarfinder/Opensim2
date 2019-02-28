@@ -57,7 +57,7 @@ namespace OpenSim.Region.CoreModules.ServiceConnectorsOut.Avatar
             get { return "RemoteAvatarServicesConnector"; }
         }
 
-        public override void Initialise(IConfigSource source)
+        public override void Initialize(IConfigSource source)
         {
             IConfig moduleConfig = source.Configs["Modules"];
             if (moduleConfig != null)
@@ -74,14 +74,14 @@ namespace OpenSim.Region.CoreModules.ServiceConnectorsOut.Avatar
 
                     m_Enabled = true;
 
-                    base.Initialise(source);
+                    base.Initialize(source);
 
                     m_log.Info("[AVATAR CONNECTOR]: Remote avatars enabled");
                 }
             }
         }
 
-        public void PostInitialise()
+        public void PostInitialize()
         {
             if (!m_Enabled)
                 return;

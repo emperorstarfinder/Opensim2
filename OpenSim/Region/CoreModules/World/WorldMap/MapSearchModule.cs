@@ -62,7 +62,7 @@ namespace OpenSim.Region.CoreModules.World.WorldMap
         }
 
         #region ISharedRegionModule Members
-        public void Initialise(IConfigSource source)
+        public void Initialize(IConfigSource source)
         {
         }
 
@@ -88,7 +88,7 @@ namespace OpenSim.Region.CoreModules.World.WorldMap
             scene.EventManager.OnNewClient -= OnNewClient;
         }
 
-        public void PostInitialise()
+        public void PostInitialize()
         {
         }
 

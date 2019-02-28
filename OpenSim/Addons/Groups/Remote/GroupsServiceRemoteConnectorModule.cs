@@ -80,7 +80,7 @@ namespace OpenSim.Groups
 
         #region ISharedRegionModule
 
-        public void Initialise(IConfigSource config)
+        public void Initialize(IConfigSource config)
         {
             IConfig groupsConfig = config.Configs["Groups"];
             if (groupsConfig == null)
@@ -139,7 +139,7 @@ namespace OpenSim.Groups
             }
         }
 
-        public void PostInitialise()
+        public void PostInitialize()
         {
         }
 

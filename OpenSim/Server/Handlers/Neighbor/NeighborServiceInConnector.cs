@@ -25,30 +25,40 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-using OpenSim.Region.CoreModules.World.Terrain;
-using OpenSim.Region.CoreModules.World.Terrain.FileLoaders;
-using OpenSim.Region.Framework.Scenes;
-using System.IO;
+using System;
+using System.Collections.Generic;
+using System.Reflection;
+using log4net;
+using Nini.Config;
+using OpenSim.Server.Base;
+using OpenSim.Services.Interfaces;
+using OpenSim.Framework;
+using OpenSim.Framework.Servers.HttpServer;
+using OpenSim.Server.Handlers.Base;
 
-namespace OpenSim.Region.CoreModules.World.Serialiser
+namespace OpenSim.Server.Handlers.Neighbor
 {
-    internal class SerialiseTerrain : IFileSerialiser
+    public class NeighborServiceInConnector : ServiceConnector
     {
-        #region IFileSerialiser Members
+        private static readonly ILog m_log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-        public string WriteToFile(Scene scene, string dir)
+        private INeighborService m_NeighborService;
+        private IAuthenticationService m_AuthenticationService = null;
+
+        public NeighborServiceInConnector(IConfigSource source, IHttpServer server, INeighborService nService, IScene scene) :
+                base(source, server, String.Empty)
         {
-            ITerrainLoader fileSystemExporter = new RAW32();
-            string targetFileName = Path.Combine(dir, "heightmap.r32");
 
-            lock (scene.Heightmap)
+            m_NeighborService = nService;
+
+            if (m_NeighborService == null)
             {
-                fileSystemExporter.SaveFile(targetFileName, scene.Heightmap);
+                m_log.Error("[Neighbor In Connector]: neighbor service was not provided");
+                return;
             }
 
-            return "heightmap.r32";
+            server.AddStreamHandler(new NeighborPostHandler(m_NeighborService, m_AuthenticationService));
+            server.AddStreamHandler(new NeighborGetHandler(m_NeighborService, m_AuthenticationService));
         }
-
-        #endregion
     }
 }

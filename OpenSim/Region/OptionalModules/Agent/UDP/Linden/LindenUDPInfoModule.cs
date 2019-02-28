@@ -60,12 +60,12 @@ namespace OpenSim.Region.OptionalModules.UDP.Linden
 
         public Type ReplaceableInterface { get { return null; } }
 
-        public void Initialise(IConfigSource source)
+        public void Initialize(IConfigSource source)
         {
 //            m_log.DebugFormat("[LINDEN UDP INFO MODULE]: INITIALIZED MODULE");
         }
 
-        public void PostInitialise()
+        public void PostInitialize()
         {
 //            m_log.DebugFormat("[LINDEN UDP INFO MODULE]: POST INITIALIZED MODULE");
         }
@@ -96,7 +96,7 @@ namespace OpenSim.Region.OptionalModules.UDP.Linden
                 "Show queue data for each client",
                 "Without the 'full' option, only root agents are shown.\n"
                     + "With the 'full' option child agents are also shown.\n\n"
-                    + "Type          - Rt is a root (avatar) client whilst cd is a child (neighbour interacting) client.\n"
+                    + "Type          - Rt is a root (avatar) client whilst cd is a child (neighbor interacting) client.\n"
                     + "Since Last In - Time in milliseconds since last packet received.\n"
                     + "Pkts In       - Number of packets processed from the client.\n"
                     + "Pkts Out      - Number of packets sent to the client.\n"

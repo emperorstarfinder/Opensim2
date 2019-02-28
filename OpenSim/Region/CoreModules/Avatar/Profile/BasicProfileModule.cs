@@ -55,7 +55,7 @@ namespace OpenSim.Region.CoreModules.Avatar.Profile
 
         #region ISharedRegionModule
 
-        public void Initialise(IConfigSource config)
+        public void Initialize(IConfigSource config)
         {
             if(config.Configs["UserProfiles"] != null)
                 return;
@@ -98,7 +98,7 @@ namespace OpenSim.Region.CoreModules.Avatar.Profile
             }
         }
 
-        public void PostInitialise()
+        public void PostInitialize()
         {
         }
 

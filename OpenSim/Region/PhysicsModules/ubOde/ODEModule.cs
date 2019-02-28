@@ -38,7 +38,7 @@ namespace OpenSim.Region.PhysicsModule.ubOde
             get { return null; }
         }
 
-        public void Initialise(IConfigSource source)
+        public void Initialize(IConfigSource source)
         {
             IConfig config = source.Configs["Startup"];
             if (config != null)

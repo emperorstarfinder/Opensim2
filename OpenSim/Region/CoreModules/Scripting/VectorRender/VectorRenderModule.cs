@@ -140,7 +140,7 @@ namespace OpenSim.Region.CoreModules.Scripting.VectorRender
 
         #region ISharedRegionModule Members
 
-        public void Initialise(IConfigSource config)
+        public void Initialize(IConfigSource config)
         {
             IConfig cfg = config.Configs["VectorRender"];
             if (null != cfg)
@@ -155,7 +155,7 @@ namespace OpenSim.Region.CoreModules.Scripting.VectorRender
             m_graph = Graphics.FromImage(bitmap);
         }
 
-        public void PostInitialise()
+        public void PostInitialize()
         {
         }
 

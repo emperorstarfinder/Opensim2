@@ -92,7 +92,7 @@ namespace OpenSim.Region.Framework.Scenes.Tests
             reg.RegisterInterface<IRegionModulesController>(rmcp);
 
             // XXX: Have to initialize directly for now
-            rmcp.Initialise(sim);
+            rmcp.Initialize(sim);
 
             rmcp.AddNode(gridService);
 
@@ -104,8 +104,8 @@ namespace OpenSim.Region.Framework.Scenes.Tests
 //            RegionModulesControllerPlugin rmcp = new RegionModulesControllerPlugin();
 //            rmcp.LoadModulesFromAddins = false;
 ////            reg.RegisterInterface<IRegionModulesController>(rmcp);
-//            rmcp.Initialise(sim);
-//            rmcp.PostInitialise();
+//            rmcp.Initialize(sim);
+//            rmcp.PostInitialize();
 //            TypeExtensionNode node = new TypeExtensionNode();
 //            node.
 //            rmcp.AddNode(node, configSource.Configs["Modules"], new Dictionary<RuntimeAddin, IList<int>>());
@@ -124,8 +124,8 @@ namespace OpenSim.Region.Framework.Scenes.Tests
                 co.Count,
                 "Expected {0} events but only got {1} ({2})",
                 expectedEventCount, co.Count, string.Join(",", co));
-            Assert.AreEqual("Initialise",       co[0]);
-            Assert.AreEqual("PostInitialise",   co[1]);
+            Assert.AreEqual("Initialize",       co[0]);
+            Assert.AreEqual("PostInitialize",   co[1]);
             Assert.AreEqual("AddRegion",        co[2]);
             Assert.AreEqual("RegionLoaded",     co[3]);
             Assert.AreEqual("RemoveRegion",     co[4]);
@@ -142,14 +142,14 @@ namespace OpenSim.Region.Framework.Scenes.Tests
 
         public Type ReplaceableInterface { get { return null; } }
 
-        public void PostInitialise()
+        public void PostInitialize()
         {
-            CallOrder.Add("PostInitialise");
+            CallOrder.Add("PostInitialize");
         }
 
-        public void Initialise(IConfigSource source)
+        public void Initialize(IConfigSource source)
         {
-            CallOrder.Add("Initialise");
+            CallOrder.Add("Initialize");
         }
 
         public void Close()
@@ -184,9 +184,9 @@ namespace OpenSim.Region.Framework.Scenes.Tests
         public string Version { get { return "0"; } }
         public string Name { get { return "MockRegionModulesControllerPlugin"; } }
 
-        public void Initialise() {}
+        public void Initialize() {}
 
-        public void Initialise(OpenSimBase sim)
+        public void Initialize(OpenSimBase sim)
         {
             m_openSim = sim;
         }
@@ -194,10 +194,10 @@ namespace OpenSim.Region.Framework.Scenes.Tests
         /// <summary>
         /// Called when the application loading is completed
         /// </summary>
-        public void PostInitialise()
+        public void PostInitialize()
         {
             foreach (ISharedRegionModule module in m_sharedInstances)
-                module.PostInitialise();
+                module.PostInitialize();
         }
 
         public void AddRegionToModules(Scene scene)
@@ -233,7 +233,7 @@ namespace OpenSim.Region.Framework.Scenes.Tests
         public void AddNode(ISharedRegionModule module)
         {
             m_sharedInstances.Add(module);
-            module.Initialise(m_openSim.ConfigSource.Source);
+            module.Initialize(m_openSim.ConfigSource.Source);
         }
 
         public void Dispose()

@@ -88,13 +88,13 @@ public static class BulletSimTestsUtil
 
         IMesher mesher = new OpenSim.Region.PhysicsModule.Meshing.Meshmerizer();
         INonSharedRegionModule mod = mesher as INonSharedRegionModule;
-        mod.Initialise(openSimINI);
+        mod.Initialize(openSimINI);
         mod.AddRegion(scene);
         mod.RegionLoaded(scene);
 
         BSScene pScene = new BSScene();
         mod = (pScene as INonSharedRegionModule);
-        mod.Initialise(openSimINI);
+        mod.Initialize(openSimINI);
         mod.AddRegion(scene);
         mod.RegionLoaded(scene);
 

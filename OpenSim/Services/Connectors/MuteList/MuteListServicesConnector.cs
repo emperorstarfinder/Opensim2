@@ -58,10 +58,10 @@ namespace OpenSim.Services.Connectors
 
         public MuteListServicesConnector(IConfigSource source)
         {
-            Initialise(source);
+            Initialize(source);
         }
 
-        public virtual void Initialise(IConfigSource source)
+        public virtual void Initialize(IConfigSource source)
         {
             IConfig gridConfig = source.Configs["MuteListService"];
             if (gridConfig == null)
@@ -79,7 +79,7 @@ namespace OpenSim.Services.Connectors
                 throw new Exception("MuteList connector init error");
             }
             m_ServerURI = serviceURI + "/mutelist";;
-            base.Initialise(source, "MuteListService");
+            base.Initialize(source, "MuteListService");
         }
 
         #region IMuteListService

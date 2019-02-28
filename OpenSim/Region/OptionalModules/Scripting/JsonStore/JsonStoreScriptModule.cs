@@ -76,12 +76,12 @@ namespace OpenSim.Region.OptionalModules.Scripting.JsonStore
 
         // -----------------------------------------------------------------
         /// <summary>
-        /// Initialise this shared module
+        /// Initialize this shared module
         /// </summary>
-        /// <param name="scene">this region is getting initialised</param>
+        /// <param name="scene">this region is getting initialized</param>
         /// <param name="source">nini config, we are not using this</param>
         // -----------------------------------------------------------------
-        public void Initialise(IConfigSource config)
+        public void Initialize(IConfigSource config)
         {
             try
             {
@@ -109,7 +109,7 @@ namespace OpenSim.Region.OptionalModules.Scripting.JsonStore
         /// everything is loaded, perform post load configuration
         /// </summary>
         // -----------------------------------------------------------------
-        public void PostInitialise()
+        public void PostInitialize()
         {
         }
 

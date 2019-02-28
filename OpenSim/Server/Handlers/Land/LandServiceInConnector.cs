@@ -55,7 +55,7 @@ namespace OpenSim.Server.Handlers.Land
                 return;
             }
 
-            //bool authentication = neighbourConfig.GetBoolean("RequireAuthentication", false);
+            //bool authentication = neighborConfig.GetBoolean("RequireAuthentication", false);
             //if (authentication)
             //    m_AuthenticationService = scene.RequestModuleInterface<IAuthenticationService>();
 

@@ -66,7 +66,7 @@ namespace OpenSim.Region.CoreModules.Framework.UserManagement
 
         #region ISharedRegionModule
 
-        public virtual void Initialise(IConfigSource config)
+        public virtual void Initialize(IConfigSource config)
         {
             string umanmod = config.Configs["Modules"].GetString("UserManagementModule", Name);
             if (umanmod == Name)
@@ -137,7 +137,7 @@ namespace OpenSim.Region.CoreModules.Framework.UserManagement
                 m_ServiceThrottle = s.RequestModuleInterface<IServiceThrottleModule>();
         }
 
-        public virtual void PostInitialise()
+        public virtual void PostInitialize()
         {
         }
 

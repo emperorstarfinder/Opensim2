@@ -75,12 +75,12 @@ namespace OpenSim.Region.CoreModules.ServiceConnectorsOut.MapImage
         public string Name { get { return "MapImageServiceModule"; } }
         public void RegionLoaded(Scene scene) { }
         public void Close() { }
-        public void PostInitialise() { }
+        public void PostInitialize() { }
 
         ///<summary>
         ///
         ///</summary>
-        public void Initialise(IConfigSource source)
+        public void Initialize(IConfigSource source)
         {
             IConfig moduleConfig = source.Configs["Modules"];
             if (moduleConfig != null)

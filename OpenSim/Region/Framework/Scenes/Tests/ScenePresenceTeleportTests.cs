@@ -146,7 +146,7 @@ namespace OpenSim.Region.Framework.Scenes.Tests
             sp.AbsolutePosition = new Vector3(30, 31, 32);
 
             List<TestClient> destinationTestClients = new List<TestClient>();
-            EntityTransferHelpers.SetupInformClientOfNeighbourTriggersNeighbourClientCreate(
+            EntityTransferHelpers.SetupInformClientOfNeighborTriggersNeighborClientCreate(
                 (TestClient)sp.ControllingClient, destinationTestClients);
 
             sceneA.RequestTeleportLocation(
@@ -156,7 +156,7 @@ namespace OpenSim.Region.Framework.Scenes.Tests
                 teleportLookAt,
                 (uint)TeleportFlags.ViaLocation);
 
-            // SetupInformClientOfNeighbour() will have handled the callback into the target scene to setup the child
+            // SetupInformClientOfNeighbor() will have handled the callback into the target scene to setup the child
             // agent.  This call will now complete the movement of the user into the destination and upgrade the agent
             // from child to root.
             destinationTestClients[0].CompleteMovement();
@@ -465,7 +465,7 @@ namespace OpenSim.Region.Framework.Scenes.Tests
                 teleportLookAt,
                 (uint)TeleportFlags.ViaLocation);
 
-            // FIXME: Not setting up InformClientOfNeighbour on the TestClient means that it does not initiate
+            // FIXME: Not setting up InformClientOfNeighbor on the TestClient means that it does not initiate
             // communication with the destination region.  But this is a very non-obvious way of doing it - really we
             // should be forced to expicitly set this up.
 
@@ -492,7 +492,7 @@ namespace OpenSim.Region.Framework.Scenes.Tests
 
 /*
         [Test]
-        public void TestSameSimulatorNeighbouringRegionsV1()
+        public void TestSameSimulatorNeighboringRegionsV1()
         {
             TestHelpers.InMethod();
 //            TestHelpers.EnableLogging();
@@ -530,7 +530,7 @@ namespace OpenSim.Region.Framework.Scenes.Tests
             AgentCircuitData acd = SceneHelpers.GenerateAgentData(userId);
             TestClient tc = new TestClient(acd, sceneA);
             List<TestClient> destinationTestClients = new List<TestClient>();
-            EntityTransferHelpers.SetupInformClientOfNeighbourTriggersNeighbourClientCreate(tc, destinationTestClients);
+            EntityTransferHelpers.SetupInformClientOfNeighborTriggersNeighborClientCreate(tc, destinationTestClients);
 
             ScenePresence beforeSceneASp = SceneHelpers.AddScenePresence(sceneA, tc, acd);
             beforeSceneASp.AbsolutePosition = new Vector3(30, 31, 32);
@@ -542,8 +542,8 @@ namespace OpenSim.Region.Framework.Scenes.Tests
             Assert.That(beforeSceneBSp, Is.Not.Null);
             Assert.That(beforeSceneBSp.IsChildAgent, Is.True);
 
-            // In this case, we will not receieve a second InformClientOfNeighbour since the viewer already knows
-            // about the neighbour region it is teleporting to.
+            // In this case, we will not receieve a second InformClientOfNeighbor since the viewer already knows
+            // about the neighbor region it is teleporting to.
             sceneA.RequestTeleportLocation(
                 beforeSceneASp.ControllingClient,
                 sceneB.RegionInfo.RegionHandle,
@@ -579,7 +579,7 @@ namespace OpenSim.Region.Framework.Scenes.Tests
 */
 
         [Test]
-        public void TestSameSimulatorNeighbouringRegionsV2()
+        public void TestSameSimulatorNeighboringRegionsV2()
         {
             TestHelpers.InMethod();
 //            TestHelpers.EnableLogging();
@@ -609,7 +609,7 @@ namespace OpenSim.Region.Framework.Scenes.Tests
             AgentCircuitData acd = SceneHelpers.GenerateAgentData(userId);
             TestClient tc = new TestClient(acd, sceneA);
             List<TestClient> destinationTestClients = new List<TestClient>();
-            EntityTransferHelpers.SetupInformClientOfNeighbourTriggersNeighbourClientCreate(tc, destinationTestClients);
+            EntityTransferHelpers.SetupInformClientOfNeighborTriggersNeighborClientCreate(tc, destinationTestClients);
 
             ScenePresence beforeSceneASp = SceneHelpers.AddScenePresence(sceneA, tc, acd);
             beforeSceneASp.AbsolutePosition = new Vector3(30, 31, 32);

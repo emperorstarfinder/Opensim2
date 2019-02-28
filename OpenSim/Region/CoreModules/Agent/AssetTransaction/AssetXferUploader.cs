@@ -201,7 +201,7 @@ namespace OpenSim.Region.CoreModules.Agent.AssetTransaction
             bool tempFile)
         {
 //            m_log.DebugFormat(
-//                "[ASSET XFER UPLOADER]: Initialised xfer from {0}, asset {1}, transaction {2}, type {3}, storeLocal {4}, tempFile {5}, already received data length {6}",
+//                "[ASSET XFER UPLOADER]: Initialized xfer from {0}, asset {1}, transaction {2}, type {3}, storeLocal {4}, tempFile {5}, already received data length {6}",
 //                remoteClient.Name, assetID, transaction, type, storeLocal, tempFile, data.Length);
 
             lock (this)

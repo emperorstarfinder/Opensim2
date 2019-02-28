@@ -123,7 +123,7 @@ namespace OpenSim.Region.CoreModules.Framework.EntityTransfer
             get { return "HGEntityTransferModule"; }
         }
 
-        public override void Initialise(IConfigSource source)
+        public override void Initialize(IConfigSource source)
         {
             IConfig moduleConfig = source.Configs["Modules"];
 
@@ -146,7 +146,7 @@ namespace OpenSim.Region.CoreModules.Framework.EntityTransfer
                         }
                     }
 
-                    InitialiseCommon(source);
+                    InitializeCommon(source);
                     m_log.DebugFormat("[HG ENTITY TRANSFER MODULE]: {0} enabled.", Name);
                 }
             }

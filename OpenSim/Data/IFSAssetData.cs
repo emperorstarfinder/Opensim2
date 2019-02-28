@@ -36,7 +36,7 @@ namespace OpenSim.Data
     public interface IFSAssetDataPlugin : IPlugin
     {
         bool[]          AssetsExist(UUID[] uuids);
-        void            Initialise(string connect, string realm, int SkipAccessTimeDays);
+        void            Initialize(string connect, string realm, int SkipAccessTimeDays);
         bool            Delete(string id);
 
         AssetMetadata   Get(string id, out string hash);

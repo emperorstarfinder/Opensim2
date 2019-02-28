@@ -57,7 +57,7 @@ namespace OpenSim.Region.CoreModules.ServiceConnectorsIn.Hypergrid
 
         #region Region Module interface
 
-        public void Initialise(IConfigSource config)
+        public void Initialize(IConfigSource config)
         {
             m_Config = config;
             IConfig moduleConfig = config.Configs["Modules"];
@@ -80,7 +80,7 @@ namespace OpenSim.Region.CoreModules.ServiceConnectorsIn.Hypergrid
 
         }
 
-        public void PostInitialise()
+        public void PostInitialize()
         {
         }
 

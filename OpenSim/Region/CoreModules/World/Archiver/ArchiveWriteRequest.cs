@@ -601,7 +601,7 @@ namespace OpenSim.Region.CoreModules.World.Archiver
             m_log.InfoFormat("[ARCHIVER]: Adding scene objects to archive.");
 
             // Write out scene object metadata
-            IRegionSerialiserModule serializer = scene.RequestModuleInterface<IRegionSerialiserModule>();
+            IRegionSerializerModule serializer = scene.RequestModuleInterface<IRegionSerializerModule>();
             foreach (SceneObjectGroup sceneObject in sceneObjects)
             {
                 //m_log.DebugFormat("[ARCHIVER]: Saving {0} {1}, {2}", entity.Name, entity.UUID, entity.GetType());

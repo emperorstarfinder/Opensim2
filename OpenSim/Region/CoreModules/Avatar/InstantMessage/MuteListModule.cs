@@ -54,7 +54,7 @@ namespace OpenSim.Region.CoreModules.Avatar.InstantMessage
         protected IMuteListService m_service = null;
         private IUserManagement m_userManagementModule;
 
-        public void Initialise(IConfigSource config)
+        public void Initialize(IConfigSource config)
         {
             IConfig cnf = config.Configs["Messaging"];
             if (cnf == null)
@@ -114,7 +114,7 @@ namespace OpenSim.Region.CoreModules.Avatar.InstantMessage
             }
         }
 
-        public void PostInitialise()
+        public void PostInitialize()
         {
             if (!m_Enabled)
                 return;

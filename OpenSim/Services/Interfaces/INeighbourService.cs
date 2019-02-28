@@ -32,8 +32,8 @@ using GridRegion = OpenSim.Services.Interfaces.GridRegion;
 
 namespace OpenSim.Services.Interfaces
 {
-    public interface INeighbourService
+    public interface INeighborService
     {
-        GridRegion HelloNeighbour(ulong regionHandle, RegionInfo otherRegion);
+        GridRegion HelloNeighbor(ulong regionHandle, RegionInfo otherRegion);
     }
 }

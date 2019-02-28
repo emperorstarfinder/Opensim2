@@ -983,7 +983,7 @@ namespace OpenSim.Region.Framework.Scenes
         private bool m_inTransit;
 
         /// <summary>
-        /// This signals whether the presence is in transit between neighbouring regions.
+        /// This signals whether the presence is in transit between neighboring regions.
         /// </summary>
         /// <remarks>
         /// It is not set when the presence is teleporting or logging in/out directly to a region.
@@ -1246,9 +1246,9 @@ namespace OpenSim.Region.Framework.Scenes
         /// Turns a child agent into a root agent.
         /// </summary>
         /// <remarks>
-        /// Child agents are logged into neighbouring sims largely to observe changes.  Root agents exist when the
+        /// Child agents are logged into neighboring sims largely to observe changes.  Root agents exist when the
         /// avatar is actual in the sim.  They can perform all actions.
-        /// This change is made whenever an avatar enters a region, whether by crossing over from a neighbouring sim,
+        /// This change is made whenever an avatar enters a region, whether by crossing over from a neighboring sim,
         /// teleporting in or on initial login.
         ///
         /// This method is on the critical path for transferring an avatar from one region to another.  Delay here
@@ -1477,7 +1477,7 @@ namespace OpenSim.Region.Framework.Scenes
             //m_log.DebugFormat("[MakeRootAgent] position and physical: {0}ms", Util.EnvironmentTickCountSubtract(ts));
             m_scene.SwapRootAgentCount(false);
 
-            // If we don't reset the movement flag here, an avatar that crosses to a neighbouring sim and returns will
+            // If we don't reset the movement flag here, an avatar that crosses to a neighboring sim and returns will
             // stall on the border crossing since the existing child agent will still have the last movement
             // recorded, which stops the input from being processed.
             MovementFlag = 0;
@@ -1842,7 +1842,7 @@ namespace OpenSim.Region.Framework.Scenes
             }
         }
 
-        // neighbouring regions we have enabled a child agent in
+        // neighboring regions we have enabled a child agent in
         // holds the seed cap for the child agent in that region
         private Dictionary<ulong, string> m_knownChildRegions = new Dictionary<ulong, string>();
 
@@ -1854,7 +1854,7 @@ namespace OpenSim.Region.Framework.Scenes
 
         private Dictionary<ulong, spRegionSizeInfo> m_knownChildRegionsSizeInfo = new Dictionary<ulong, spRegionSizeInfo>();
 
-        public void AddNeighbourRegion(GridRegion region, string capsPath)
+        public void AddNeighborRegion(GridRegion region, string capsPath)
         {
             lock (m_knownChildRegions)
             {
@@ -1868,7 +1868,7 @@ namespace OpenSim.Region.Framework.Scenes
             }
         }
 
-        public void AddNeighbourRegionSizeInfo(GridRegion region)
+        public void AddNeighborRegionSizeInfo(GridRegion region)
         {
             lock (m_knownChildRegions)
             {
@@ -1887,7 +1887,7 @@ namespace OpenSim.Region.Framework.Scenes
             }
         }
 
-        public void SetNeighbourRegionSizeInfo(List<GridRegion> regionsList)
+        public void SetNeighborRegionSizeInfo(List<GridRegion> regionsList)
         {
             lock (m_knownChildRegions)
             {
@@ -1904,7 +1904,7 @@ namespace OpenSim.Region.Framework.Scenes
             }
         }
 
-        public void RemoveNeighbourRegion(ulong regionHandle)
+        public void RemoveNeighborRegion(ulong regionHandle)
         {
             lock (m_knownChildRegions)
             {
@@ -1917,25 +1917,25 @@ namespace OpenSim.Region.Framework.Scenes
             }
         }
 
-        public bool knowsNeighbourRegion(ulong regionHandle)
+        public bool knowsNeighborRegion(ulong regionHandle)
         {
             lock (m_knownChildRegions)
                 return m_knownChildRegions.ContainsKey(regionHandle);
         }
 
-        public void DropOldNeighbours(List<ulong> oldRegions)
+        public void DropOldNeighbors(List<ulong> oldRegions)
         {
             foreach (ulong handle in oldRegions)
             {
-                RemoveNeighbourRegion(handle);
+                RemoveNeighborRegion(handle);
                 Scene.CapsModule.DropChildSeed(UUID, handle);
             }
         }
 
-        public void DropThisRootRegionFromNeighbours()
+        public void DropThisRootRegionFromNeighbors()
         {
             ulong handle = m_scene.RegionInfo.RegionHandle;
-            RemoveNeighbourRegion(handle);
+            RemoveNeighborRegion(handle);
             Scene.CapsModule.DropChildSeed(UUID, handle);
         }
 
@@ -2061,8 +2061,8 @@ namespace OpenSim.Region.Framework.Scenes
         /// </summary>
         /// <param name="client"></param>
         /// <param name="openChildAgents">
-        /// If true, send notification to neighbour regions to expect
-        /// a child agent from the client.  These neighbours can be some distance away, depending right now on the
+        /// If true, send notification to neighbor regions to expect
+        /// a child agent from the client.  These neighbors can be some distance away, depending right now on the
         /// configuration of DefaultDrawDistance in the [Startup] section of config
         /// </param>
         public void CompleteMovement(IClientAPI client, bool openChildAgents)
@@ -2336,7 +2336,7 @@ namespace OpenSim.Region.Framework.Scenes
                     //m_log.DebugFormat("[CompleteMovement] attachments: {0}ms", Util.EnvironmentTickCountSubtract(ts));
                     if (openChildAgents)
                     {
-                        // Create child agents in neighbouring regions
+                        // Create child agents in neighboring regions
                         IEntityTransferModule m_agentTransfer = m_scene.RequestModuleInterface<IEntityTransferModule>();
                         if (m_agentTransfer != null)
                         {
@@ -4585,7 +4585,7 @@ namespace OpenSim.Region.Framework.Scenes
 
             foreach (ulong handle in byebyeRegions)
             {
-                RemoveNeighbourRegion(handle);
+                RemoveNeighborRegion(handle);
                 Scene.CapsModule.DropChildSeed(UUID, handle);
             }
         }
@@ -4599,7 +4599,7 @@ namespace OpenSim.Region.Framework.Scenes
                 if (handle != Scene.RegionInfo.RegionHandle)
                 {
                     byebyeRegions.Add(handle);
-                    RemoveNeighbourRegion(handle);
+                    RemoveNeighborRegion(handle);
                     Scene.CapsModule.DropChildSeed(UUID, handle);
                 }
             }

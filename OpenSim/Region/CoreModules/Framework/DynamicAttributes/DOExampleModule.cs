@@ -68,7 +68,7 @@ namespace OpenSim.Region.Framework.DynamicAttributes.DOExampleModule
         public string Name { get { return "DO"; } }
         public Type ReplaceableInterface { get { return null; } }
 
-        public void Initialise(IConfigSource source) {}
+        public void Initialize(IConfigSource source) {}
 
         public void AddRegion(Scene scene)
         {

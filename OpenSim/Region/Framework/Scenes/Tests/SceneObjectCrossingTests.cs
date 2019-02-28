@@ -149,7 +149,7 @@ namespace OpenSim.Region.Framework.Scenes.Tests
             AgentCircuitData acd = SceneHelpers.GenerateAgentData(userId);
             TestClient tc = new TestClient(acd, sceneA);
             List<TestClient> destinationTestClients = new List<TestClient>();
-            EntityTransferHelpers.SetupInformClientOfNeighbourTriggersNeighbourClientCreate(tc, destinationTestClients);
+            EntityTransferHelpers.SetupInformClientOfNeighborTriggersNeighborClientCreate(tc, destinationTestClients);
 
             ScenePresence sp1SceneA = SceneHelpers.AddScenePresence(sceneA, tc, acd);
             sp1SceneA.AbsolutePosition = so1StartPos;
@@ -257,7 +257,7 @@ namespace OpenSim.Region.Framework.Scenes.Tests
             AgentCircuitData acd = SceneHelpers.GenerateAgentData(userId);
             TestClient tc = new TestClient(acd, sceneA);
             List<TestClient> destinationTestClients = new List<TestClient>();
-            EntityTransferHelpers.SetupInformClientOfNeighbourTriggersNeighbourClientCreate(tc, destinationTestClients);
+            EntityTransferHelpers.SetupInformClientOfNeighborTriggersNeighborClientCreate(tc, destinationTestClients);
             ScenePresence sp1SceneA = SceneHelpers.AddScenePresence(sceneA, tc, acd);
 
             SceneObjectGroup so1 = SceneHelpers.AddSceneObject(sceneA, 1, userId, "", sceneObjectIdTail);

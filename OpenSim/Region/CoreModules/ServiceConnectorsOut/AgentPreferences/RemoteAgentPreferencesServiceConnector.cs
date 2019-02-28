@@ -61,7 +61,7 @@ namespace OpenSim.Region.CoreModules.ServiceConnectorsOut.AgentPreferences
             get { return "RemoteAgentPreferencesServicesConnector"; }
         }
 
-        public new void Initialise(IConfigSource source)
+        public new void Initialize(IConfigSource source)
         {
             IConfig moduleConfig = source.Configs["Modules"];
             if (moduleConfig != null)
@@ -78,14 +78,14 @@ namespace OpenSim.Region.CoreModules.ServiceConnectorsOut.AgentPreferences
 
                     m_Enabled = true;
 
-                    base.Initialise(source);
+                    base.Initialize(source);
 
                     m_log.Info("[AGENT PREFERENCES CONNECTOR]: Remote agent preferences enabled");
                 }
             }
         }
 
-        public void PostInitialise()
+        public void PostInitialize()
         {
             /* no op */
         }

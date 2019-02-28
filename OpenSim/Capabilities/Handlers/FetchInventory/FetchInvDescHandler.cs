@@ -87,7 +87,7 @@ namespace OpenSim.Capabilities.Handlers
 
                 try
                 {
-                    LLSDHelpers.DeserialiseOSDMap(inventoryhash, llsdRequest);
+                    LLSDHelpers.DeserializeOSDMap(inventoryhash, llsdRequest);
                 }
                 catch (Exception e)
                 {

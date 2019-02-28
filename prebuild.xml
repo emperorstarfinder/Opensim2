@@ -3126,7 +3126,7 @@
         <Match path="World/Media/Moap/Tests" pattern="*.cs" recurse="true">
          <Exclude name="obj" pattern="obj"/>
         </Match>
-        <Match path="World/Serialiser/Tests" pattern="*.cs" recurse="true">
+        <Match path="World/Serializer/Tests" pattern="*.cs" recurse="true">
          <Exclude name="obj" pattern="obj"/>
         </Match>
         <Match path="World/Terrain/Tests" pattern="*.cs" recurse="true">

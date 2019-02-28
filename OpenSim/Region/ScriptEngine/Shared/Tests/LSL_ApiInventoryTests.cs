@@ -77,7 +77,7 @@ namespace OpenSim.Region.ScriptEngine.Shared.Tests
             m_scene = new SceneHelpers().SetupScene();
             SceneHelpers.SetupSceneModules(m_scene, initConfigSource, new object[] { new DefaultPermissionsModule() });
             m_engine = new XEngine.XEngine();
-            m_engine.Initialise(initConfigSource);
+            m_engine.Initialize(initConfigSource);
             m_engine.AddRegion(m_scene);
         }
 

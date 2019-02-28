@@ -58,7 +58,7 @@ namespace OpenSim.Region.CoreModules.World.LightShare
 
         #region INonSharedRegionModule Members
 
-        public void Initialise(IConfigSource config)
+        public void Initialize(IConfigSource config)
         {
             try
             {

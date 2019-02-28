@@ -390,7 +390,7 @@ namespace OpenSim
                                           "show users [full]",
                                           "Show user data for users currently on the region",
                                           "Without the 'full' option, only users actually on the region are shown."
-                                            + "  With the 'full' option child agents of users in neighbouring regions are also shown.",
+                                            + "  With the 'full' option child agents of users in neighboring regions are also shown.",
                                           HandleShow);
 
             m_console.Commands.AddCommand("Comms", false, "show connections",

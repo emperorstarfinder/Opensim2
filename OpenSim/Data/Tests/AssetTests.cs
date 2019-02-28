@@ -85,7 +85,7 @@ namespace OpenSim.Data.Tests
         {
             ClearDB();
             m_db = (TAssetData)service;
-            m_db.Initialise(m_connStr);
+            m_db.Initialize(m_connStr);
         }
 
         private void ClearDB()

@@ -90,8 +90,8 @@ namespace OpenSim.Server.Handlers.Grid
                     case "deregister":
                         return Deregister(request);
 
-                    case "get_neighbours":
-                        return GetNeighbours(request);
+                    case "get_neighbors":
+                        return GetNeighbors(request);
 
                     case "get_region_by_uuid":
                         return GetRegionByUUID(request);
@@ -222,22 +222,22 @@ namespace OpenSim.Server.Handlers.Grid
 
         }
 
-        byte[] GetNeighbours(Dictionary<string, object> request)
+        byte[] GetNeighbors(Dictionary<string, object> request)
         {
             UUID scopeID = UUID.Zero;
             if (request.ContainsKey("SCOPEID"))
                 UUID.TryParse(request["SCOPEID"].ToString(), out scopeID);
             else
-                m_log.WarnFormat("[GRID HANDLER]: no scopeID in request to get neighbours");
+                m_log.WarnFormat("[GRID HANDLER]: no scopeID in request to get neighbors");
 
             UUID regionID = UUID.Zero;
             if (request.ContainsKey("REGIONID"))
                 UUID.TryParse(request["REGIONID"].ToString(), out regionID);
             else
-                m_log.WarnFormat("[GRID HANDLER]: no regionID in request to get neighbours");
+                m_log.WarnFormat("[GRID HANDLER]: no regionID in request to get neighbors");
 
-            List<GridRegion> rinfos = m_GridService.GetNeighbours(scopeID, regionID);
-            //m_log.DebugFormat("[GRID HANDLER]: neighbours for region {0}: {1}", regionID, rinfos.Count);
+            List<GridRegion> rinfos = m_GridService.GetNeighbors(scopeID, regionID);
+            //m_log.DebugFormat("[GRID HANDLER]: neighbors for region {0}: {1}", regionID, rinfos.Count);
 
             Dictionary<string, object> result = new Dictionary<string, object>();
             if ((rinfos == null) || ((rinfos != null) && (rinfos.Count == 0)))
@@ -265,16 +265,16 @@ namespace OpenSim.Server.Handlers.Grid
             if (request.ContainsKey("SCOPEID"))
                 UUID.TryParse(request["SCOPEID"].ToString(), out scopeID);
             else
-                m_log.WarnFormat("[GRID HANDLER]: no scopeID in request to get neighbours");
+                m_log.WarnFormat("[GRID HANDLER]: no scopeID in request to get neighbors");
 
             UUID regionID = UUID.Zero;
             if (request.ContainsKey("REGIONID"))
                 UUID.TryParse(request["REGIONID"].ToString(), out regionID);
             else
-                m_log.WarnFormat("[GRID HANDLER]: no regionID in request to get neighbours");
+                m_log.WarnFormat("[GRID HANDLER]: no regionID in request to get neighbors");
 
             GridRegion rinfo = m_GridService.GetRegionByUUID(scopeID, regionID);
-            //m_log.DebugFormat("[GRID HANDLER]: neighbours for region {0}: {1}", regionID, rinfos.Count);
+            //m_log.DebugFormat("[GRID HANDLER]: neighbors for region {0}: {1}", regionID, rinfos.Count);
 
             Dictionary<string, object> result = new Dictionary<string, object>();
             if (rinfo == null)
@@ -336,7 +336,7 @@ namespace OpenSim.Server.Handlers.Grid
                 m_log.WarnFormat("[GRID HANDLER]: no name in request to get region by name");
 
             GridRegion rinfo = m_GridService.GetRegionByName(scopeID, regionName);
-            //m_log.DebugFormat("[GRID HANDLER]: neighbours for region {0}: {1}", regionID, rinfos.Count);
+            //m_log.DebugFormat("[GRID HANDLER]: neighbors for region {0}: {1}", regionID, rinfos.Count);
 
             Dictionary<string, object> result = new Dictionary<string, object>();
             if (rinfo == null)
@@ -371,7 +371,7 @@ namespace OpenSim.Server.Handlers.Grid
                 m_log.WarnFormat("[GRID HANDLER]: no MAX in request to get regions by name");
 
             List<GridRegion> rinfos = m_GridService.GetRegionsByName(scopeID, regionName, max);
-            //m_log.DebugFormat("[GRID HANDLER]: neighbours for region {0}: {1}", regionID, rinfos.Count);
+            //m_log.DebugFormat("[GRID HANDLER]: neighbors for region {0}: {1}", regionID, rinfos.Count);
 
             Dictionary<string, object> result = new Dictionary<string, object>();
             if ((rinfos == null) || ((rinfos != null) && (rinfos.Count == 0)))

@@ -538,8 +538,8 @@ namespace OpenSim.Region.PhysicsModule.ubOde
             step_time = -1;
 
 
-            base.Initialise(m_frameWorkScene.PhysicsRequestAsset,
-                (m_frameWorkScene.Heightmap != null ? m_frameWorkScene.Heightmap.GetFloatsSerialised() : new float[m_frameWorkScene.RegionInfo.RegionSizeX * m_frameWorkScene.RegionInfo.RegionSizeY]),
+            base.Initialize(m_frameWorkScene.PhysicsRequestAsset,
+                (m_frameWorkScene.Heightmap != null ? m_frameWorkScene.Heightmap.GetFloatsSerialized() : new float[m_frameWorkScene.RegionInfo.RegionSizeX * m_frameWorkScene.RegionInfo.RegionSizeY]),
                 (float)m_frameWorkScene.RegionInfo.RegionSettings.WaterHeight);
         }
 

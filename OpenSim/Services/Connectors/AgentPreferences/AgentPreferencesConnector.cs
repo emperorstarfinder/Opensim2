@@ -59,10 +59,10 @@ namespace OpenSim.Services.Connectors
         public AgentPreferencesServicesConnector(IConfigSource source)
             : base(source, "AgentPreferencesService")
         {
-            Initialise(source);
+            Initialize(source);
         }
 
-        public void Initialise(IConfigSource source)
+        public void Initialize(IConfigSource source)
         {
             IConfig gridConfig = source.Configs["AgentPreferencesService"];
             if (gridConfig == null)
@@ -80,7 +80,7 @@ namespace OpenSim.Services.Connectors
             }
             m_ServerURI = serviceURI;
 
-            base.Initialise(source, "AgentPreferencesService");
+            base.Initialize(source, "AgentPreferencesService");
         }
 
         #region IAgentPreferencesService

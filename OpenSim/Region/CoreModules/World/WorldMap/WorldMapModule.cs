@@ -97,7 +97,7 @@ namespace OpenSim.Region.CoreModules.World.WorldMap
         private bool m_exportPrintRegionName = false; // prints the region name exported map
 
         #region INonSharedRegionModule Members
-        public virtual void Initialise(IConfigSource config)
+        public virtual void Initialize(IConfigSource config)
         {
             string[] configSections = new string[] { "Map", "Startup" };
 

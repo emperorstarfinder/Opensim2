@@ -68,7 +68,7 @@ namespace OpenSim.Region.OptionalModules.Materials
 
         private Dictionary<FaceMaterial, double> m_changed = new Dictionary<FaceMaterial, double>();
 
-        public void Initialise(IConfigSource source)
+        public void Initialize(IConfigSource source)
         {
             m_enabled = true; // default is enabled
 

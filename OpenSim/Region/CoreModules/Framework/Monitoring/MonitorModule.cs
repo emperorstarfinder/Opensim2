@@ -72,7 +72,7 @@ namespace OpenSim.Region.CoreModules.Framework.Monitoring
 
         #region Implementation of INonSharedRegionModule
 
-        public void Initialise(IConfigSource source)
+        public void Initialize(IConfigSource source)
         {
             IConfig cnfg = source.Configs["Monitoring"];
 

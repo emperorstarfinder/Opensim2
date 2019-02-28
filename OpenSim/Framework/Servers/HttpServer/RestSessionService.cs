@@ -182,18 +182,18 @@ namespace OpenSim.Framework.Servers.HttpServer
 
     public delegate bool CheckIdentityMethod(string sid, string aid);
 
-    public class RestDeserialiseSecureHandler<TRequest, TResponse> : BaseOutputStreamHandler, IStreamHandler
+    public class RestDeserializeSecureHandler<TRequest, TResponse> : BaseOutputStreamHandler, IStreamHandler
         where TRequest : new()
     {
         private static readonly ILog m_log
             = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-        private RestDeserialiseMethod<TRequest, TResponse> m_method;
+        private RestDeserializeMethod<TRequest, TResponse> m_method;
         private CheckIdentityMethod m_smethod;
 
-        public RestDeserialiseSecureHandler(
+        public RestDeserializeSecureHandler(
              string httpMethod, string path,
-             RestDeserialiseMethod<TRequest, TResponse> method, CheckIdentityMethod smethod)
+             RestDeserializeMethod<TRequest, TResponse> method, CheckIdentityMethod smethod)
             : base(httpMethod, path)
         {
             m_smethod = smethod;
@@ -236,7 +236,7 @@ namespace OpenSim.Framework.Servers.HttpServer
 
     public delegate bool CheckTrustedSourceMethod(IPEndPoint peer);
 
-    public class RestDeserialiseTrustedHandler<TRequest, TResponse> : BaseOutputStreamHandler, IStreamHandler
+    public class RestDeserializeTrustedHandler<TRequest, TResponse> : BaseOutputStreamHandler, IStreamHandler
         where TRequest : new()
     {
         private static readonly ILog m_log
@@ -245,14 +245,14 @@ namespace OpenSim.Framework.Servers.HttpServer
         /// <summary>
         /// The operation to perform once trust has been established.
         /// </summary>
-        private RestDeserialiseMethod<TRequest, TResponse> m_method;
+        private RestDeserializeMethod<TRequest, TResponse> m_method;
 
         /// <summary>
         /// The method used to check whether a request is trusted.
         /// </summary>
         private CheckTrustedSourceMethod m_tmethod;
 
-        public RestDeserialiseTrustedHandler(string httpMethod, string path, RestDeserialiseMethod<TRequest, TResponse> method, CheckTrustedSourceMethod tmethod)
+        public RestDeserializeTrustedHandler(string httpMethod, string path, RestDeserializeMethod<TRequest, TResponse> method, CheckTrustedSourceMethod tmethod)
             : base(httpMethod, path)
         {
             m_tmethod = tmethod;

@@ -47,7 +47,7 @@ namespace OpenSim.Region.Framework.Interfaces
         /// Squash the entire heightmap into a single dimensioned array
         /// </summary>
         /// <returns></returns>
-        float[] GetFloatsSerialised();
+        float[] GetFloatsSerialized();
 
         double[,] GetDoubles();
 

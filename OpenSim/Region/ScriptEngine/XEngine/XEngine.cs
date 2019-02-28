@@ -251,7 +251,7 @@ namespace OpenSim.Region.ScriptEngine.XEngine
         /// </summary>
         public event ObjectRemoved OnObjectRemoved;
 
-        public void Initialise(IConfigSource configSource)
+        public void Initialize(IConfigSource configSource)
         {
             if (configSource.Configs["XEngine"] == null)
                 return;

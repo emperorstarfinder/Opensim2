@@ -791,7 +791,7 @@ public class BSShapeHull : BSShape
                 parms.volumeWeight = BSParam.BHullVolumeWeight;
                 parms.concavity = BSParam.BHullConcavity;
                 parms.addExtraDistPoints = BSParam.NumericBool(BSParam.BHullAddExtraDistPoints);
-                parms.addNeighboursDistPoints = BSParam.NumericBool(BSParam.BHullAddNeighboursDistPoints);
+                parms.addNeighborsDistPoints = BSParam.NumericBool(BSParam.BHullAddNeighborsDistPoints);
                 parms.addFacesPoints = BSParam.NumericBool(BSParam.BHullAddFacesPoints);
                 parms.shouldAdjustCollisionMargin = BSParam.NumericBool(BSParam.BHullShouldAdjustCollisionMargin);
                 parms.whichHACD = 0;    // Use the HACD routine that comes with Bullet

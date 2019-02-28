@@ -54,10 +54,10 @@ namespace OpenSim.Services.Connectors
 
         public EstateDataRemoteConnector(IConfigSource source)
         {
-            Initialise(source);
+            Initialize(source);
         }
 
-        public virtual void Initialise(IConfigSource source)
+        public virtual void Initialize(IConfigSource source)
         {
             IConfig gridConfig = source.Configs["EstateService"];
             if (gridConfig == null)
@@ -76,7 +76,7 @@ namespace OpenSim.Services.Connectors
             }
             m_ServerURI = serviceURI;
 
-            base.Initialise(source, "EstateService");
+            base.Initialize(source, "EstateService");
         }
 
         #region IEstateDataService

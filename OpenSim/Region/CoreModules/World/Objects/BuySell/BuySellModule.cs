@@ -53,7 +53,7 @@ namespace OpenSim.Region.CoreModules.World.Objects.BuySell
         public string Name { get { return "Object BuySell Module"; } }
         public Type ReplaceableInterface { get { return null; } }
 
-        public void Initialise(IConfigSource source) {}
+        public void Initialize(IConfigSource source) {}
 
         public void AddRegion(Scene scene)
         {

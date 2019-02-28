@@ -36,19 +36,19 @@ namespace OpenSim.Region.CoreModules.World.Terrain.PaintBrushes
     public class WeatherSphere : ITerrainPaintableEffect
     {
         private const double talus = 0.2;
-        private const NeighbourSystem type = NeighbourSystem.Moore;
+        private const NeighborSystem type = NeighborSystem.Moore;
 
         #region Supporting Functions
 
-        private static int[] Neighbours(NeighbourSystem neighbourType, int index)
+        private static int[] Neighbors(NeighborSystem neighborType, int index)
         {
             int[] coord = new int[2];
 
             index++;
 
-            switch (neighbourType)
+            switch (neighborType)
             {
-                case NeighbourSystem.Moore:
+                case NeighborSystem.Moore:
                     switch (index)
                     {
                         case 1:
@@ -101,7 +101,7 @@ namespace OpenSim.Region.CoreModules.World.Terrain.PaintBrushes
                     }
                     break;
 
-                case NeighbourSystem.VonNeumann:
+                case NeighborSystem.VonNeumann:
                     switch (index)
                     {
                         case 1:
@@ -138,7 +138,7 @@ namespace OpenSim.Region.CoreModules.World.Terrain.PaintBrushes
             return coord;
         }
 
-        private enum NeighbourSystem
+        private enum NeighborSystem
         {
             Moore,
             VonNeumann
@@ -166,14 +166,14 @@ namespace OpenSim.Region.CoreModules.World.Terrain.PaintBrushes
 
                     if (z > 0) // add in non-zero amount
                     {
-                        const int NEIGHBOUR_ME = 4;
-                        const int NEIGHBOUR_MAX = 9;
+                        const int NEIGHBOR_ME = 4;
+                        const int NEIGHBOR_MAX = 9;
 
-                        for (int j = 0; j < NEIGHBOUR_MAX; j++)
+                        for (int j = 0; j < NEIGHBOR_MAX; j++)
                         {
-                            if (j != NEIGHBOUR_ME)
+                            if (j != NEIGHBOR_ME)
                             {
-                                int[] coords = Neighbours(type, j);
+                                int[] coords = Neighbors(type, j);
 
                                 coords[0] += x;
                                 coords[1] += y;

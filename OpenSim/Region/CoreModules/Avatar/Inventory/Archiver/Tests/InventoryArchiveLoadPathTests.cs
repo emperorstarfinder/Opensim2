@@ -37,7 +37,7 @@ using OpenSim.Framework;
 using OpenSim.Framework.Serialization;
 using OpenSim.Framework.Serialization.External;
 using OpenSim.Region.CoreModules.Avatar.Inventory.Archiver;
-using OpenSim.Region.CoreModules.World.Serialiser;
+using OpenSim.Region.CoreModules.World.Serializer;
 using OpenSim.Region.Framework.Scenes;
 using OpenSim.Region.Framework.Scenes.Serialization;
 using OpenSim.Services.Interfaces;
@@ -57,13 +57,13 @@ namespace OpenSim.Region.CoreModules.Avatar.Inventory.Archiver.Tests
             TestHelpers.InMethod();
 //            log4net.Config.XmlConfigurator.Configure();
 
-            SerialiserModule serialiserModule = new SerialiserModule();
+            SerializerModule serializerModule = new SerializerModule();
             InventoryArchiverModule archiverModule = new InventoryArchiverModule();
 
             // Annoyingly, we have to set up a scene even though inventory loading has nothing to do with a scene
             Scene scene = new SceneHelpers().SetupScene();
 
-            SceneHelpers.SetupSceneModules(scene, serialiserModule, archiverModule);
+            SceneHelpers.SetupSceneModules(scene, serializerModule, archiverModule);
 
             UserAccountHelpers.CreateUserWithInventory(scene, m_uaMT, "meowfood");
             UserAccountHelpers.CreateUserWithInventory(scene, m_uaLL1, "hampshire");
@@ -102,10 +102,10 @@ namespace OpenSim.Region.CoreModules.Avatar.Inventory.Archiver.Tests
             TestHelpers.InMethod();
 //            log4net.Config.XmlConfigurator.Configure();
 
-            SerialiserModule serialiserModule = new SerialiserModule();
+            SerializerModule serializerModule = new SerializerModule();
             InventoryArchiverModule archiverModule = new InventoryArchiverModule();
             Scene scene = new SceneHelpers().SetupScene();
-            SceneHelpers.SetupSceneModules(scene, serialiserModule, archiverModule);
+            SceneHelpers.SetupSceneModules(scene, serializerModule, archiverModule);
 
             UserAccountHelpers.CreateUserWithInventory(scene, m_uaMT, "password");
             archiverModule.DearchiveInventory(UUID.Random(), m_uaMT.FirstName, m_uaMT.LastName, "/Objects", "password", m_iarStream);

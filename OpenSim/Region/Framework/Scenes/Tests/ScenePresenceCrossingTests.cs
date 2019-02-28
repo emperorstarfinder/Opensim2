@@ -98,7 +98,7 @@ namespace OpenSim.Region.Framework.Scenes.Tests
             AgentCircuitData acd = SceneHelpers.GenerateAgentData(userId);
             TestClient tc = new TestClient(acd, sceneA);
             List<TestClient> destinationTestClients = new List<TestClient>();
-            EntityTransferHelpers.SetupInformClientOfNeighbourTriggersNeighbourClientCreate(tc, destinationTestClients);
+            EntityTransferHelpers.SetupInformClientOfNeighborTriggersNeighborClientCreate(tc, destinationTestClients);
 
             ScenePresence originalSp = SceneHelpers.AddScenePresence(sceneA, tc, acd);
             originalSp.AbsolutePosition = new Vector3(128, 32, 10);
@@ -162,7 +162,7 @@ namespace OpenSim.Region.Framework.Scenes.Tests
         }
 
         /// <summary>
-        /// Test a cross attempt where the user can see into the neighbour but does not have permission to become
+        /// Test a cross attempt where the user can see into the neighbor but does not have permission to become
         /// root there.
         /// </summary>
         [Test]
@@ -197,7 +197,7 @@ namespace OpenSim.Region.Framework.Scenes.Tests
             AgentCircuitData acd = SceneHelpers.GenerateAgentData(userId);
             TestClient tc = new TestClient(acd, sceneA);
             List<TestClient> destinationTestClients = new List<TestClient>();
-            EntityTransferHelpers.SetupInformClientOfNeighbourTriggersNeighbourClientCreate(tc, destinationTestClients);
+            EntityTransferHelpers.SetupInformClientOfNeighborTriggersNeighborClientCreate(tc, destinationTestClients);
 
             // Make sure sceneB will not accept this avatar.
             sceneB.RegionInfo.EstateSettings.PublicAccess = false;

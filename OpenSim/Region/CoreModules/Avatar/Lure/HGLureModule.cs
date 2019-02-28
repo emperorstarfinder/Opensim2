@@ -57,7 +57,7 @@ namespace OpenSim.Region.CoreModules.Avatar.Lure
 
         private ExpiringCache<UUID, GridInstantMessage> m_PendingLures = new ExpiringCache<UUID, GridInstantMessage>();
 
-        public void Initialise(IConfigSource config)
+        public void Initialize(IConfigSource config)
         {
             if (config.Configs["Messaging"] != null)
             {
@@ -130,7 +130,7 @@ namespace OpenSim.Region.CoreModules.Avatar.Lure
             client.OnTeleportLureRequest += OnTeleportLureRequest;
         }
 
-        public void PostInitialise()
+        public void PostInitialize()
         {
         }
 

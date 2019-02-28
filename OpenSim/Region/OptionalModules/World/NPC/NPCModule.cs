@@ -59,7 +59,7 @@ namespace OpenSim.Region.OptionalModules.World.NPC
 
         public bool Enabled { get; private set; }
 
-        public void Initialise(IConfigSource source)
+        public void Initialize(IConfigSource source)
         {
             IConfig config = source.Configs["NPC"];
 
@@ -91,7 +91,7 @@ namespace OpenSim.Region.OptionalModules.World.NPC
         {
         }
 
-        public void PostInitialise()
+        public void PostInitialize()
         {
         }
 

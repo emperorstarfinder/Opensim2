@@ -63,8 +63,8 @@ namespace OpenSim.Data.MySQL
 
         public string Version { get { return "1.0.0.0"; } }
 
-        // Loads and initialises the MySQL storage plugin and checks for migrations
-        public void Initialise(string connect, string realm, int UpdateAccessTime)
+        // Loads and initializes the MySQL storage plugin and checks for migrations
+        public void Initialize(string connect, string realm, int UpdateAccessTime)
         {
             m_ConnectionString = connect;
             m_Table = realm;
@@ -87,7 +87,7 @@ namespace OpenSim.Data.MySQL
             }
         }
 
-        public void Initialise()
+        public void Initialize()
         {
             throw new NotImplementedException();
         }

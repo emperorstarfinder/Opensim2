@@ -80,7 +80,7 @@ namespace OpenSim.Framework.Monitoring
         PerfCounterControl processorPercentPerfCounter = null;
 
         // IRegionModuleBase.Initialize
-        public void Initialise(IConfigSource source)
+        public void Initialize(IConfigSource source)
         {
             if (source == null)
                 return;

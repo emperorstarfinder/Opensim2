@@ -62,7 +62,7 @@ namespace OpenSim.Services.Connectors.SimianGrid
 
         public Type ReplaceableInterface { get { return null; } }
         public void RegionLoaded(Scene scene) { }
-        public void PostInitialise() { }
+        public void PostInitialize() { }
         public void Close() { }
 
         public SimianAvatarServiceConnector() { }
@@ -77,7 +77,7 @@ namespace OpenSim.Services.Connectors.SimianGrid
             CommonInit(source);
         }
 
-        public void Initialise(IConfigSource source)
+        public void Initialize(IConfigSource source)
         {
             IConfig moduleConfig = source.Configs["Modules"];
             if (moduleConfig != null)

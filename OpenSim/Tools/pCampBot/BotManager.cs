@@ -272,7 +272,7 @@ namespace pCampBot
             StatsManager.RegisterConsoleCommands(m_console);
 
             m_serverStatsCollector = new ServerStatsCollector();
-            m_serverStatsCollector.Initialise(null);
+            m_serverStatsCollector.Initialize(null);
             m_serverStatsCollector.Enabled = true;
             m_serverStatsCollector.Start();
 

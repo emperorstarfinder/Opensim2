@@ -59,10 +59,10 @@ namespace OpenSim.Services.Connectors
 
         public UserAccountServicesConnector(IConfigSource source)
         {
-            Initialise(source);
+            Initialize(source);
         }
 
-        public virtual void Initialise(IConfigSource source)
+        public virtual void Initialize(IConfigSource source)
         {
             IConfig assetConfig = source.Configs["UserAccountService"];
             if (assetConfig == null)
@@ -81,7 +81,7 @@ namespace OpenSim.Services.Connectors
             }
             m_ServerURI = serviceURI;
 
-            base.Initialise(source, "UserAccountService");
+            base.Initialize(source, "UserAccountService");
         }
 
         public virtual UserAccount GetUserAccount(UUID scopeID, string firstName, string lastName)

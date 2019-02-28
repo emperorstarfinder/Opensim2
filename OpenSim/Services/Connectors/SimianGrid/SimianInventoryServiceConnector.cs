@@ -81,7 +81,7 @@ namespace OpenSim.Services.Connectors.SimianGrid
 
         public Type ReplaceableInterface { get { return null; } }
         public void RegionLoaded(Scene scene) { }
-        public void PostInitialise() { }
+        public void PostInitialize() { }
         public void Close() { }
 
         public SimianInventoryServiceConnector() { }
@@ -107,7 +107,7 @@ namespace OpenSim.Services.Connectors.SimianGrid
 
         }
 
-        public void Initialise(IConfigSource source)
+        public void Initialize(IConfigSource source)
         {
             IConfig moduleConfig = source.Configs["Modules"];
             if (moduleConfig != null)

@@ -14,10 +14,10 @@ namespace OpenSim.Services.Connectors
 
         public BaseServiceConnector(IConfigSource config, string section)
         {
-            Initialise(config, section);
+            Initialize(config, section);
         }
 
-        public void Initialise(IConfigSource config, string section)
+        public void Initialize(IConfigSource config, string section)
         {
             string authType = Util.GetConfigVarFromSections<string>(config, "AuthType", new string[] { "Network", section }, "None");
 

@@ -154,7 +154,7 @@ namespace OpenSim.Region.CoreModules.Avatar.Friends
         }
 
         #region ISharedRegionModule
-        public void Initialise(IConfigSource config)
+        public void Initialize(IConfigSource config)
         {
             IConfig moduleConfig = config.Configs["Modules"];
             if (moduleConfig != null)
@@ -197,7 +197,7 @@ namespace OpenSim.Region.CoreModules.Avatar.Friends
             }
         }
 
-        public void PostInitialise()
+        public void PostInitialize()
         {
         }
 

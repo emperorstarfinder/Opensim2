@@ -61,7 +61,7 @@ namespace OpenSim.Tests.Common
 
         public Dictionary<UUID, List<Event>> Events { get; set; }
 
-        public void Initialise(IConfigSource source) {}
+        public void Initialize(IConfigSource source) {}
 
         public void Close() {}
 

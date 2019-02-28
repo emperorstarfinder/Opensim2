@@ -64,7 +64,7 @@ namespace OpenSim.Region.CoreModules.Avatar.Gods
         protected Scene m_scene;
         protected IDialogModule m_dialogModule;
 
-        public void Initialise(IConfigSource source)
+        public void Initialize(IConfigSource source)
         {
         }
 

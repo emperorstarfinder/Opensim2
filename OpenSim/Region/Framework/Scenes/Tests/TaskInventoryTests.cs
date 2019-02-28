@@ -40,7 +40,7 @@ using OpenSim.Framework;
 using OpenSim.Region.Framework.Scenes;
 using OpenSim.Region.Framework.Interfaces;
 using OpenSim.Region.CoreModules.Avatar.Inventory.Archiver;
-using OpenSim.Region.CoreModules.World.Serialiser;
+using OpenSim.Region.CoreModules.World.Serializer;
 using OpenSim.Region.CoreModules.ServiceConnectorsOut.Simulation;
 using OpenSim.Services.Interfaces;
 using OpenSim.Tests.Common;

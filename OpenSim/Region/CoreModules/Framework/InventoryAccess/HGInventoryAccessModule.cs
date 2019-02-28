@@ -82,7 +82,7 @@ namespace OpenSim.Region.CoreModules.Framework.InventoryAccess
             get { return "HGInventoryAccessModule"; }
         }
 
-        public override void Initialise(IConfigSource source)
+        public override void Initialize(IConfigSource source)
         {
             IConfig moduleConfig = source.Configs["Modules"];
             if (moduleConfig != null)
@@ -92,7 +92,7 @@ namespace OpenSim.Region.CoreModules.Framework.InventoryAccess
                 {
                     m_Enabled = true;
 
-                    InitialiseCommon(source);
+                    InitializeCommon(source);
 
                     m_log.InfoFormat("[HG INVENTORY ACCESS MODULE]: {0} enabled.", Name);
 

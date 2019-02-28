@@ -59,12 +59,12 @@ namespace OpenSim.Region.OptionalModules.Agent.TextureSender
 
         public Type ReplaceableInterface { get { return null; } }
 
-        public void Initialise(IConfigSource source)
+        public void Initialize(IConfigSource source)
         {
 //            m_log.DebugFormat("[J2K DECODER COMMAND MODULE]: INITIALIZED MODULE");
         }
 
-        public void PostInitialise()
+        public void PostInitialize()
         {
 //            m_log.DebugFormat("[J2K DECODER COMMAND MODULE]: POST INITIALIZED MODULE");
         }

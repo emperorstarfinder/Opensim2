@@ -62,7 +62,7 @@ namespace OpenSim.Region.CoreModules.Framework.Search
 
         #region ISharedRegionModule
 
-        public void Initialise(IConfigSource config)
+        public void Initialize(IConfigSource config)
         {
             string umanmod = config.Configs["Modules"].GetString("SearchModule", Name);
             if (umanmod == Name)
@@ -124,7 +124,7 @@ namespace OpenSim.Region.CoreModules.Framework.Search
             }
         }
 
-        public void PostInitialise()
+        public void PostInitialize()
         {
         }
 

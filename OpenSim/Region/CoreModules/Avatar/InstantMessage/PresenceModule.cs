@@ -72,7 +72,7 @@ namespace OpenSim.Region.CoreModules.Avatar.InstantMessage
             }
         }
 
-        public void Initialise(IConfigSource config)
+        public void Initialize(IConfigSource config)
         {
         }
 
@@ -94,7 +94,7 @@ namespace OpenSim.Region.CoreModules.Avatar.InstantMessage
             m_Scenes.Remove(scene);
         }
 
-        public void PostInitialise()
+        public void PostInitialize()
         {
         }
 

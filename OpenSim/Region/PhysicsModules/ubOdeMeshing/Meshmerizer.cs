@@ -88,7 +88,7 @@ namespace OpenSim.Region.PhysicsModule.ubODEMeshing
             get { return null; }
         }
 
-        public void Initialise(IConfigSource config)
+        public void Initialize(IConfigSource config)
         {
             IConfig start_config = config.Configs["Startup"];
 

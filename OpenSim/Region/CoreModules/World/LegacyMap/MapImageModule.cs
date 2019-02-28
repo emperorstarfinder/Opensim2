@@ -102,7 +102,7 @@ namespace OpenSim.Region.CoreModules.World.LegacyMap
                         terrainRenderer = new ShadedMapTileRenderer();
                     }
 
-                    terrainRenderer.Initialise(m_scene, m_config);
+                    terrainRenderer.Initialize(m_scene, m_config);
 
                     mapbmp = new Bitmap((int)m_scene.Heightmap.Width, (int)m_scene.Heightmap.Height,
                                             System.Drawing.Imaging.PixelFormat.Format24bppRgb);
@@ -168,7 +168,7 @@ namespace OpenSim.Region.CoreModules.World.LegacyMap
 
         #region Region Module interface
 
-        public void Initialise(IConfigSource source)
+        public void Initialize(IConfigSource source)
         {
             m_config = source;
 

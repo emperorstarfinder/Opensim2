@@ -60,7 +60,7 @@ namespace OpenSim.Region.CoreModules.ServiceConnectorsOut.Asset
             get { return "RemoteAssetServicesConnector"; }
         }
 
-        public override void Initialise(IConfigSource source)
+        public override void Initialize(IConfigSource source)
         {
             IConfig moduleConfig = source.Configs["Modules"];
             if (moduleConfig != null)
@@ -77,14 +77,14 @@ namespace OpenSim.Region.CoreModules.ServiceConnectorsOut.Asset
 
                     m_Enabled = true;
 
-                    base.Initialise(source);
+                    base.Initialize(source);
 
                     m_log.Info("[ASSET CONNECTOR]: Remote assets enabled");
                 }
             }
         }
 
-        public void PostInitialise()
+        public void PostInitialize()
         {
         }
 

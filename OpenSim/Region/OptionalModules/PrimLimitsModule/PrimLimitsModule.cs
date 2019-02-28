@@ -57,7 +57,7 @@ namespace OpenSim.Region.OptionalModules
 
         public Type ReplaceableInterface { get { return null; } }
 
-        public void Initialise(IConfigSource config)
+        public void Initialize(IConfigSource config)
         {
             string permissionModules = Util.GetConfigVarFromSections<string>(config, "permissionmodules",
                 new string[] { "Startup", "Permissions" }, "DefaultPermissionsModule");

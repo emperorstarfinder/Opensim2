@@ -62,12 +62,12 @@ namespace OpenSim.Region.CoreModules.World.Objects.Commands
 
         public Type ReplaceableInterface { get { return null; } }
 
-        public void Initialise(IConfigSource source)
+        public void Initialize(IConfigSource source)
         {
 //            m_log.DebugFormat("[OBJECT COMMANDS MODULE]: INITIALIZED MODULE");
         }
 
-        public void PostInitialise()
+        public void PostInitialize()
         {
 //            m_log.DebugFormat("[OBJECT COMMANDS MODULE]: POST INITIALIZED MODULE");
         }

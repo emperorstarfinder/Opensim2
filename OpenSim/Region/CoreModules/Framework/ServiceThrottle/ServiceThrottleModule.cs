@@ -52,7 +52,7 @@ namespace OpenSim.Region.CoreModules.Framework
 
         #region ISharedRegionModule
 
-        public void Initialise(IConfigSource config)
+        public void Initialize(IConfigSource config)
         {
             m_processorJobEngine = new JobEngine(
                 "ServiceThrottle","ServiceThrottle");
@@ -83,7 +83,7 @@ namespace OpenSim.Region.CoreModules.Framework
             }
         }
 
-        public void PostInitialise()
+        public void PostInitialize()
         {
         }
 

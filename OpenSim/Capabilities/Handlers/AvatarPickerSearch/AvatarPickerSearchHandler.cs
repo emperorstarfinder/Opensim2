@@ -87,7 +87,7 @@ namespace OpenSim.Capabilities.Handlers
             foreach (UserData u in users)
                 osdReply.agents.Array.Add(ConvertUserData(u));
 
-            string reply = LLSDHelpers.SerialiseLLSDReply(osdReply);
+            string reply = LLSDHelpers.SerializeLLSDReply(osdReply);
             return System.Text.Encoding.UTF8.GetBytes(reply);
         }
 

@@ -82,7 +82,7 @@ namespace OpenSim.Region.CoreModules.Agent.TextureSender
         {
         }
 
-        public void Initialise(IConfigSource source)
+        public void Initialize(IConfigSource source)
         {
             IConfig startupConfig = source.Configs["Startup"];
             if (startupConfig != null)
@@ -109,7 +109,7 @@ namespace OpenSim.Region.CoreModules.Agent.TextureSender
                 m_scene = null;
         }
 
-        public void PostInitialise()
+        public void PostInitialize()
         {
         }
 

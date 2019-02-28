@@ -202,7 +202,7 @@ namespace OpenSim.Region.Framework.Scenes
         public delegate void OnPluginConsoleDelegate(string[] args);
 
         /// <summary>
-        /// Triggered after <see cref="OpenSim.IApplicationPlugin.PostInitialise"/>
+        /// Triggered after <see cref="OpenSim.IApplicationPlugin.PostInitialize"/>
         /// has been called for all <see cref="OpenSim.IApplicationPlugin"/>
         /// loaded via <see cref="OpenSim.OpenSimBase.LoadPlugins"/>.
         /// Handlers for this event are typically used to parse the arguments

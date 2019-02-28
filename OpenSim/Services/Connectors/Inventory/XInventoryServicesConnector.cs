@@ -81,16 +81,16 @@ namespace OpenSim.Services.Connectors
             : base(source, configName)
         {
             m_configName = configName;
-            Initialise(source);
+            Initialize(source);
         }
 
         public XInventoryServicesConnector(IConfigSource source)
             : base(source, "InventoryService")
         {
-            Initialise(source);
+            Initialize(source);
         }
 
-        public virtual void Initialise(IConfigSource source)
+        public virtual void Initialize(IConfigSource source)
         {
             IConfig config = source.Configs[m_configName];
             if (config == null)

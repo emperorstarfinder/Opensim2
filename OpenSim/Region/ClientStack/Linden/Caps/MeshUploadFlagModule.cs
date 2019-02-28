@@ -65,7 +65,7 @@ namespace OpenSim.Region.ClientStack.Linden
             Enabled = true;
         }
 
-        public void Initialise(IConfigSource source)
+        public void Initialize(IConfigSource source)
         {
             IConfig config = source.Configs["Mesh"];
             if (config == null)
@@ -99,7 +99,7 @@ namespace OpenSim.Region.ClientStack.Linden
         {
         }
 
-        public void PostInitialise()
+        public void PostInitialize()
         {
         }
 

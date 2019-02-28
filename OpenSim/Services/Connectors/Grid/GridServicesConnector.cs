@@ -63,10 +63,10 @@ namespace OpenSim.Services.Connectors
 
         public GridServicesConnector(IConfigSource source)
         {
-            Initialise(source);
+            Initialize(source);
         }
 
-        public virtual void Initialise(IConfigSource source)
+        public virtual void Initialize(IConfigSource source)
         {
             IConfig gridConfig = source.Configs["GridService"];
             if (gridConfig == null)
@@ -85,7 +85,7 @@ namespace OpenSim.Services.Connectors
             }
             m_ServerURI = serviceURI;
 
-            base.Initialise(source, "GridService");
+            base.Initialize(source, "GridService");
         }
 
 
@@ -184,14 +184,14 @@ namespace OpenSim.Services.Connectors
             return false;
         }
 
-        public List<GridRegion> GetNeighbours(UUID scopeID, UUID regionID)
+        public List<GridRegion> GetNeighbors(UUID scopeID, UUID regionID)
         {
             Dictionary<string, object> sendData = new Dictionary<string, object>();
 
             sendData["SCOPEID"] = scopeID.ToString();
             sendData["REGIONID"] = regionID.ToString();
 
-            sendData["METHOD"] = "get_neighbours";
+            sendData["METHOD"] = "get_neighbors";
 
             List<GridRegion> rinfos = new List<GridRegion>();
 
@@ -214,7 +214,7 @@ namespace OpenSim.Services.Connectors
             if (replyData != null)
             {
                 Dictionary<string, object>.ValueCollection rinfosList = replyData.Values;
-                //m_log.DebugFormat("[GRID CONNECTOR]: get neighbours returned {0} elements", rinfosList.Count);
+                //m_log.DebugFormat("[GRID CONNECTOR]: get neighbors returned {0} elements", rinfosList.Count);
                 foreach (object r in rinfosList)
                 {
                     if (r is Dictionary<string, object>)
@@ -225,7 +225,7 @@ namespace OpenSim.Services.Connectors
                 }
             }
             else
-                m_log.DebugFormat("[GRID CONNECTOR]: GetNeighbours {0}, {1} received null response",
+                m_log.DebugFormat("[GRID CONNECTOR]: GetNeighbors {0}, {1} received null response",
                     scopeID, regionID);
 
             return rinfos;

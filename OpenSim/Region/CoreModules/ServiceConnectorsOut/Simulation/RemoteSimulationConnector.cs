@@ -63,7 +63,7 @@ namespace OpenSim.Region.CoreModules.ServiceConnectorsOut.Simulation
 
         #region Region Module interface
 
-        public virtual void Initialise(IConfigSource configSource)
+        public virtual void Initialize(IConfigSource configSource)
         {
             IConfig moduleConfig = configSource.Configs["Modules"];
             if (moduleConfig != null)
@@ -73,7 +73,7 @@ namespace OpenSim.Region.CoreModules.ServiceConnectorsOut.Simulation
                 {
                     m_localBackend = new LocalSimulationConnectorModule();
 
-                    m_localBackend.InitialiseService(configSource);
+                    m_localBackend.InitializeService(configSource);
 
                     m_remoteConnector = new SimulationServiceConnector();
 
@@ -84,7 +84,7 @@ namespace OpenSim.Region.CoreModules.ServiceConnectorsOut.Simulation
             }
         }
 
-        public virtual void PostInitialise()
+        public virtual void PostInitialize()
         {
         }
 

@@ -225,7 +225,7 @@ namespace OpenSim.Server.Base
 
             // Allow derived classes to perform initialization that
             // needs to be done after the console has opened
-            Initialise();
+            Initialize();
         }
 
         public bool Running
@@ -272,7 +272,7 @@ namespace OpenSim.Server.Base
         {
         }
 
-        protected virtual void Initialise()
+        protected virtual void Initialize()
         {
         }
 

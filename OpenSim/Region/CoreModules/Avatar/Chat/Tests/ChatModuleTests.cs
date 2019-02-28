@@ -65,7 +65,7 @@ namespace OpenSim.Region.CoreModules.Avatar.Chat.Tests
             Util.FireAndForgetMethod = Util.DefaultFireAndForgetMethod;
         }
 
-        private void SetupNeighbourRegions(TestScene sceneA, TestScene sceneB)
+        private void SetupNeighborRegions(TestScene sceneA, TestScene sceneB)
         {
             // XXX: HTTP server is not (and should not be) necessary for this test, though it's absence makes the
             // CapabilitiesModule complain when it can't set up HTTP endpoints.
@@ -92,7 +92,7 @@ namespace OpenSim.Region.CoreModules.Avatar.Chat.Tests
         }
 
         /// <summary>
-        /// Tests chat between neighbour regions on the east-west axis
+        /// Tests chat between neighbor regions on the east-west axis
         /// </summary>
         /// <remarks>
         /// Really, this is a combination of a child agent position update test and a chat range test.  These need
@@ -114,7 +114,7 @@ namespace OpenSim.Region.CoreModules.Avatar.Chat.Tests
             TestScene sceneWest = sh.SetupScene("sceneWest", TestHelpers.ParseTail(0x1), 1000, 1000);
             TestScene sceneEast = sh.SetupScene("sceneEast", TestHelpers.ParseTail(0x2), 1001, 1000);
 
-            SetupNeighbourRegions(sceneWest, sceneEast);
+            SetupNeighborRegions(sceneWest, sceneEast);
 
             ScenePresence sp1 = SceneHelpers.AddScenePresence(sceneEast, sp1Uuid);
             TestClient sp1Client = (TestClient)sp1.ControllingClient;
@@ -183,7 +183,7 @@ namespace OpenSim.Region.CoreModules.Avatar.Chat.Tests
         }
 
         /// <summary>
-        /// Tests chat between neighbour regions on the north-south axis
+        /// Tests chat between neighbor regions on the north-south axis
         /// </summary>
         /// <remarks>
         /// Really, this is a combination of a child agent position update test and a chat range test.  These need
@@ -205,7 +205,7 @@ namespace OpenSim.Region.CoreModules.Avatar.Chat.Tests
             TestScene sceneNorth = sh.SetupScene("sceneNorth", TestHelpers.ParseTail(0x1), 1000, 1000);
             TestScene sceneSouth = sh.SetupScene("sceneSouth", TestHelpers.ParseTail(0x2), 1000, 1001);
 
-            SetupNeighbourRegions(sceneNorth, sceneSouth);
+            SetupNeighborRegions(sceneNorth, sceneSouth);
 
             ScenePresence sp1 = SceneHelpers.AddScenePresence(sceneNorth, sp1Uuid);
             TestClient sp1Client = (TestClient)sp1.ControllingClient;

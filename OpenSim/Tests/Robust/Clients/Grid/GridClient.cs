@@ -72,8 +72,8 @@ namespace Robust.Tests
             msg = m_Connector.RegisterRegion(UUID.Zero, r3);
             Assert.AreEqual(msg, string.Empty, "Region 3 failed to re-register");
 
-            List<GridRegion> regions = m_Connector.GetNeighbours(UUID.Zero, r1.RegionID);
-            Assert.AreNotEqual(regions, null, "GetNeighbours of region 1 failed");
+            List<GridRegion> regions = m_Connector.GetNeighbors(UUID.Zero, r1.RegionID);
+            Assert.AreNotEqual(regions, null, "GetNeighbors of region 1 failed");
             Assert.AreEqual(regions.Count, 1, "Region 1 should have 1 neighbor");
             Assert.AreEqual(regions[0].RegionName, "Test Region 2", "Region 1 has the wrong neighbor");
 

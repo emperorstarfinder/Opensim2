@@ -61,7 +61,7 @@ namespace pCampBot
 //            client.Self.Movement.Fly = true;
 //            client.Self.Movement.Fly = false;
 
-            // Seek out neighbouring region
+            // Seek out neighboring region
             Simulator currentSim = client.Network.CurrentSim;
             ulong currentHandle = currentSim.Handle;
             uint currentX, currentY;

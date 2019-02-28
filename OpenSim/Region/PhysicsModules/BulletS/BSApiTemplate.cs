@@ -223,7 +223,7 @@ public struct HACDParams
     public float volumeWeight;				// 0.0
     public float concavity;				    // 100
     public float addExtraDistPoints;		// false
-    public float addNeighboursDistPoints;	// false
+    public float addNeighborsDistPoints;	// false
     public float addFacesPoints;			// false
     public float shouldAdjustCollisionMargin;	// false
     // VHACD

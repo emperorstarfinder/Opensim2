@@ -58,7 +58,7 @@ namespace OpenSim.Region.ClientStack.LindenCaps
             get { return null; }
         }
 
-        public void Initialise(IConfigSource source)
+        public void Initialize(IConfigSource source)
         {
             m_enabled = false; // whatever
             IConfig config = source.Configs["ClientStack.LindenCaps"];
@@ -105,7 +105,7 @@ namespace OpenSim.Region.ClientStack.LindenCaps
             scene.EventManager.OnRegisterCaps -= RegisterCaps;
         }
 
-        public void PostInitialise() { }
+        public void PostInitialize() { }
 
         public void Close() { }
 

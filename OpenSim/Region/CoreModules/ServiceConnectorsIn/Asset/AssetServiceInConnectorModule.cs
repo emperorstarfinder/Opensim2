@@ -51,7 +51,7 @@ namespace OpenSim.Region.CoreModules.ServiceConnectorsIn.Asset
 
         #region Region Module interface
 
-        public void Initialise(IConfigSource config)
+        public void Initialize(IConfigSource config)
         {
             m_Config = config;
             IConfig moduleConfig = config.Configs["Modules"];
@@ -66,7 +66,7 @@ namespace OpenSim.Region.CoreModules.ServiceConnectorsIn.Asset
             }
         }
 
-        public void PostInitialise()
+        public void PostInitialize()
         {
         }
 

@@ -38,10 +38,10 @@ using OpenSim.Region.Framework.Scenes.Serialization;
 using OpenSim.Tests.Common;
 using OpenMetaverse.StructuredData;
 
-namespace OpenSim.Region.CoreModules.World.Serialiser.Tests
+namespace OpenSim.Region.CoreModules.World.Serializer.Tests
 {
     [TestFixture]
-    public class SerialiserTests : OpenSimTestCase
+    public class SerializerTests : OpenSimTestCase
     {
         private const string ObjectRootPartStubXml =
 @"<SceneObjectGroup>
@@ -590,14 +590,14 @@ namespace OpenSim.Region.CoreModules.World.Serialiser.Tests
         </SceneObjectGroup>";
 
         protected Scene m_scene;
-        protected SerialiserModule m_serialiserModule;
+        protected SerializerModule m_serializerModule;
 
         [TestFixtureSetUp]
         public void Init()
         {
-            m_serialiserModule = new SerialiserModule();
+            m_serializerModule = new SerializerModule();
             m_scene = new SceneHelpers().SetupScene();
-            SceneHelpers.SetupSceneModules(m_scene, m_serialiserModule);
+            SceneHelpers.SetupSceneModules(m_scene, m_serializerModule);
         }
 
         [Test]
@@ -780,7 +780,7 @@ namespace OpenSim.Region.CoreModules.World.Serialiser.Tests
             TestHelpers.InMethod();
             //log4net.Config.XmlConfigurator.Configure();
 
-            SceneObjectGroup so = m_serialiserModule.DeserializeGroupFromXml2(ObjectWithNoPartsXml2);
+            SceneObjectGroup so = m_serializerModule.DeserializeGroupFromXml2(ObjectWithNoPartsXml2);
             SceneObjectPart rootPart = so.RootPart;
 
             Assert.That(rootPart.UUID, Is.EqualTo(new UUID("9be68fdd-f740-4a0f-9675-dfbbb536b946")));
@@ -828,7 +828,7 @@ namespace OpenSim.Region.CoreModules.World.Serialiser.Tests
 
             Dictionary<string, object> options = new Dictionary<string, object>();
             options["old-guids"] = true;
-            string xml2 = m_serialiserModule.SerializeGroupToXml2(so, options);
+            string xml2 = m_serializerModule.SerializeGroupToXml2(so, options);
 
             XmlTextReader xtr = new XmlTextReader(new StringReader(xml2));
             xtr.ReadStartElement("SceneObjectGroup");

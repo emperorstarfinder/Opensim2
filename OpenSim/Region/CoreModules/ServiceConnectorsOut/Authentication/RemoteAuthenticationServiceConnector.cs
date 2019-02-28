@@ -57,7 +57,7 @@ namespace OpenSim.Region.CoreModules.ServiceConnectorsOut.Authentication
             get { return "RemoteAuthenticationServicesConnector"; }
         }
 
-        public override void Initialise(IConfigSource source)
+        public override void Initialize(IConfigSource source)
         {
             IConfig moduleConfig = source.Configs["Modules"];
             if (moduleConfig != null)
@@ -74,14 +74,14 @@ namespace OpenSim.Region.CoreModules.ServiceConnectorsOut.Authentication
 
                     m_Enabled = true;
 
-                    base.Initialise(source);
+                    base.Initialize(source);
 
                     m_log.Info("[AUTH CONNECTOR]: Remote Authentication enabled");
                 }
             }
         }
 
-        public void PostInitialise()
+        public void PostInitialize()
         {
             if (!m_Enabled)
                 return;

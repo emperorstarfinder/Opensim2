@@ -60,7 +60,7 @@ namespace OpenSim.Services.Connectors.SimianGrid
             get { return this.GetType().Name; }
         }
 
-        public void Initialise(IConfigSource config)
+        public void Initialize(IConfigSource config)
         {
             try
             {
@@ -75,7 +75,7 @@ namespace OpenSim.Services.Connectors.SimianGrid
                         return;
                     }
 
-                    InitialiseSimCap();
+                    InitializeSimCap();
                     SimulatorCapability = SimulatorCapability.Trim();
                     m_log.InfoFormat("[SimianExternalCaps] using {0} as simulator capability",SimulatorCapability);
                 }
@@ -87,7 +87,7 @@ namespace OpenSim.Services.Connectors.SimianGrid
             }
         }
 
-        public void PostInitialise() { }
+        public void PostInitialize() { }
         public void Close() { }
         public void AddRegion(Scene scene) { }
         public void RemoveRegion(Scene scene) { }
@@ -103,7 +103,7 @@ namespace OpenSim.Services.Connectors.SimianGrid
         /// configuration itself, then look for a file that contains the cap, then finally look
         /// for an environment variable that contains it.
         ///</summary>
-        private void InitialiseSimCap()
+        private void InitializeSimCap()
         {
             if (m_config.Contains("SimulatorCapability"))
             {

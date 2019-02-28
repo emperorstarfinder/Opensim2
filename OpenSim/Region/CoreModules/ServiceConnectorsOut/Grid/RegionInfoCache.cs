@@ -77,7 +77,7 @@ namespace OpenSim.Region.CoreModules.ServiceConnectorsOut.Grid
             m_Cache.AddOrUpdate(rinfo.ScopeID, rinfo, 1e7f);
         }
 
-        public void CacheNearNeighbour(UUID scopeID, GridRegion rinfo)
+        public void CacheNearNeighbor(UUID scopeID, GridRegion rinfo)
         {
             if (rinfo == null)
                 return;

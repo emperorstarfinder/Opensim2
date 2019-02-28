@@ -121,7 +121,7 @@ namespace OpenSim.Region.OptionalModules.World.MoneyModule
         /// Called on startup so the module can be configured.
         /// </summary>
         /// <param name="config">Configuration source.</param>
-        public void Initialise(IConfigSource config)
+        public void Initialize(IConfigSource config)
         {
             m_gConfig = config;
             ReadConfigAndPopulate();
@@ -212,7 +212,7 @@ namespace OpenSim.Region.OptionalModules.World.MoneyModule
             return give_result;
         }
 
-        public void PostInitialise()
+        public void PostInitialize()
         {
         }
 

@@ -69,7 +69,7 @@ namespace OpenSim.Region.CoreModules.World.Land
             get { return "DefaultDwellModule"; }
         }
 
-        public void Initialise(IConfigSource source)
+        public void Initialize(IConfigSource source)
         {
             m_Config = source;
 

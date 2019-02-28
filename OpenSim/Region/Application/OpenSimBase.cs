@@ -184,7 +184,7 @@ namespace OpenSim
             // without a location parameter to allow that to happen.
             if (registryLocation == String.Empty)
             {
-                using (PluginLoader<IApplicationPlugin> loader = new PluginLoader<IApplicationPlugin>(new ApplicationPluginInitialiser(this)))
+                using (PluginLoader<IApplicationPlugin> loader = new PluginLoader<IApplicationPlugin>(new ApplicationPluginInitializer(this)))
                 {
                     loader.Load("/OpenSim/Startup");
                     m_plugins = loader.Plugins;
@@ -192,7 +192,7 @@ namespace OpenSim
             }
             else
             {
-                using (PluginLoader<IApplicationPlugin> loader = new PluginLoader<IApplicationPlugin>(new ApplicationPluginInitialiser(this), registryLocation))
+                using (PluginLoader<IApplicationPlugin> loader = new PluginLoader<IApplicationPlugin>(new ApplicationPluginInitializer(this), registryLocation))
                 {
                     loader.Load("/OpenSim/Startup");
                     m_plugins = loader.Plugins;
@@ -282,7 +282,7 @@ namespace OpenSim
             // We still want to post initalize any plugins even if loading has been disabled since a test may have
             // inserted them manually.
             foreach (IApplicationPlugin plugin in m_plugins)
-                plugin.PostInitialise();
+                plugin.PostInitialize();
 
             if (m_console != null)
                 AddPluginCommands(m_console);

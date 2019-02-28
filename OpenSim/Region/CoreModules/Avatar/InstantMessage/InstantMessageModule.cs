@@ -56,7 +56,7 @@ namespace OpenSim.Region.CoreModules.Avatar.InstantMessage
 
         protected IMessageTransferModule m_TransferModule = null;
 
-        public virtual void Initialise(IConfigSource config)
+        public virtual void Initialize(IConfigSource config)
         {
             if (config.Configs["Messaging"] != null)
             {
@@ -127,7 +127,7 @@ namespace OpenSim.Region.CoreModules.Avatar.InstantMessage
             }
         }
 
-        public virtual void PostInitialise()
+        public virtual void PostInitialize()
         {
         }
 

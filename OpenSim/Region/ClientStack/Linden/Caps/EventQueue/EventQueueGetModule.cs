@@ -80,7 +80,7 @@ namespace OpenSim.Region.ClientStack.Linden
         private Dictionary<UUID, UUID> m_AvatarQueueUUIDMapping = new Dictionary<UUID, UUID>();
 
         #region INonSharedRegionModule methods
-        public virtual void Initialise(IConfigSource config)
+        public virtual void Initialize(IConfigSource config)
         {
         }
 

@@ -82,7 +82,7 @@ namespace OpenSim.Region.ScriptEngine.Shared.Tests
                 m_scene, initConfigSource, new AttachmentsModule(), new BasicInventoryAccessModule());
 
             m_engine = new XEngine.XEngine();
-            m_engine.Initialise(initConfigSource);
+            m_engine.Initialize(initConfigSource);
             m_engine.AddRegion(m_scene);
         }
 

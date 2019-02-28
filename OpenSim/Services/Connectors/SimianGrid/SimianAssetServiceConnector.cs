@@ -70,7 +70,7 @@ namespace OpenSim.Services.Connectors.SimianGrid
                     m_cache = cache;
             }
         }
-        public void PostInitialise() { }
+        public void PostInitialize() { }
         public void Close() { }
 
         public SimianAssetServiceConnector() { }
@@ -92,7 +92,7 @@ namespace OpenSim.Services.Connectors.SimianGrid
             m_serverUrl = url;
         }
 
-        public void Initialise(IConfigSource source)
+        public void Initialize(IConfigSource source)
         {
             IConfig moduleConfig = source.Configs["Modules"];
             if (moduleConfig != null)

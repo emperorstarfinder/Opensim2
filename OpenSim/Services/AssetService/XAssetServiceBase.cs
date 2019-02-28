@@ -99,7 +99,7 @@ namespace OpenSim.Services.AssetService
                         String.Format("Failed to load ChainedAssetService from {0}", chainedAssetServiceDesignator));
             }
 
-            m_Database.Initialise(connString);
+            m_Database.Initialize(connString);
 
             if (HasChainedAssetService)
             {

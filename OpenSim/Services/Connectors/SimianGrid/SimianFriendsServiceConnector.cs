@@ -53,10 +53,10 @@ namespace OpenSim.Services.Connectors.SimianGrid
 
         public SimianFriendsServiceConnector(IConfigSource source)
         {
-            Initialise(source);
+            Initialize(source);
         }
 
-        public void Initialise(IConfigSource source)
+        public void Initialize(IConfigSource source)
         {
             IConfig gridConfig = source.Configs["FriendsService"];
             if (gridConfig != null)

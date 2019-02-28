@@ -54,7 +54,7 @@ namespace OpenSim.Region.OptionalModules.WebSocketEchoModule
 
         private HashSet<WebSocketHttpServerHandler> _activeHandlers = new HashSet<WebSocketHttpServerHandler>();
 
-        public void Initialise(IConfigSource pConfig)
+        public void Initialize(IConfigSource pConfig)
         {
             enabled = (pConfig.Configs["WebSocketEcho"] != null);
 //            if (enabled)
@@ -64,7 +64,7 @@ namespace OpenSim.Region.OptionalModules.WebSocketEchoModule
         /// <summary>
         /// This method sets up the callback to WebSocketHandlerCallback below when a HTTPRequest comes in for /echo
         /// </summary>
-        public void PostInitialise()
+        public void PostInitialize()
         {
             if (enabled)
                 MainServer.Instance.AddWebSocketHandler("/echo", WebSocketHandlerCallback);

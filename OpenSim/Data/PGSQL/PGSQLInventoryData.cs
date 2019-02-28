@@ -54,18 +54,18 @@ namespace OpenSim.Data.PGSQL
         #region IPlugin members
 
         [Obsolete("Cannot be default-initialized!")]
-        public void Initialise()
+        public void Initialize()
         {
             m_log.Info("[PGSQLInventoryData]: " + Name + " cannot be default-initialized!");
-            throw new PluginNotInitialisedException(Name);
+            throw new PluginNotInitializedException(Name);
         }
 
         /// <summary>
-        /// Loads and initialises the PGSQL inventory storage interface
+        /// Loads and initializes the PGSQL inventory storage interface
         /// </summary>
         /// <param name="connectionString">connect string</param>
         /// <remarks>use PGSQL_connection.ini</remarks>
-        public void Initialise(string connectionString)
+        public void Initialize(string connectionString)
         {
             m_connectionString = connectionString;
             database = new PGSQLManager(connectionString);

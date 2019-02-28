@@ -1411,24 +1411,24 @@ namespace OpenSim.Region.ClientStack.LindenUDP
         }
 
         /// <summary>
-        /// Tell the client that the given neighbour region is ready to receive a child agent.
+        /// Tell the client that the given neighbor region is ready to receive a child agent.
         /// </summary>
-        public virtual void InformClientOfNeighbour(ulong neighbourHandle, IPEndPoint neighbourEndPoint)
+        public virtual void InformClientOfNeighbor(ulong neighborHandle, IPEndPoint neighborEndPoint)
         {
-            IPAddress neighbourIP = neighbourEndPoint.Address;
-            ushort neighbourPort = (ushort)neighbourEndPoint.Port;
+            IPAddress neighborIP = neighborEndPoint.Address;
+            ushort neighborPort = (ushort)neighborEndPoint.Port;
 
             EnableSimulatorPacket enablesimpacket = (EnableSimulatorPacket)PacketPool.Instance.GetPacket(PacketType.EnableSimulator);
             // TODO: don't create new blocks if recycling an old packet
             enablesimpacket.SimulatorInfo = new EnableSimulatorPacket.SimulatorInfoBlock();
-            enablesimpacket.SimulatorInfo.Handle = neighbourHandle;
+            enablesimpacket.SimulatorInfo.Handle = neighborHandle;
 
-            byte[] byteIP = neighbourIP.GetAddressBytes();
+            byte[] byteIP = neighborIP.GetAddressBytes();
             enablesimpacket.SimulatorInfo.IP = (uint)byteIP[3] << 24;
             enablesimpacket.SimulatorInfo.IP += (uint)byteIP[2] << 16;
             enablesimpacket.SimulatorInfo.IP += (uint)byteIP[1] << 8;
             enablesimpacket.SimulatorInfo.IP += (uint)byteIP[0];
-            enablesimpacket.SimulatorInfo.Port = neighbourPort;
+            enablesimpacket.SimulatorInfo.Port = neighborPort;
 
             enablesimpacket.Header.Reliable = true; // ESP's should be reliable.
 

@@ -151,7 +151,7 @@ namespace OpenSim.Services.FSAssetService
                 throw new Exception(string.Format("Could not find a storage interface in the module {0}", dllName));
 
             // Initialize DB And perform any migrations required
-            m_DataConnector.Initialise(connectionString, realm, SkipAccessTimeDays);
+            m_DataConnector.Initialize(connectionString, realm, SkipAccessTimeDays);
 
             // Setup Fallback Service
             string str = assetConfig.GetString("FallbackService", string.Empty);

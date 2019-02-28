@@ -40,7 +40,7 @@ using OpenSim.Region.Framework.Scenes;
 using OpenSim.Region.Framework.Interfaces;
 using OpenSim.Region.ClientStack.Linden;
 using OpenSim.Region.CoreModules.Framework.EntityTransfer;
-using OpenSim.Region.CoreModules.World.Serialiser;
+using OpenSim.Region.CoreModules.World.Serializer;
 using OpenSim.Region.CoreModules.ServiceConnectorsOut.Simulation;
 using OpenSim.Tests.Common;
 using GridRegion = OpenSim.Services.Interfaces.GridRegion;
@@ -68,13 +68,13 @@ namespace OpenSim.Region.Framework.Scenes.Tests
 ////
 ////            SceneHelpers sh = new SceneHelpers();
 ////
-////            scene = sh.SetupScene("Neighbour x", UUID.Random(), 1000, 1000);
-////            scene2 = sh.SetupScene("Neighbour x+1", UUID.Random(), 1001, 1000);
-////            scene3 = sh.SetupScene("Neighbour x-1", UUID.Random(), 999, 1000);
+////            scene = sh.SetupScene("Neighbor x", UUID.Random(), 1000, 1000);
+////            scene2 = sh.SetupScene("Neighbor x+1", UUID.Random(), 1001, 1000);
+////            scene3 = sh.SetupScene("Neighbor x-1", UUID.Random(), 999, 1000);
 ////
 ////            ISharedRegionModule interregionComms = new LocalSimulationConnectorModule();
-////            interregionComms.Initialise(new IniConfigSource());
-////            interregionComms.PostInitialise();
+////            interregionComms.Initialize(new IniConfigSource());
+////            interregionComms.PostInitialize();
 ////            SceneHelpers.SetupSceneModules(scene, new IniConfigSource(), interregionComms);
 ////            SceneHelpers.SetupSceneModules(scene2, new IniConfigSource(), interregionComms);
 ////            SceneHelpers.SetupSceneModules(scene3, new IniConfigSource(), interregionComms);
@@ -224,7 +224,7 @@ namespace OpenSim.Region.Framework.Scenes.Tests
             GridRegion region = scene.GridService.GetRegionByName(UUID.Zero, scene.RegionInfo.RegionName);
             string reason;
 
-            // *** This is the first stage, when a neighbouring region is told that a viewer is about to try and
+            // *** This is the first stage, when a neighboring region is told that a viewer is about to try and
             // establish a child scene presence.  We pass in the circuit code that the client has to connect with ***
             // XXX: ViaLogin may not be correct here.
             EntityTransferContext ctx = new EntityTransferContext();
@@ -251,22 +251,22 @@ namespace OpenSim.Region.Framework.Scenes.Tests
         }
 
         /// <summary>
-        /// Test that if a root agent logs into a region, a child agent is also established in the neighbouring region
+        /// Test that if a root agent logs into a region, a child agent is also established in the neighboring region
         /// </summary>
         /// <remarks>
         /// Please note that unlike the other tests here, this doesn't rely on anything set up in the instance fields.
         /// INCOMPLETE
         /// </remarks>
         [Test]
-        public void TestChildAgentEstablishedInNeighbour()
+        public void TestChildAgentEstablishedInNeighbor()
         {
             TestHelpers.InMethod();
 //            log4net.Config.XmlConfigurator.Configure();
 
 //            UUID agent1Id = UUID.Parse("00000000-0000-0000-0000-000000000001");
 
-            TestScene myScene1 = new SceneHelpers().SetupScene("Neighbour y", UUID.Random(), 1000, 1000);
-            TestScene myScene2 = new SceneHelpers().SetupScene("Neighbour y + 1", UUID.Random(), 1001, 1000);
+            TestScene myScene1 = new SceneHelpers().SetupScene("Neighbor y", UUID.Random(), 1000, 1000);
+            TestScene myScene2 = new SceneHelpers().SetupScene("Neighbor y + 1", UUID.Random(), 1001, 1000);
 
             IConfigSource configSource = new IniConfigSource();
             IConfig config = configSource.AddConfig("Startup");

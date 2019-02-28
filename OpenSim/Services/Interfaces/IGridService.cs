@@ -58,12 +58,12 @@ namespace OpenSim.Services.Interfaces
         bool DeregisterRegion(UUID regionID);
 
         /// <summary>
-        /// Get information about the regions neighbouring the given co-ordinates (in meters).
+        /// Get information about the regions neighboring the given co-ordinates (in meters).
         /// </summary>
         /// <param name="x"></param>
         /// <param name="y"></param>
         /// <returns></returns>
-        List<GridRegion> GetNeighbours(UUID scopeID, UUID regionID);
+        List<GridRegion> GetNeighbors(UUID scopeID, UUID regionID);
 
         GridRegion GetRegionByUUID(UUID scopeID, UUID regionID);
 
