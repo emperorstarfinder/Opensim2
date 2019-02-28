@@ -120,7 +120,7 @@ namespace OpenSim.Region.ClientStack.LindenUDP
         /// <summary>Circuit code that this client is connected on</summary>
         public readonly uint CircuitCode;
         /// <summary>Sequence numbers of packets we've received (for duplicate checking)</summary>
-        public IncomingPacketHistoryCollection PacketArchive = new IncomingPacketHistoryCollection(200);
+        public IncomingPacketHistoryCollection PacketArchive = new IncomingPacketHistoryCollection(256);
 
         /// <summary>Packets we have sent that need to be ACKed by the client</summary>
         public UnackedPacketCollection NeedAcks = new UnackedPacketCollection();
@@ -575,22 +575,22 @@ namespace OpenSim.Region.ClientStack.LindenUDP
             {
                 DoubleLocklessQueue<OutgoingPacket> queue = m_packetOutboxes[category];
 
-                if (m_deliverPackets == false)
+                if (forceQueue || m_deliverPackets == false)
                 {
                     queue.Enqueue(packet, highPriority);
                     return true;
                 }
 
-                TokenBucket bucket = m_throttleCategories[category];
-
-                // Don't send this packet if queue is not empty
+                // need to enqueue if queue is not empty
                 if (queue.Count > 0 || m_nextPackets[category] != null)
                 {
                     queue.Enqueue(packet, highPriority);
                     return true;
                 }
 
-                if (!forceQueue && bucket.CheckTokens(packet.Buffer.DataLength))
+                // check bandwidth
+                TokenBucket bucket = m_throttleCategories[category];
+                if (bucket.CheckTokens(packet.Buffer.DataLength))
                 {
                     // enough tokens so it can be sent imediatly by caller
                     bucket.RemoveTokens(packet.Buffer.DataLength);
@@ -608,7 +608,6 @@ namespace OpenSim.Region.ClientStack.LindenUDP
                 // We don't have a token bucket for this category, so it will not be queued
                 return false;
             }
-
         }
 
         /// <summary>
@@ -650,6 +649,12 @@ namespace OpenSim.Region.ClientStack.LindenUDP
                     // leaving a dequeued packet still waiting to be sent out. Try to
                     // send it again
                     OutgoingPacket nextPacket = m_nextPackets[i];
+                    if(nextPacket.Buffer == null)
+                    {
+                        if (m_packetOutboxes[i].Count < 5)
+                            emptyCategories |= CategoryToFlag(i);
+                        continue;
+                    }
                     if (bucket.RemoveTokens(nextPacket.Buffer.DataLength))
                     {
                         // Send the packet
@@ -681,21 +686,29 @@ namespace OpenSim.Region.ClientStack.LindenUDP
                         {
                             // A packet was pulled off the queue. See if we have
                             // enough tokens in the bucket to send it out
-                            if (bucket.RemoveTokens(packet.Buffer.DataLength))
+                            if(packet.Buffer == null)
                             {
-                                // Send the packet
-                                m_udpServer.SendPacketFinal(packet);
-                                packetSent = true;
-
+                                // packet canceled elsewhere (by a ack for example)
                                 if (queue.Count < 5)
                                     emptyCategories |= CategoryToFlag(i);
                             }
                             else
                             {
-                                // Save the dequeued packet for the next iteration
-                                m_nextPackets[i] = packet;
-                            }
+                                if (bucket.RemoveTokens(packet.Buffer.DataLength))
+                                {
+                                    // Send the packet
+                                    m_udpServer.SendPacketFinal(packet);
+                                    packetSent = true;
 
+                                    if (queue.Count < 5)
+                                        emptyCategories |= CategoryToFlag(i);
+                                }
+                                else
+                                {
+                                    // Save the dequeued packet for the next iteration
+                                    m_nextPackets[i] = packet;
+                                }
+                            }
                         }
                         else
                         {
@@ -803,8 +816,6 @@ namespace OpenSim.Region.ClientStack.LindenUDP
             }
         }
 
-
-
         /// <summary>
         /// Fires the OnQueueEmpty callback and sets the minimum time that it
         /// can be called again
@@ -843,6 +854,11 @@ namespace OpenSim.Region.ClientStack.LindenUDP
                 return 0;
         }
 
+        public void FreeUDPBuffer(UDPPacketBuffer buf)
+        {
+            m_udpServer.FreeUDPBuffer(buf);
+        }
+
         /// <summary>
         /// Converts a <seealso cref="ThrottleOutPacketType"/> integer to a
         /// flag value
@@ -853,34 +869,20 @@ namespace OpenSim.Region.ClientStack.LindenUDP
         {
             ThrottleOutPacketType category = (ThrottleOutPacketType)i;
 
-            /*
-             * Land = 1,
-        /// <summary>Wind data</summary>
-        Wind = 2,
-        /// <summary>Cloud data</summary>
-        Cloud = 3,
-        /// <summary>Any packets that do not fit into the other throttles</summary>
-        Task = 4,
-        /// <summary>Texture assets</summary>
-        Texture = 5,
-        /// <summary>Non-texture assets</summary>
-        Asset = 6,
-             */
-
             switch (category)
             {
                 case ThrottleOutPacketType.Land:
-                    return ThrottleOutPacketTypeFlags.Land;
+                    return ThrottleOutPacketTypeFlags.Land; // Terrain data
                 case ThrottleOutPacketType.Wind:
-                    return ThrottleOutPacketTypeFlags.Wind;
+                    return ThrottleOutPacketTypeFlags.Wind; // Wind data
                 case ThrottleOutPacketType.Cloud:
-                    return ThrottleOutPacketTypeFlags.Cloud;
+                    return ThrottleOutPacketTypeFlags.Cloud; // Cloud data
                 case ThrottleOutPacketType.Task:
-                    return ThrottleOutPacketTypeFlags.Task;
+                    return ThrottleOutPacketTypeFlags.Task; // Object updates and everything not on the other categories
                 case ThrottleOutPacketType.Texture:
-                    return ThrottleOutPacketTypeFlags.Texture;
+                    return ThrottleOutPacketTypeFlags.Texture; // Textures data (also impacts http texture and mesh by default)
                 case ThrottleOutPacketType.Asset:
-                    return ThrottleOutPacketTypeFlags.Asset;
+                    return ThrottleOutPacketTypeFlags.Asset; // Non-texture Assets data
                 default:
                     return 0;
             }
