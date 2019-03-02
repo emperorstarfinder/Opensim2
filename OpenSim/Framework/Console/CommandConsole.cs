@@ -1,32 +1,33 @@
-/*
- * Copyright (c) Contributors, http://opensimulator.org/
- * See CONTRIBUTORS.TXT for a full list of copyright holders.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *     * Redistributions of source code must retain the above copyright
- *       notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above copyright
- *       notice, this list of conditions and the following disclaimer in the
- *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the OpenSimulator Project nor the
- *       names of its contributors may be used to endorse or promote products
- *       derived from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE DEVELOPERS ``AS IS'' AND ANY
- * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE CONTRIBUTORS BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+/// <license>
+///     Copyright (c) Contributors, http://opensimulator.org/
+///     See CONTRIBUTORS.TXT for a full list of copyright holders.
+///     For an explanation of the license of each contributor and the content it
+///     covers please see the Licenses directory.
+///
+///     Redistribution and use in source and binary forms, with or without
+///     modification, are permitted provided that the following conditions are met:
+///         * Redistributions of source code must retain the above copyright
+///         notice, this list of conditions and the following disclaimer.
+///         * Redistributions in binary form must reproduce the above copyright
+///         notice, this list of conditions and the following disclaimer in the
+///         documentation and/or other materials provided with the distribution.
+///         * Neither the name of the OpenSimulator Project nor the
+///         names of its contributors may be used to endorse or promote products
+///         derived from this software without specific prior written permission.
+///
+///     THIS SOFTWARE IS PROVIDED BY THE DEVELOPERS ``AS IS'' AND ANY
+///     EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+///     WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+///     DISCLAIMED. IN NO EVENT SHALL THE CONTRIBUTORS BE LIABLE FOR ANY
+///     DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+///     (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+///     LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+///     ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+///     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+///     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+/// </license>
 
 using System;
-using System.Xml;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -34,6 +35,7 @@ using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
+using System.Xml;
 using log4net;
 using OpenSim.Framework;
 
@@ -41,41 +43,40 @@ namespace OpenSim.Framework.Console
 {
     public class Commands : ICommands
     {
-//        private static readonly ILog m_log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
-
         /// <summary>
-        /// Encapsulates a command that can be invoked from the console
+        ///     Encapsulates a command that
+        ///      can be invoked from the console
         /// </summary>
         private class CommandInfo
         {
-            /// <value>
-            /// The module from which this command comes
-            /// </value>
+            /// <summary>
+            ///     The module from which this command comes
+            /// </summary>
             public string module;
 
-            /// <value>
-            /// Whether the module is shared
-            /// </value>
+            /// <summary>
+            ///     Whether the module is shared
+            /// </summary>
             public bool shared;
 
-            /// <value>
-            /// Very short BNF description
-            /// </value>
+            /// <summary>
+            ///     Very short BNF description
+            /// </summary>
             public string help_text;
 
-            /// <value>
-            /// Longer one line help text
-            /// </value>
+            /// <summary>
+            ///     Longer one line help text
+            /// </summary>
             public string long_help;
 
-            /// <value>
-            /// Full descriptive help for this command
-            /// </value>
+            /// <summary>
+            ///     Full descriptive help for this command
+            /// </summary>
             public string descriptive_help;
 
-            /// <value>
-            /// The method to invoke for this command
-            /// </value>
+            /// <summary>
+            ///     The method to invoke for this command
+            /// </summary>
             public List<CommandDelegate> fn;
         }
 
@@ -86,19 +87,19 @@ namespace OpenSim.Framework.Console
             = @"For more information, type 'help all' to get a list of all commands,
               or type help <item>' where <item> is one of the following:";
 
-        /// <value>
-        /// Commands organized by keyword in a tree
-        /// </value>
+        /// <summary>
+        ///     Commands organized by keyword in a tree
+        /// </summary>
         private Dictionary<string, object> tree =
                 new Dictionary<string, object>();
 
         /// <summary>
-        /// Commands organized by module
+        ///     Commands organized by module
         /// </summary>
         private Dictionary<string, List<CommandInfo>> m_modulesCommands = new Dictionary<string, List<CommandInfo>>();
 
         /// <summary>
-        /// Get help for the given help string
+        ///     Get help for the given help string
         /// </summary>
         /// <param name="helpParts">Parsed parts of the help string.  If empty then general help is returned.</param>
         /// <returns></returns>
@@ -134,7 +135,8 @@ namespace OpenSim.Framework.Console
         }
 
         /// <summary>
-        /// Collects the help from all commands and return in alphabetical order.
+        ///     Collects the help from all commands
+        ///      and return in alphabetical order.
         /// </summary>
         /// <returns></returns>
         private List<string> CollectAllCommandsHelp()
@@ -156,7 +158,8 @@ namespace OpenSim.Framework.Console
         }
 
         /// <summary>
-        /// See if we can find the requested command in order to display longer help
+        ///     See if we can find the requested 
+        ///     command in order to display longer help
         /// </summary>
         /// <param name="helpParts"></param>
         /// <returns></returns>
@@ -173,17 +176,20 @@ namespace OpenSim.Framework.Console
             }
 
             Dictionary<string, object> dict = tree;
+
             while (helpParts.Count > 0)
             {
                 string helpPart = helpParts[0];
 
                 if (!dict.ContainsKey(helpPart))
+                {
                     break;
-
-                //m_log.Debug("Found {0}", helpParts[0]);
+                }
 
                 if (dict[helpPart] is Dictionary<string, Object>)
+                {
                     dict = (Dictionary<string, object>)dict[helpPart];
+                }
 
                 helpParts.RemoveAt(0);
             }
@@ -199,7 +205,9 @@ namespace OpenSim.Framework.Console
 
                 // If we do have some descriptive help then insert a spacing line before for readability.
                 if (descriptiveHelp != string.Empty)
+                {
                     help.Add(string.Empty);
+                }
 
                 help.Add(commandInfo.descriptive_help);
             }
@@ -212,11 +220,14 @@ namespace OpenSim.Framework.Console
         }
 
         /// <summary>
-        /// Try to collect help for the given module if that module exists.
+        ///     Try to collect help for the 
+        ///     given module if that module exists.
         /// </summary>
         /// <param name="moduleName"></param>
         /// <param name="helpText">/param>
-        /// <returns>true if there was the module existed, false otherwise.</returns>
+        /// <returns>
+        ///     true if there was the module existed, false otherwise.
+        /// </returns>
         private bool TryCollectModuleHelp(string moduleName, List<string> helpText)
         {
             lock (m_modulesCommands)
@@ -249,28 +260,9 @@ namespace OpenSim.Framework.Console
             }
         }
 
-//        private List<string> CollectHelp(Dictionary<string, object> dict)
-//        {
-//            List<string> result = new List<string>();
-//
-//            foreach (KeyValuePair<string, object> kvp in dict)
-//            {
-//                if (kvp.Value is Dictionary<string, Object>)
-//                {
-//                    result.AddRange(CollectHelp((Dictionary<string, Object>)kvp.Value));
-//                }
-//                else
-//                {
-//                    if (((CommandInfo)kvp.Value).long_help != String.Empty)
-//                        result.Add(((CommandInfo)kvp.Value).help_text+" - "+
-//                                ((CommandInfo)kvp.Value).long_help);
-//                }
-//            }
-//            return result;
-//        }
-
         /// <summary>
-        /// Add a command to those which can be invoked from the console.
+        ///     Add a command to those which 
+        ///     can be invoked from the console.
         /// </summary>
         /// <param name="module"></param>
         /// <param name="command"></param>
@@ -284,7 +276,8 @@ namespace OpenSim.Framework.Console
         }
 
         /// <summary>
-        /// Add a command to those which can be invoked from the console.
+        ///     Add a command to those which
+        ///      can be invoked from the console.
         /// </summary>
         /// <param name="module"></param>
         /// <param name="command"></param>
@@ -305,9 +298,13 @@ namespace OpenSim.Framework.Console
                 if (current.ContainsKey(part))
                 {
                     if (current[part] is Dictionary<string, Object>)
+                    {
                         current = (Dictionary<string, Object>)current[part];
+                    }
                     else
+                    {
                         return;
+                    }
                 }
                 else
                 {
@@ -321,8 +318,11 @@ namespace OpenSim.Framework.Console
             if (current.ContainsKey(String.Empty))
             {
                 info = (CommandInfo)current[String.Empty];
+
                 if (!info.shared && !info.fn.Contains(fn))
+                {
                     info.fn.Add(fn);
+                }
 
                 return;
             }
@@ -341,6 +341,7 @@ namespace OpenSim.Framework.Console
             lock (m_modulesCommands)
             {
                 List<CommandInfo> commands;
+
                 if (m_modulesCommands.ContainsKey(module))
                 {
                     commands = m_modulesCommands[module];
@@ -351,7 +352,6 @@ namespace OpenSim.Framework.Console
                     m_modulesCommands[module] = commands;
                 }
 
-//                m_log.DebugFormat("[COMMAND CONSOLE]: Adding to category {0} command {1}", module, command);
                 commands.Add(info);
             }
         }
@@ -376,6 +376,7 @@ namespace OpenSim.Framework.Console
                         found.Add(opt);
                         break;
                     }
+
                     if (opt.StartsWith(s))
                     {
                         found.Add(opt);
@@ -393,7 +394,6 @@ namespace OpenSim.Framework.Console
                 else
                 {
                     break;
-//                    return new string[] {"<cr>"};
                 }
             }
 
@@ -402,24 +402,36 @@ namespace OpenSim.Framework.Console
                 List<string> choices = new List<string>();
 
                 bool addcr = false;
+
                 foreach (string s in current.Keys)
                 {
                     if (s == String.Empty)
                     {
                         CommandInfo ci = (CommandInfo)current[String.Empty];
+
                         if (ci.fn.Count != 0)
+                        {
                             addcr = true;
+                        }
                     }
                     else
+                    {
                         choices.Add(s);
+                    }
                 }
+
                 if (addcr)
+                {
                     choices.Add("<cr>");
+                }
+
                 return choices.ToArray();
             }
 
             if (current.ContainsKey(String.Empty))
-                return new string[] { "Command help: "+((CommandInfo)current[String.Empty]).help_text};
+            {
+                return new string[] { "Command help: " + ((CommandInfo)current[String.Empty]).help_text };
+            }
 
             return new string[] { new List<string>(current.Keys)[0] };
         }
@@ -445,6 +457,7 @@ namespace OpenSim.Framework.Console
                         found.Add(opt);
                         break;
                     }
+
                     if (opt.StartsWith(s))
                     {
                         found.Add(opt);
@@ -467,7 +480,9 @@ namespace OpenSim.Framework.Console
             }
 
             if (current.ContainsKey(String.Empty))
+            {
                 return (CommandInfo)current[String.Empty];
+            }
 
             return null;
         }
@@ -484,17 +499,25 @@ namespace OpenSim.Framework.Console
             CommandInfo ci = ResolveCommand(cmd, out result);
 
             if (ci == null)
+            {
                 return new string[0];
+            }
 
             if (ci.fn.Count == 0)
+            {
                 return new string[0];
+            }
 
             foreach (CommandDelegate fn in ci.fn)
             {
                 if (fn != null)
+                {
                     fn(ci.module, result);
+                }
                 else
+                {
                     return new string[0];
+                }
             }
 
             return result;
@@ -504,24 +527,36 @@ namespace OpenSim.Framework.Console
         {
             CommandInfo help = (CommandInfo)((Dictionary<string, object>)tree["help"])[String.Empty];
             ((Dictionary<string, object>)tree["help"]).Remove(string.Empty);
+
             if (((Dictionary<string, object>)tree["help"]).Count == 0)
+            {
                 tree.Remove("help");
+            }
 
             CommandInfo quit = (CommandInfo)((Dictionary<string, object>)tree["quit"])[String.Empty];
             ((Dictionary<string, object>)tree["quit"]).Remove(string.Empty);
+
             if (((Dictionary<string, object>)tree["quit"]).Count == 0)
+            {
                 tree.Remove("quit");
+            }
 
             XmlElement root = doc.CreateElement("", "HelpTree", "");
 
             ProcessTreeLevel(tree, root, doc);
 
             if (!tree.ContainsKey("help"))
-                tree["help"] = (object) new Dictionary<string, object>();
+            {
+                tree["help"] = (object)new Dictionary<string, object>();
+            }
+
             ((Dictionary<string, object>)tree["help"])[String.Empty] = help;
 
             if (!tree.ContainsKey("quit"))
-                tree["quit"] = (object) new Dictionary<string, object>();
+            {
+                tree["quit"] = (object)new Dictionary<string, object>();
+            }
+
             ((Dictionary<string, object>)tree["quit"])[String.Empty] = quit;
 
             return root;
@@ -577,24 +612,36 @@ namespace OpenSim.Framework.Console
         {
             CommandInfo help = (CommandInfo)((Dictionary<string, object>)tree["help"])[String.Empty];
             ((Dictionary<string, object>)tree["help"]).Remove(string.Empty);
+
             if (((Dictionary<string, object>)tree["help"]).Count == 0)
+            {
                 tree.Remove("help");
+            }
 
             CommandInfo quit = (CommandInfo)((Dictionary<string, object>)tree["quit"])[String.Empty];
             ((Dictionary<string, object>)tree["quit"]).Remove(string.Empty);
+
             if (((Dictionary<string, object>)tree["quit"]).Count == 0)
+            {
                 tree.Remove("quit");
+            }
 
             tree.Clear();
 
             ReadTreeLevel(tree, root, fn);
 
             if (!tree.ContainsKey("help"))
-                tree["help"] = (object) new Dictionary<string, object>();
+            {
+                tree["help"] = (object)new Dictionary<string, object>();
+            }
+
             ((Dictionary<string, object>)tree["help"])[String.Empty] = help;
 
             if (!tree.ContainsKey("quit"))
-                tree["quit"] = (object) new Dictionary<string, object>();
+            {
+                tree["quit"] = (object)new Dictionary<string, object>();
+            }
+
             ((Dictionary<string, object>)tree["quit"])[String.Empty] = quit;
         }
 
@@ -611,40 +658,42 @@ namespace OpenSim.Framework.Console
             {
                 switch (part.Name)
                 {
-                case "Level":
-                    name = ((XmlElement)part).GetAttribute("Name");
-                    next = new Dictionary<string, object>();
-                    level[name] = next;
-                    ReadTreeLevel(next, part, fn);
-                    break;
-                case "Command":
-                    cmdL = part.ChildNodes;
-                    c = new CommandInfo();
-                    foreach (XmlNode cmdPart in cmdL)
-                    {
-                        switch (cmdPart.Name)
+                    case "Level":
+                        name = ((XmlElement)part).GetAttribute("Name");
+                        next = new Dictionary<string, object>();
+                        level[name] = next;
+                        ReadTreeLevel(next, part, fn);
+                        break;
+                    case "Command":
+                        cmdL = part.ChildNodes;
+                        c = new CommandInfo();
+
+                        foreach (XmlNode cmdPart in cmdL)
                         {
-                        case "Module":
-                            c.module = cmdPart.InnerText;
-                            break;
-                        case "Shared":
-                            c.shared = Convert.ToBoolean(cmdPart.InnerText);
-                            break;
-                        case "HelpText":
-                            c.help_text = cmdPart.InnerText;
-                            break;
-                        case "LongHelp":
-                            c.long_help = cmdPart.InnerText;
-                            break;
-                        case "Description":
-                            c.descriptive_help = cmdPart.InnerText;
-                            break;
+                            switch (cmdPart.Name)
+                            {
+                                case "Module":
+                                    c.module = cmdPart.InnerText;
+                                    break;
+                                case "Shared":
+                                    c.shared = Convert.ToBoolean(cmdPart.InnerText);
+                                    break;
+                                case "HelpText":
+                                    c.help_text = cmdPart.InnerText;
+                                    break;
+                                case "LongHelp":
+                                    c.long_help = cmdPart.InnerText;
+                                    break;
+                                case "Description":
+                                    c.descriptive_help = cmdPart.InnerText;
+                                    break;
+                            }
                         }
-                    }
-                    c.fn = new List<CommandDelegate>();
-                    c.fn.Add(fn);
-                    level[String.Empty] = c;
-                    break;
+
+                        c.fn = new List<CommandDelegate>();
+                        c.fn.Add(fn);
+                        level[String.Empty] = c;
+                        break;
                 }
             }
         }
@@ -652,9 +701,13 @@ namespace OpenSim.Framework.Console
 
     public class Parser
     {
-        // If an unquoted portion ends with an element matching this regex
-        // and the next element contains a space, then we have stripped
-        // embedded quotes that should not have been stripped
+        /// <summary>
+        ///     If an unquoted portion ends with
+        ///     an element matching this regex
+        ///     and the next element contains a space,
+        ///     then we have stripped embedded quotes
+        ///     that should not have been stripped.
+        /// </summary>
         private static Regex optionRegex = new Regex("^--[a-zA-Z0-9-]+=$");
 
         public static string[] Parse(string text)
@@ -663,26 +716,33 @@ namespace OpenSim.Framework.Console
 
             int index;
 
-            string[] unquoted = text.Split(new char[] {'"'});
+            string[] unquoted = text.Split(new char[] { '"' });
 
-            for (index = 0 ; index < unquoted.Length ; index++)
+            for (index = 0; index < unquoted.Length; index++)
             {
                 if (index % 2 == 0)
                 {
-                    string[] words = unquoted[index].Split(new char[] {' '});
+                    string[] words = unquoted[index].Split(new char[] { ' ' });
 
                     bool option = false;
+
                     foreach (string w in words)
                     {
                         if (w != String.Empty)
                         {
                             if (optionRegex.Match(w) == Match.Empty)
+                            {
                                 option = false;
+                            }
                             else
+                            {
                                 option = true;
+                            }
+
                             result.Add(w);
                         }
                     }
+
                     // The last item matched the regex, put the quotes back
                     if (option)
                     {
@@ -715,12 +775,10 @@ namespace OpenSim.Framework.Console
     }
 
     /// <summary>
-    /// A console that processes commands internally
+    ///     A console that processes commands internally
     /// </summary>
     public class CommandConsole : ConsoleBase, ICommandConsole
     {
-//        private static readonly ILog m_log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
-
         public event OnOutputDelegate OnOutput;
 
         public ICommands Commands { get; private set; }
@@ -739,25 +797,33 @@ namespace OpenSim.Framework.Console
             List<string> help = Commands.GetHelp(cmd);
 
             foreach (string s in help)
+            {
                 Output(s);
+            }
         }
 
         protected void FireOnOutput(string text)
         {
             OnOutputDelegate onOutput = OnOutput;
+
             if (onOutput != null)
+            {
                 onOutput(text);
+            }
         }
 
         /// <summary>
-        /// Display a command prompt on the console and wait for user input
+        ///     Display a command prompt on the 
+        ///     console and wait for user input
         /// </summary>
         public void Prompt()
         {
             string line = ReadLine(DefaultPrompt + "# ", true, true);
 
             if (line != String.Empty)
+            {
                 Output("Invalid command");
+            }
         }
 
         public void RunCommand(string cmd)
@@ -779,14 +845,18 @@ namespace OpenSim.Framework.Console
                 {
                     int i;
 
-                    for (i=0 ; i < cmd.Length ; i++)
+                    for (i = 0; i < cmd.Length; i++)
                     {
                         if (cmd[i].Contains(" "))
+                        {
                             cmd[i] = "\"" + cmd[i] + "\"";
+                        }
                     }
+
                     return String.Empty;
                 }
             }
+
             return cmdinput;
         }
     }
