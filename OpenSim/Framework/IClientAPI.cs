@@ -671,7 +671,6 @@ namespace OpenSim.Framework
         Particles = 1 << 19,
         ExtraData = 1 << 20,
         Sound = 1 << 21,
-        Joint = 1 << 22,
 
         TerseUpdate = Position | Rotation | Velocity | Acceleration | AngularVelocity,
         FullUpdate =    0x00ffffff,
@@ -1148,7 +1147,7 @@ namespace OpenSim.Framework
         /// </remarks>
         void MoveAgentIntoRegion(RegionInfo regInfo, Vector3 pos, Vector3 look);
 
-        void InformClientOfNeighbor(ulong neighborHandle, IPEndPoint neighborExternalEndPoint);
+        void InformClientOfNeighbour(ulong neighbourHandle, IPEndPoint neighbourExternalEndPoint);
 
         /// <summary>
         /// Return circuit information for this client.
