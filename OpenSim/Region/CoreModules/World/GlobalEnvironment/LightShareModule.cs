@@ -1,43 +1,45 @@
-﻿/*
- * Copyright (c) Contributors, http://opensimulator.org/
- * See CONTRIBUTORS.TXT for a full list of copyright holders.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *     * Redistributions of source code must retain the above copyright
- *       notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above copyright
- *       notice, this list of conditions and the following disclaimer in the
- *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the OpenSimulator Project nor the
- *       names of its contributors may be used to endorse or promote products
- *       derived from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE DEVELOPERS ``AS IS'' AND ANY
- * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE CONTRIBUTORS BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+﻿/// <license>
+///     Copyright (c) Contributors, http://opensimulator.org/
+///     See CONTRIBUTORS.TXT for a full list of copyright holders.
+///     For an explanation of the license of each contributor and the content it
+///     covers please see the Licenses directory.
+///
+///     Redistribution and use in source and binary forms, with or without
+///     modification, are permitted provided that the following conditions are met:
+///         * Redistributions of source code must retain the above copyright
+///         notice, this list of conditions and the following disclaimer.
+///         * Redistributions in binary form must reproduce the above copyright
+///         notice, this list of conditions and the following disclaimer in the
+///         documentation and/or other materials provided with the distribution.
+///         * Neither the name of the OpenSimulator Project nor the
+///         names of its contributors may be used to endorse or promote products
+///         derived from this software without specific prior written permission.
+///
+///     THIS SOFTWARE IS PROVIDED BY THE DEVELOPERS ``AS IS'' AND ANY
+///     EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+///     WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+///     DISCLAIMED. IN NO EVENT SHALL THE CONTRIBUTORS BE LIABLE FOR ANY
+///     DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+///     (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+///     LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+///     ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+///     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+///     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+/// </license>
 
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using log4net;
+using Mono.Addins;
+using Nini.Config;
 using OpenMetaverse;
 using OpenSim.Framework;
 using OpenSim.Region.CoreModules.Framework.InterfaceCommander;
 using OpenSim.Region.Framework.Interfaces;
 using OpenSim.Region.Framework.Scenes;
-using log4net;
-using Nini.Config;
-using Mono.Addins;
 
-namespace OpenSim.Region.CoreModules.World.LightShare
+namespace OpenSim.Region.CoreModules.World.GlobalEnvironment.LightShare
 {
     [Extension(Path = "/OpenSim/RegionModules", NodeName = "RegionModule", Id = "LightShareModule")]
     public class LightShareModule : INonSharedRegionModule, ILightShareModule, ICommandableModule
@@ -66,16 +68,18 @@ namespace OpenSim.Region.CoreModules.World.LightShare
             }
             catch (Exception)
             {
-                m_log.Debug("[WINDLIGHT]: ini failure for enable_windlight - using default");
+                m_log.Debug("[Wind Light]: ini failure for enable_windlight - using default");
             }
 
-            m_log.DebugFormat("[WINDLIGHT]: windlight module {0}", (m_enableWindlight ? "enabled" : "disabled"));
+            m_log.DebugFormat("[Wind Light]: windlight module {0}", (m_enableWindlight ? "enabled" : "disabled"));
         }
 
         public void AddRegion(Scene scene)
         {
             if (!m_enableWindlight)
+            {
                 return;
+            }
 
             m_scene = scene;
             m_scene.RegisterModuleInterface<ILightShareModule>(this);
@@ -92,7 +96,9 @@ namespace OpenSim.Region.CoreModules.World.LightShare
         public void RemoveRegion(Scene scene)
         {
             if (!m_enableWindlight)
+            {
                 return;
+            }
 
             m_scene.EventManager.OnPluginConsole -= EventManager_OnPluginConsole;
 
@@ -125,13 +131,8 @@ namespace OpenSim.Region.CoreModules.World.LightShare
 
         public static bool EnableWindlight
         {
-            get
-            {
-                return m_enableWindlight;
-            }
-            set
-            {
-            }
+            get { return m_enableWindlight; }
+            set { }
         }
 
         #region events
@@ -191,7 +192,9 @@ namespace OpenSim.Region.CoreModules.World.LightShare
         public void SendProfileToClient(IClientAPI client, RegionLightShareData wl)
         {
             if (client == null)
+            {
                 return;
+            }
 
             if (m_enableWindlight)
             {
@@ -211,7 +214,10 @@ namespace OpenSim.Region.CoreModules.World.LightShare
         private void EventManager_OnMakeRootAgent(ScenePresence presence)
         {
             if (m_enableWindlight && m_scene.RegionInfo.WindlightSettings.valid)
-                m_log.Debug("[WINDLIGHT]: Sending windlight scene to new client");
+            {
+                m_log.Debug("[Wind Light]: Sending windlight scene to new client");
+            }
+
             SendProfileToClient(presence.ControllingClient);
         }
 
@@ -248,30 +254,30 @@ namespace OpenSim.Region.CoreModules.World.LightShare
         {
             if (!m_enableWindlight)
             {
-                m_log.InfoFormat("[WINDLIGHT]: Cannot load windlight profile, module disabled. Use 'windlight enable' first.");
+                m_log.InfoFormat("[Wind Light]: Cannot load windlight profile, module disabled. Use 'windlight enable' first.");
             }
             else
             {
-                m_log.InfoFormat("[WINDLIGHT]: Loading Windlight profile from database");
+                m_log.InfoFormat("[Wind Light]: Loading Windlight profile from database");
                 m_scene.LoadWindlightProfile();
-                m_log.InfoFormat("[WINDLIGHT]: Load complete");
+                m_log.InfoFormat("[Wind Light]: Load complete");
             }
         }
 
         private void HandleDisable(Object[] args)
         {
-            m_log.InfoFormat("[WINDLIGHT]: Plugin now disabled");
+            m_log.InfoFormat("[Wind Light]: Plugin now disabled");
             m_enableWindlight = false;
         }
 
         private void HandleEnable(Object[] args)
         {
-            m_log.InfoFormat("[WINDLIGHT]: Plugin now enabled");
+            m_log.InfoFormat("[Wind Light]: Plugin now enabled");
             m_enableWindlight = true;
         }
 
         /// <summary>
-        /// Processes commandline input. Do not call directly.
+        ///     Processes commandline input. Do not call directly.
         /// </summary>
         /// <param name="args">Commandline arguments</param>
         private void EventManager_OnPluginConsole(string[] args)
@@ -286,6 +292,7 @@ namespace OpenSim.Region.CoreModules.World.LightShare
 
                 string[] tmpArgs = new string[args.Length - 2];
                 int i;
+
                 for (i = 2; i < args.Length; i++)
                 {
                     tmpArgs[i - 2] = args[i];
@@ -294,8 +301,7 @@ namespace OpenSim.Region.CoreModules.World.LightShare
                 m_commander.ProcessConsoleCommand(args[1], tmpArgs);
             }
         }
-        #endregion
 
+        #endregion
     }
 }
-

@@ -1866,7 +1866,7 @@ namespace OpenSim.Region.Framework.Scenes
 
         private Dictionary<ulong, spRegionSizeInfo> m_knownChildRegionsSizeInfo = new Dictionary<ulong, spRegionSizeInfo>();
 
-        public void AddNeighbourRegion(GridRegion region, string capsPath)
+        public void AddNeighborRegion(GridRegion region, string capsPath)
         {
             lock (m_knownChildRegions)
             {
@@ -1880,7 +1880,7 @@ namespace OpenSim.Region.Framework.Scenes
             }
         }
 
-        public void AddNeighbourRegionSizeInfo(GridRegion region)
+        public void AddNeighborRegionSizeInfo(GridRegion region)
         {
             lock (m_knownChildRegions)
             {
@@ -1899,7 +1899,7 @@ namespace OpenSim.Region.Framework.Scenes
             }
         }
 
-        public void SetNeighbourRegionSizeInfo(List<GridRegion> regionsList)
+        public void SetNeighborRegionSizeInfo(List<GridRegion> regionsList)
         {
             lock (m_knownChildRegions)
             {
@@ -1916,7 +1916,7 @@ namespace OpenSim.Region.Framework.Scenes
             }
         }
 
-        public void RemoveNeighbourRegion(ulong regionHandle)
+        public void RemoveNeighborRegion(ulong regionHandle)
         {
             lock (m_knownChildRegions)
             {
@@ -1929,25 +1929,25 @@ namespace OpenSim.Region.Framework.Scenes
             }
         }
 
-        public bool knowsNeighbourRegion(ulong regionHandle)
+        public bool knowsNeighborRegion(ulong regionHandle)
         {
             lock (m_knownChildRegions)
                 return m_knownChildRegions.ContainsKey(regionHandle);
         }
 
-        public void DropOldNeighbours(List<ulong> oldRegions)
+        public void DropOldNeighbors(List<ulong> oldRegions)
         {
             foreach (ulong handle in oldRegions)
             {
-                RemoveNeighbourRegion(handle);
+                RemoveNeighborRegion(handle);
                 Scene.CapsModule.DropChildSeed(UUID, handle);
             }
         }
 
-        public void DropThisRootRegionFromNeighbours()
+        public void DropThisRootRegionFromNeighbors()
         {
             ulong handle = m_scene.RegionInfo.RegionHandle;
-            RemoveNeighbourRegion(handle);
+            RemoveNeighborRegion(handle);
             Scene.CapsModule.DropChildSeed(UUID, handle);
         }
 
@@ -4597,7 +4597,7 @@ namespace OpenSim.Region.Framework.Scenes
 
             foreach (ulong handle in byebyeRegions)
             {
-                RemoveNeighbourRegion(handle);
+                RemoveNeighborRegion(handle);
                 Scene.CapsModule.DropChildSeed(UUID, handle);
             }
         }
@@ -4611,7 +4611,7 @@ namespace OpenSim.Region.Framework.Scenes
                 if (handle != Scene.RegionInfo.RegionHandle)
                 {
                     byebyeRegions.Add(handle);
-                    RemoveNeighbourRegion(handle);
+                    RemoveNeighborRegion(handle);
                     Scene.CapsModule.DropChildSeed(UUID, handle);
                 }
             }

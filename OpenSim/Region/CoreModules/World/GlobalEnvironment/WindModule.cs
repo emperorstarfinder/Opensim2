@@ -1,29 +1,31 @@
-/*
- * Copyright (c) Contributors, http://opensimulator.org/
- * See CONTRIBUTORS.TXT for a full list of copyright holders.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *     * Redistributions of source code must retain the above copyright
- *       notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above copyright
- *       notice, this list of conditions and the following disclaimer in the
- *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the OpenSimulator Project nor the
- *       names of its contributors may be used to endorse or promote products
- *       derived from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE DEVELOPERS ``AS IS'' AND ANY
- * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE CONTRIBUTORS BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+/// <license>
+///     Copyright (c) Contributors, http://opensimulator.org/
+///     See CONTRIBUTORS.TXT for a full list of copyright holders.
+///     For an explanation of the license of each contributor and the content it
+///     covers please see the Licenses directory.
+///
+///     Redistribution and use in source and binary forms, with or without
+///     modification, are permitted provided that the following conditions are met:
+///         * Redistributions of source code must retain the above copyright
+///         notice, this list of conditions and the following disclaimer.
+///         * Redistributions in binary form must reproduce the above copyright
+///         notice, this list of conditions and the following disclaimer in the
+///         documentation and/or other materials provided with the distribution.
+///         * Neither the name of the OpenSimulator Project nor the
+///         names of its contributors may be used to endorse or promote products
+///         derived from this software without specific prior written permission.
+///
+///     THIS SOFTWARE IS PROVIDED BY THE DEVELOPERS ``AS IS'' AND ANY
+///     EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+///     WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+///     DISCLAIMED. IN NO EVENT SHALL THE CONTRIBUTORS BE LIABLE FOR ANY
+///     DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+///     (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+///     LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+///     ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+///     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+///     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+/// </license>
 
 using System;
 using System.Collections.Generic;
@@ -33,12 +35,11 @@ using Mono.Addins;
 using Nini.Config;
 using OpenMetaverse;
 using OpenSim.Framework;
+using OpenSim.Region.CoreModules.World.GlobalEnvironment;
 using OpenSim.Region.Framework.Interfaces;
 using OpenSim.Region.Framework.Scenes;
 
-using OpenSim.Region.CoreModules.World.Wind;
-
-namespace OpenSim.Region.CoreModules
+namespace OpenSim.Region.CoreModules.World.GlobalEnvironment
 {
     [Extension(Path = "/OpenSim/RegionModules", NodeName = "RegionModule", Id = "WindModule")]
     public class WindModule : IWindModule
@@ -48,7 +49,6 @@ namespace OpenSim.Region.CoreModules
         private uint m_frame = 0;
         private int m_dataVersion = 0;
         private int m_frameUpdateRate = 150;
-        //private Random m_rndnums = new Random(Environment.TickCount);
         private Scene m_scene = null;
         private bool m_ready = false;
         private bool m_inUpdate = false;
@@ -67,7 +67,6 @@ namespace OpenSim.Region.CoreModules
         public void Initialize(IConfigSource config)
         {
             m_windConfig = config.Configs["Wind"];
-//            string desiredWindPlugin = m_dWindPluginName;
 
             if (m_windConfig != null)
             {
@@ -84,23 +83,24 @@ namespace OpenSim.Region.CoreModules
 
             if (m_enabled)
             {
-                m_log.InfoFormat("[WIND] Enabled with an update rate of {0} frames.", m_frameUpdateRate);
-
+                m_log.InfoFormat("[Wind]: Enabled with an update rate of {0} frames.", m_frameUpdateRate);
             }
-
         }
 
         public void AddRegion(Scene scene)
         {
             if (!m_enabled)
+            {
                 return;
+            }
 
             m_scene = scene;
             m_frame = 0;
+
             // Register all the Wind Model Plug-ins
             foreach (IWindModelPlugin windPlugin in AddinManager.GetExtensionObjects("/OpenSim/WindModule", false))
             {
-                m_log.InfoFormat("[WIND] Found Plugin: {0}", windPlugin.Name);
+                m_log.InfoFormat("[Wind]: Found Plugin: {0}", windPlugin.Name);
                 m_availableWindPlugins.Add(windPlugin.Name, windPlugin);
             }
 
@@ -109,7 +109,7 @@ namespace OpenSim.Region.CoreModules
             {
                 m_activeWindPlugin = m_availableWindPlugins[m_dWindPluginName];
 
-                m_log.InfoFormat("[WIND] {0} plugin found, initializing.", m_dWindPluginName);
+                m_log.InfoFormat("[Wind]: {0} plugin found, initializing.", m_dWindPluginName);
 
                 if (m_windConfig != null)
                 {
@@ -121,20 +121,13 @@ namespace OpenSim.Region.CoreModules
             // if the plug-in wasn't found, default to no wind.
             if (m_activeWindPlugin == null)
             {
-                m_log.ErrorFormat("[WIND] Could not find specified wind plug-in: {0}", m_dWindPluginName);
-                m_log.ErrorFormat("[WIND] Defaulting to no wind.");
+                m_log.ErrorFormat("[Wind]: Could not find specified wind plug-in: {0}", m_dWindPluginName);
+                m_log.ErrorFormat("[Wind]: Defaulting to no wind.");
             }
-
-            // This one puts an entry in the main help screen
-            //                m_scene.AddCommand("Regions", this, "wind", "wind", "Usage: wind <plugin> <param> [value] - Get or Update Wind paramaters", null);
-
-            // This one enables the ability to type just the base command without any parameters
-            //                m_scene.AddCommand("Regions", this, "wind", "", "", HandleConsoleCommand);
 
             // Get a list of the parameters for each plugin
             foreach (IWindModelPlugin windPlugin in m_availableWindPlugins.Values)
             {
-                //                    m_scene.AddCommand("Regions", this, String.Format("wind base wind_plugin {0}", windPlugin.Name), String.Format("{0} - {1}", windPlugin.Name, windPlugin.Description), "", HandleConsoleBaseCommand);
                 m_scene.AddCommand(
                     "Regions",
                     this,
@@ -159,8 +152,10 @@ namespace OpenSim.Region.CoreModules
 
             // Generate initial wind values
             GenWind();
+
             // hopefully this will not be the same for all regions on same instance
             m_dataVersion = (int)m_scene.AllocateLocalId();
+
             // Mark Module Ready for duty
             m_ready = true;
         }
@@ -168,12 +163,15 @@ namespace OpenSim.Region.CoreModules
         public void RemoveRegion(Scene scene)
         {
             if (!m_enabled)
+            {
                 return;
-
+            }
+            
             m_ready = false;
 
             // REVIEW: If a region module is closed, is there a possibility that it'll re-open/initialize ??
             m_activeWindPlugin = null;
+
             foreach (IWindModelPlugin windPlugin in m_availableWindPlugins.Values)
             {
                 windPlugin.Dispose();
@@ -183,8 +181,6 @@ namespace OpenSim.Region.CoreModules
 
             //  Remove our hooks
             m_scene.EventManager.OnFrame -= WindUpdate;
-//            m_scene.EventManager.OnMakeRootAgent -= OnAgentEnteredRegion;
-
         }
 
         public void Close()
@@ -208,6 +204,7 @@ namespace OpenSim.Region.CoreModules
         #endregion
 
         #region Console Commands
+
         private void ValidateConsole()
         {
             if (m_scene.ConsoleScene() == null)
@@ -244,8 +241,7 @@ namespace OpenSim.Region.CoreModules
         {
             ValidateConsole();
 
-            if ((cmdparams.Length != 4)
-                || !cmdparams[1].Equals("base"))
+            if ((cmdparams.Length != 4) || !cmdparams[1].Equals("base"))
             {
                 MainConsole.Instance.Output(
                     "Invalid parameters to change parameters for Wind module base, usage: wind base <parameter> <value>");
@@ -296,15 +292,14 @@ namespace OpenSim.Region.CoreModules
         }
 
         /// <summary>
-        /// Called to change plugin parameters.
+        ///     Called to change plugin parameters.
         /// </summary>
         private void HandleConsoleParamCommand(string module, string[] cmdparams)
         {
             ValidateConsole();
 
             // wind <plugin> <param> [value]
-            if ((cmdparams.Length != 4)
-                && (cmdparams.Length != 3))
+            if ((cmdparams.Length != 4) && (cmdparams.Length != 3))
             {
                 MainConsole.Instance.Output("Usage: wind <plugin> <param> [value]");
                 return;
@@ -313,6 +308,7 @@ namespace OpenSim.Region.CoreModules
             string plugin = cmdparams[1];
             string param = cmdparams[2];
             float value = 0f;
+
             if (cmdparams.Length == 4)
             {
                 if (!float.TryParse(cmdparams[3], out value))
@@ -342,10 +338,9 @@ namespace OpenSim.Region.CoreModules
                     MainConsole.Instance.OutputFormat("{0}", e.Message);
                 }
             }
-
         }
-        #endregion
 
+        #endregion
 
         #region IWindModule Methods
 
@@ -416,7 +411,9 @@ namespace OpenSim.Region.CoreModules
         public void WindUpdate()
         {
             if ((!m_ready || m_inUpdate || (m_frame++ % m_frameUpdateRate) != 0))
+            {
                 return;
+            }
 
             m_inUpdate = true;
             Util.FireAndForget(delegate
@@ -428,7 +425,6 @@ namespace OpenSim.Region.CoreModules
                     {
                         client.SendWindData(m_dataVersion, windSpeeds);
                     });
-
                 }
                 finally
                 {
@@ -439,10 +435,9 @@ namespace OpenSim.Region.CoreModules
         }
 
         /// <summary>
-        /// Calculate new wind
-        /// returns false if no change
+        ///     Calculate new wind
+        ///     returns false if no change
         /// </summary>
-
         private bool GenWind()
         {
             if (m_activeWindPlugin != null && m_activeWindPlugin.WindUpdate(m_frame))
@@ -451,6 +446,7 @@ namespace OpenSim.Region.CoreModules
                 m_dataVersion++;
                 return true;
             }
+
             return false;
         }
     }

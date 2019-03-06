@@ -69,7 +69,7 @@ namespace OpenSim.Region.ClientStack.LindenUDP
             get { return null; }
         }
 
-        public virtual void Initialise(IConfigSource source)
+        public virtual void Initialize(IConfigSource source)
         {
             m_Config = source;
         }
@@ -83,7 +83,7 @@ namespace OpenSim.Region.ClientStack.LindenUDP
             uint port = (uint)scene.RegionInfo.InternalEndPoint.Port;
 
             IPAddress listenIP = scene.RegionInfo.InternalEndPoint.Address;
-            Initialise(listenIP, ref port, scene.RegionInfo.ProxyOffset, m_Config, scene.AuthenticateHandler);
+            Initialize(listenIP, ref port, scene.RegionInfo.ProxyOffset, m_Config, scene.AuthenticateHandler);
             scene.RegionInfo.InternalEndPoint.Port = (int)port;
 
             AddScene(scene);
@@ -100,7 +100,7 @@ namespace OpenSim.Region.ClientStack.LindenUDP
         }
         #endregion
 
-        public virtual void Initialise(IPAddress listenIP, ref uint port, int proxyPortOffsetParm, IConfigSource configSource, AgentCircuitManager circuitManager)
+        public virtual void Initialize(IPAddress listenIP, ref uint port, int proxyPortOffsetParm, IConfigSource configSource, AgentCircuitManager circuitManager)
         {
             m_udpServer = new LLUDPServer(listenIP, ref port, proxyPortOffsetParm, configSource, circuitManager);
         }
