@@ -26,16 +26,16 @@
  */
 
 using System;
-using System.Reflection;
 using System.Collections;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Runtime.Remoting.Lifetime;
 using System.Threading;
-using OpenMetaverse;
 using Nini.Config;
+using OpenMetaverse;
 using OpenSim;
 using OpenSim.Framework;
-using OpenSim.Region.CoreModules.World.LightShare;
+using OpenSim.Region.CoreModules.World.GlobalEnvironment.LightShare;
 using OpenSim.Region.Framework.Interfaces;
 using OpenSim.Region.Framework.Scenes;
 using OpenSim.Region.ScriptEngine.Shared;
