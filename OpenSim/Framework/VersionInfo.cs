@@ -34,6 +34,7 @@ namespace OpenSim
         public const string SoftwareName = "OpenSim";
         public const string VersionNumber = "0.9.1.0";
         public const string AssemblyVersionNumber = "0.9.1.0";
+        public const Flavour VERSION_FLAVOUR = Flavour.Dev;
 
         public enum Flavour
         {
