@@ -1,0 +1,5 @@
+F:\Hyperion\Backup Last working version\bin\OpenSim.Services.AvatarService.dll
+F:\Hyperion\Backup Last working version\bin\OpenSim.Services.AvatarService.pdb
+F:\Hyperion\Backup Last working version\OpenSim\Services\AvatarService\obj\Debug\OpenSim.Services.AvatarService.dll
+F:\Hyperion\Backup Last working version\OpenSim\Services\AvatarService\obj\Debug\OpenSim.Services.AvatarService.pdb
+F:\Hyperion\Backup Last working version\OpenSim\Services\AvatarService\obj\Debug\OpenSim.Services.AvatarService.csprojResolveAssemblyReference.cache

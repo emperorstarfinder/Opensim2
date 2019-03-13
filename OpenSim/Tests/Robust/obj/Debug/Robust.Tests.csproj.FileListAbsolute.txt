@@ -1,0 +1,5 @@
+F:\Hyperion\Backup Last working version\bin\Robust.Tests.dll
+F:\Hyperion\Backup Last working version\bin\Robust.Tests.pdb
+F:\Hyperion\Backup Last working version\OpenSim\Tests\Robust\obj\Debug\Robust.Tests.csprojResolveAssemblyReference.cache
+F:\Hyperion\Backup Last working version\OpenSim\Tests\Robust\obj\Debug\Robust.Tests.dll
+F:\Hyperion\Backup Last working version\OpenSim\Tests\Robust\obj\Debug\Robust.Tests.pdb

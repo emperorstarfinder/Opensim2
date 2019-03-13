@@ -1,0 +1,6 @@
+F:\Hyperion\Backup Last working version\bin\OpenSim.Framework.Servers.HttpServer.dll
+F:\Hyperion\Backup Last working version\bin\OpenSim.Framework.Servers.HttpServer.pdb
+F:\Hyperion\Backup Last working version\OpenSim\Framework\Servers\HttpServer\obj\Debug\OpenSim.Framework.Servers.HttpServer.dll
+F:\Hyperion\Backup Last working version\OpenSim\Framework\Servers\HttpServer\obj\Debug\OpenSim.Framework.Servers.HttpServer.pdb
+F:\Hyperion\Backup Last working version\OpenSim\Framework\Servers\HttpServer\obj\Debug\OpenSim.Framework.Servers.HttpServer.csprojAssemblyReference.cache
+F:\Hyperion\Backup Last working version\OpenSim\Framework\Servers\HttpServer\obj\Debug\OpenSim.Framework.Servers.HttpServer.csproj.CoreCompileInputs.cache

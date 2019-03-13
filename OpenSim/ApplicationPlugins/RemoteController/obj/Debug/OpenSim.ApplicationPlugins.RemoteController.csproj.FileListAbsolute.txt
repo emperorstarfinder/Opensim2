@@ -1,0 +1,5 @@
+F:\Hyperion\Backup Last working version\bin\OpenSim.ApplicationPlugins.RemoteController.dll
+F:\Hyperion\Backup Last working version\bin\OpenSim.ApplicationPlugins.RemoteController.pdb
+F:\Hyperion\Backup Last working version\OpenSim\ApplicationPlugins\RemoteController\obj\Debug\OpenSim.ApplicationPlugins.RemoteController.dll
+F:\Hyperion\Backup Last working version\OpenSim\ApplicationPlugins\RemoteController\obj\Debug\OpenSim.ApplicationPlugins.RemoteController.pdb
+F:\Hyperion\Backup Last working version\OpenSim\ApplicationPlugins\RemoteController\obj\Debug\OpenSim.ApplicationPlugins.RemoteController.csprojResolveAssemblyReference.cache

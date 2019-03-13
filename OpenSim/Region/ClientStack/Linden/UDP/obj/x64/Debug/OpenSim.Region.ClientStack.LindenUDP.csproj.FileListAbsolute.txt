@@ -1,0 +1,12 @@
+F:\Hyperion\OpenSim\Region\ClientStack\Linden\UDP\bin\x64\Debug\OpenSim.Region.ClientStack.LindenUDP.dll
+F:\Hyperion\OpenSim\Region\ClientStack\Linden\UDP\bin\x64\Debug\OpenSim.Region.ClientStack.LindenUDP.pdb
+F:\Hyperion\OpenSim\Region\ClientStack\Linden\UDP\obj\x64\Debug\OpenSim.Region.ClientStack.LindenUDP.csprojAssemblyReference.cache
+F:\Hyperion\OpenSim\Region\ClientStack\Linden\UDP\obj\x64\Debug\OpenSim.Region.ClientStack.LindenUDP.csproj.CoreCompileInputs.cache
+F:\Hyperion\OpenSim\Region\ClientStack\Linden\UDP\obj\x64\Debug\OpenSim.Region.ClientStack.LindenUDP.dll
+F:\Hyperion\OpenSim\Region\ClientStack\Linden\UDP\obj\x64\Debug\OpenSim.Region.ClientStack.LindenUDP.pdb
+F:\Hyperion\Backup Last working version\OpenSim\Region\ClientStack\Linden\UDP\bin\x64\Debug\OpenSim.Region.ClientStack.LindenUDP.dll
+F:\Hyperion\Backup Last working version\OpenSim\Region\ClientStack\Linden\UDP\bin\x64\Debug\OpenSim.Region.ClientStack.LindenUDP.pdb
+F:\Hyperion\Backup Last working version\OpenSim\Region\ClientStack\Linden\UDP\obj\x64\Debug\OpenSim.Region.ClientStack.LindenUDP.csprojAssemblyReference.cache
+F:\Hyperion\Backup Last working version\OpenSim\Region\ClientStack\Linden\UDP\obj\x64\Debug\OpenSim.Region.ClientStack.LindenUDP.csproj.CoreCompileInputs.cache
+F:\Hyperion\Backup Last working version\OpenSim\Region\ClientStack\Linden\UDP\obj\x64\Debug\OpenSim.Region.ClientStack.LindenUDP.dll
+F:\Hyperion\Backup Last working version\OpenSim\Region\ClientStack\Linden\UDP\obj\x64\Debug\OpenSim.Region.ClientStack.LindenUDP.pdb

@@ -1,0 +1,5 @@
+F:\Hyperion\Backup Last working version\bin\OpenSim.Region.ScriptEngine.Shared.Instance.dll
+F:\Hyperion\Backup Last working version\bin\OpenSim.Region.ScriptEngine.Shared.Instance.pdb
+F:\Hyperion\Backup Last working version\OpenSim\Region\ScriptEngine\Shared\Instance\obj\Debug\OpenSim.Region.ScriptEngine.Shared.Instance.csprojResolveAssemblyReference.cache
+F:\Hyperion\Backup Last working version\OpenSim\Region\ScriptEngine\Shared\Instance\obj\Debug\OpenSim.Region.ScriptEngine.Shared.Instance.dll
+F:\Hyperion\Backup Last working version\OpenSim\Region\ScriptEngine\Shared\Instance\obj\Debug\OpenSim.Region.ScriptEngine.Shared.Instance.pdb

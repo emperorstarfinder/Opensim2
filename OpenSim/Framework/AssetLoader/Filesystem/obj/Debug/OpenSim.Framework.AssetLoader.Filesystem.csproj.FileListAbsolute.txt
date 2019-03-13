@@ -1,0 +1,5 @@
+F:\Hyperion\Backup Last working version\bin\OpenSim.Framework.AssetLoader.Filesystem.dll
+F:\Hyperion\Backup Last working version\bin\OpenSim.Framework.AssetLoader.Filesystem.pdb
+F:\Hyperion\Backup Last working version\OpenSim\Framework\AssetLoader\Filesystem\obj\Debug\OpenSim.Framework.AssetLoader.Filesystem.dll
+F:\Hyperion\Backup Last working version\OpenSim\Framework\AssetLoader\Filesystem\obj\Debug\OpenSim.Framework.AssetLoader.Filesystem.pdb
+F:\Hyperion\Backup Last working version\OpenSim\Framework\AssetLoader\Filesystem\obj\Debug\OpenSim.Framework.AssetLoader.Filesystem.csprojResolveAssemblyReference.cache

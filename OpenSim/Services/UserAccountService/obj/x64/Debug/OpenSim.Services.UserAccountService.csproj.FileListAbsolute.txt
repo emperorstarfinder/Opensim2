@@ -1,0 +1,12 @@
+F:\Hyperion\OpenSim\Services\UserAccountService\bin\x64\Debug\OpenSim.Services.UserAccountService.dll
+F:\Hyperion\OpenSim\Services\UserAccountService\bin\x64\Debug\OpenSim.Services.UserAccountService.pdb
+F:\Hyperion\OpenSim\Services\UserAccountService\obj\x64\Debug\OpenSim.Services.UserAccountService.csprojAssemblyReference.cache
+F:\Hyperion\OpenSim\Services\UserAccountService\obj\x64\Debug\OpenSim.Services.UserAccountService.csproj.CoreCompileInputs.cache
+F:\Hyperion\OpenSim\Services\UserAccountService\obj\x64\Debug\OpenSim.Services.UserAccountService.dll
+F:\Hyperion\OpenSim\Services\UserAccountService\obj\x64\Debug\OpenSim.Services.UserAccountService.pdb
+F:\Hyperion\Backup Last working version\OpenSim\Services\UserAccountService\bin\x64\Debug\OpenSim.Services.UserAccountService.dll
+F:\Hyperion\Backup Last working version\OpenSim\Services\UserAccountService\bin\x64\Debug\OpenSim.Services.UserAccountService.pdb
+F:\Hyperion\Backup Last working version\OpenSim\Services\UserAccountService\obj\x64\Debug\OpenSim.Services.UserAccountService.csprojAssemblyReference.cache
+F:\Hyperion\Backup Last working version\OpenSim\Services\UserAccountService\obj\x64\Debug\OpenSim.Services.UserAccountService.csproj.CoreCompileInputs.cache
+F:\Hyperion\Backup Last working version\OpenSim\Services\UserAccountService\obj\x64\Debug\OpenSim.Services.UserAccountService.dll
+F:\Hyperion\Backup Last working version\OpenSim\Services\UserAccountService\obj\x64\Debug\OpenSim.Services.UserAccountService.pdb

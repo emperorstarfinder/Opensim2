@@ -1,0 +1,5 @@
+F:\Hyperion\Backup Last working version\bin\OpenSim.Region.ClientStack.LindenCaps.dll
+F:\Hyperion\Backup Last working version\bin\OpenSim.Region.ClientStack.LindenCaps.pdb
+F:\Hyperion\Backup Last working version\OpenSim\Region\ClientStack\Linden\Caps\obj\Debug\OpenSim.Region.ClientStack.LindenCaps.csprojResolveAssemblyReference.cache
+F:\Hyperion\Backup Last working version\OpenSim\Region\ClientStack\Linden\Caps\obj\Debug\OpenSim.Region.ClientStack.LindenCaps.dll
+F:\Hyperion\Backup Last working version\OpenSim\Region\ClientStack\Linden\Caps\obj\Debug\OpenSim.Region.ClientStack.LindenCaps.pdb

@@ -1,0 +1,5 @@
+F:\Hyperion\Backup Last working version\bin\OpenSim.ApplicationPlugins.RegionModulesController.dll
+F:\Hyperion\Backup Last working version\bin\OpenSim.ApplicationPlugins.RegionModulesController.pdb
+F:\Hyperion\Backup Last working version\OpenSim\ApplicationPlugins\RegionModulesController\obj\Debug\OpenSim.ApplicationPlugins.RegionModulesController.dll
+F:\Hyperion\Backup Last working version\OpenSim\ApplicationPlugins\RegionModulesController\obj\Debug\OpenSim.ApplicationPlugins.RegionModulesController.pdb
+F:\Hyperion\Backup Last working version\OpenSim\ApplicationPlugins\RegionModulesController\obj\Debug\OpenSim.ApplicationPlugins.RegionModulesController.csprojResolveAssemblyReference.cache

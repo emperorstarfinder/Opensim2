@@ -1,0 +1,5 @@
+F:\Hyperion\Backup Last working version\bin\OpenSim.Region.PhysicsModules.Meshing.dll
+F:\Hyperion\Backup Last working version\bin\OpenSim.Region.PhysicsModules.Meshing.pdb
+F:\Hyperion\Backup Last working version\OpenSim\Region\PhysicsModules\Meshing\obj\Debug\OpenSim.Region.PhysicsModules.Meshing.dll
+F:\Hyperion\Backup Last working version\OpenSim\Region\PhysicsModules\Meshing\obj\Debug\OpenSim.Region.PhysicsModules.Meshing.pdb
+F:\Hyperion\Backup Last working version\OpenSim\Region\PhysicsModules\Meshing\obj\Debug\OpenSim.Region.PhysicsModules.Meshing.csprojResolveAssemblyReference.cache

@@ -1,0 +1,5 @@
+F:\Hyperion\Backup Last working version\bin\OpenSim.Tests.Performance.dll
+F:\Hyperion\Backup Last working version\bin\OpenSim.Tests.Performance.pdb
+F:\Hyperion\Backup Last working version\OpenSim\Tests\Performance\obj\Debug\OpenSim.Tests.Performance.dll
+F:\Hyperion\Backup Last working version\OpenSim\Tests\Performance\obj\Debug\OpenSim.Tests.Performance.pdb
+F:\Hyperion\Backup Last working version\OpenSim\Tests\Performance\obj\Debug\OpenSim.Tests.Performance.csprojResolveAssemblyReference.cache

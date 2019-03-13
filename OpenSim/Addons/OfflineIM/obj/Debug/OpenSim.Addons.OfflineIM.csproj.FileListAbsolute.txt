@@ -1,0 +1,5 @@
+F:\Hyperion\Backup Last working version\bin\OpenSim.Addons.OfflineIM.dll
+F:\Hyperion\Backup Last working version\bin\OpenSim.Addons.OfflineIM.pdb
+F:\Hyperion\Backup Last working version\OpenSim\Addons\OfflineIM\obj\Debug\OpenSim.Addons.OfflineIM.csprojResolveAssemblyReference.cache
+F:\Hyperion\Backup Last working version\OpenSim\Addons\OfflineIM\obj\Debug\OpenSim.Addons.OfflineIM.dll
+F:\Hyperion\Backup Last working version\OpenSim\Addons\OfflineIM\obj\Debug\OpenSim.Addons.OfflineIM.pdb

@@ -1,0 +1,5 @@
+F:\Hyperion\Backup Last working version\bin\OpenSim.Tests.Stress.dll
+F:\Hyperion\Backup Last working version\bin\OpenSim.Tests.Stress.pdb
+F:\Hyperion\Backup Last working version\OpenSim\Tests\Stress\obj\Debug\OpenSim.Tests.Stress.dll
+F:\Hyperion\Backup Last working version\OpenSim\Tests\Stress\obj\Debug\OpenSim.Tests.Stress.pdb
+F:\Hyperion\Backup Last working version\OpenSim\Tests\Stress\obj\Debug\OpenSim.Tests.Stress.csprojResolveAssemblyReference.cache

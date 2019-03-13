@@ -1,0 +1,5 @@
+F:\Hyperion\Backup Last working version\bin\OpenSim.Tools.lslc.exe
+F:\Hyperion\Backup Last working version\bin\OpenSim.Tools.lslc.pdb
+F:\Hyperion\Backup Last working version\OpenSim\Tools\Compiler\obj\Debug\OpenSim.Tools.lslc.exe
+F:\Hyperion\Backup Last working version\OpenSim\Tools\Compiler\obj\Debug\OpenSim.Tools.lslc.pdb
+F:\Hyperion\Backup Last working version\OpenSim\Tools\Compiler\obj\Debug\OpenSim.Tools.lslc.csprojResolveAssemblyReference.cache

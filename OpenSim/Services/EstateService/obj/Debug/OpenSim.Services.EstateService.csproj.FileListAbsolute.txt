@@ -1,0 +1,5 @@
+F:\Hyperion\Backup Last working version\bin\OpenSim.Services.EstateService.dll
+F:\Hyperion\Backup Last working version\bin\OpenSim.Services.EstateService.pdb
+F:\Hyperion\Backup Last working version\OpenSim\Services\EstateService\obj\Debug\OpenSim.Services.EstateService.dll
+F:\Hyperion\Backup Last working version\OpenSim\Services\EstateService\obj\Debug\OpenSim.Services.EstateService.pdb
+F:\Hyperion\Backup Last working version\OpenSim\Services\EstateService\obj\Debug\OpenSim.Services.EstateService.csprojResolveAssemblyReference.cache

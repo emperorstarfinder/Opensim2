@@ -1,0 +1,5 @@
+F:\Hyperion\Backup Last working version\bin\OpenSim.Services.FreeswitchService.dll
+F:\Hyperion\Backup Last working version\bin\OpenSim.Services.FreeswitchService.pdb
+F:\Hyperion\Backup Last working version\OpenSim\Services\FreeswitchService\obj\Debug\OpenSim.Services.FreeswitchService.dll
+F:\Hyperion\Backup Last working version\OpenSim\Services\FreeswitchService\obj\Debug\OpenSim.Services.FreeswitchService.pdb
+F:\Hyperion\Backup Last working version\OpenSim\Services\FreeswitchService\obj\Debug\OpenSim.Services.FreeswitchService.csprojResolveAssemblyReference.cache

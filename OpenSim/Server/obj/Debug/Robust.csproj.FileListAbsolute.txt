@@ -1,0 +1,5 @@
+F:\Hyperion\Backup Last working version\bin\Robust.exe
+F:\Hyperion\Backup Last working version\bin\Robust.pdb
+F:\Hyperion\Backup Last working version\OpenSim\Server\obj\Debug\Robust.exe
+F:\Hyperion\Backup Last working version\OpenSim\Server\obj\Debug\Robust.pdb
+F:\Hyperion\Backup Last working version\OpenSim\Server\obj\Debug\Robust.csprojResolveAssemblyReference.cache

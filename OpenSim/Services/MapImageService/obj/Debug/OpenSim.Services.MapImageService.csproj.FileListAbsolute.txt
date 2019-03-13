@@ -1,0 +1,5 @@
+F:\Hyperion\Backup Last working version\bin\OpenSim.Services.MapImageService.dll
+F:\Hyperion\Backup Last working version\bin\OpenSim.Services.MapImageService.pdb
+F:\Hyperion\Backup Last working version\OpenSim\Services\MapImageService\obj\Debug\OpenSim.Services.MapImageService.dll
+F:\Hyperion\Backup Last working version\OpenSim\Services\MapImageService\obj\Debug\OpenSim.Services.MapImageService.pdb
+F:\Hyperion\Backup Last working version\OpenSim\Services\MapImageService\obj\Debug\OpenSim.Services.MapImageService.csprojResolveAssemblyReference.cache

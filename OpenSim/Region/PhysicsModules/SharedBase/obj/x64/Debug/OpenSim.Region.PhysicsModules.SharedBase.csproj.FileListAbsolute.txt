@@ -1,0 +1,12 @@
+F:\Hyperion\OpenSim\Region\PhysicsModules\SharedBase\bin\x64\Debug\OpenSim.Region.PhysicsModules.SharedBase.dll
+F:\Hyperion\OpenSim\Region\PhysicsModules\SharedBase\bin\x64\Debug\OpenSim.Region.PhysicsModules.SharedBase.pdb
+F:\Hyperion\OpenSim\Region\PhysicsModules\SharedBase\obj\x64\Debug\OpenSim.Region.PhysicsModules.SharedBase.csprojAssemblyReference.cache
+F:\Hyperion\OpenSim\Region\PhysicsModules\SharedBase\obj\x64\Debug\OpenSim.Region.PhysicsModules.SharedBase.csproj.CoreCompileInputs.cache
+F:\Hyperion\OpenSim\Region\PhysicsModules\SharedBase\obj\x64\Debug\OpenSim.Region.PhysicsModules.SharedBase.dll
+F:\Hyperion\OpenSim\Region\PhysicsModules\SharedBase\obj\x64\Debug\OpenSim.Region.PhysicsModules.SharedBase.pdb
+F:\Hyperion\Backup Last working version\OpenSim\Region\PhysicsModules\SharedBase\bin\x64\Debug\OpenSim.Region.PhysicsModules.SharedBase.dll
+F:\Hyperion\Backup Last working version\OpenSim\Region\PhysicsModules\SharedBase\bin\x64\Debug\OpenSim.Region.PhysicsModules.SharedBase.pdb
+F:\Hyperion\Backup Last working version\OpenSim\Region\PhysicsModules\SharedBase\obj\x64\Debug\OpenSim.Region.PhysicsModules.SharedBase.csprojAssemblyReference.cache
+F:\Hyperion\Backup Last working version\OpenSim\Region\PhysicsModules\SharedBase\obj\x64\Debug\OpenSim.Region.PhysicsModules.SharedBase.csproj.CoreCompileInputs.cache
+F:\Hyperion\Backup Last working version\OpenSim\Region\PhysicsModules\SharedBase\obj\x64\Debug\OpenSim.Region.PhysicsModules.SharedBase.dll
+F:\Hyperion\Backup Last working version\OpenSim\Region\PhysicsModules\SharedBase\obj\x64\Debug\OpenSim.Region.PhysicsModules.SharedBase.pdb

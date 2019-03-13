@@ -1,0 +1,5 @@
+F:\Hyperion\Backup Last working version\bin\SmartThreadPool.dll
+F:\Hyperion\Backup Last working version\bin\SmartThreadPool.pdb
+F:\Hyperion\Backup Last working version\ThirdParty\SmartThreadPool\obj\Debug\SmartThreadPool.dll
+F:\Hyperion\Backup Last working version\ThirdParty\SmartThreadPool\obj\Debug\SmartThreadPool.pdb
+F:\Hyperion\Backup Last working version\ThirdParty\SmartThreadPool\obj\Debug\SmartThreadPool.csproj.CoreCompileInputs.cache

@@ -1,0 +1,4 @@
+F:\Hyperion\Backup Last working version\bin\OpenSim.Tools.Configger.exe
+F:\Hyperion\Backup Last working version\bin\OpenSim.Tools.Configger.pdb
+F:\Hyperion\Backup Last working version\OpenSim\Tools\Configger\obj\Debug\OpenSim.Tools.Configger.exe
+F:\Hyperion\Backup Last working version\OpenSim\Tools\Configger\obj\Debug\OpenSim.Tools.Configger.pdb

@@ -1,0 +1,12 @@
+F:\Hyperion\OpenSim\Services\Base\bin\x64\Debug\OpenSim.Services.Base.dll
+F:\Hyperion\OpenSim\Services\Base\bin\x64\Debug\OpenSim.Services.Base.pdb
+F:\Hyperion\OpenSim\Services\Base\obj\x64\Debug\OpenSim.Services.Base.csprojAssemblyReference.cache
+F:\Hyperion\OpenSim\Services\Base\obj\x64\Debug\OpenSim.Services.Base.csproj.CoreCompileInputs.cache
+F:\Hyperion\OpenSim\Services\Base\obj\x64\Debug\OpenSim.Services.Base.dll
+F:\Hyperion\OpenSim\Services\Base\obj\x64\Debug\OpenSim.Services.Base.pdb
+F:\Hyperion\Backup Last working version\OpenSim\Services\Base\bin\x64\Debug\OpenSim.Services.Base.dll
+F:\Hyperion\Backup Last working version\OpenSim\Services\Base\bin\x64\Debug\OpenSim.Services.Base.pdb
+F:\Hyperion\Backup Last working version\OpenSim\Services\Base\obj\x64\Debug\OpenSim.Services.Base.csprojAssemblyReference.cache
+F:\Hyperion\Backup Last working version\OpenSim\Services\Base\obj\x64\Debug\OpenSim.Services.Base.csproj.CoreCompileInputs.cache
+F:\Hyperion\Backup Last working version\OpenSim\Services\Base\obj\x64\Debug\OpenSim.Services.Base.dll
+F:\Hyperion\Backup Last working version\OpenSim\Services\Base\obj\x64\Debug\OpenSim.Services.Base.pdb

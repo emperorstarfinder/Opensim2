@@ -1,0 +1,5 @@
+F:\Hyperion\Backup Last working version\bin\OpenSim.Region.OptionalModules.dll
+F:\Hyperion\Backup Last working version\bin\OpenSim.Region.OptionalModules.pdb
+F:\Hyperion\Backup Last working version\OpenSim\Region\OptionalModules\obj\Debug\OpenSim.Region.OptionalModules.csprojResolveAssemblyReference.cache
+F:\Hyperion\Backup Last working version\OpenSim\Region\OptionalModules\obj\Debug\OpenSim.Region.OptionalModules.dll
+F:\Hyperion\Backup Last working version\OpenSim\Region\OptionalModules\obj\Debug\OpenSim.Region.OptionalModules.pdb

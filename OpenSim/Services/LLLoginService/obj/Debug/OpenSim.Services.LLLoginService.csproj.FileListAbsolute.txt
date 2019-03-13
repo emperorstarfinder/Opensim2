@@ -1,0 +1,5 @@
+F:\Hyperion\Backup Last working version\bin\OpenSim.Services.LLLoginService.dll
+F:\Hyperion\Backup Last working version\bin\OpenSim.Services.LLLoginService.pdb
+F:\Hyperion\Backup Last working version\OpenSim\Services\LLLoginService\obj\Debug\OpenSim.Services.LLLoginService.dll
+F:\Hyperion\Backup Last working version\OpenSim\Services\LLLoginService\obj\Debug\OpenSim.Services.LLLoginService.pdb
+F:\Hyperion\Backup Last working version\OpenSim\Services\LLLoginService\obj\Debug\OpenSim.Services.LLLoginService.csprojResolveAssemblyReference.cache

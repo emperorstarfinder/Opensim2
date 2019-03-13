@@ -1,0 +1,5 @@
+F:\Hyperion\Backup Last working version\bin\OpenSim.Tests.Common.dll
+F:\Hyperion\Backup Last working version\bin\OpenSim.Tests.Common.pdb
+F:\Hyperion\Backup Last working version\OpenSim\Tests\Common\obj\Debug\OpenSim.Tests.Common.csprojResolveAssemblyReference.cache
+F:\Hyperion\Backup Last working version\OpenSim\Tests\Common\obj\Debug\OpenSim.Tests.Common.dll
+F:\Hyperion\Backup Last working version\OpenSim\Tests\Common\obj\Debug\OpenSim.Tests.Common.pdb

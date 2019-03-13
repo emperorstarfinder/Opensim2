@@ -1,0 +1,5 @@
+F:\Hyperion\Backup Last working version\bin\OpenSim.ApplicationPlugins.LoadRegions.dll
+F:\Hyperion\Backup Last working version\bin\OpenSim.ApplicationPlugins.LoadRegions.pdb
+F:\Hyperion\Backup Last working version\OpenSim\ApplicationPlugins\LoadRegions\obj\Debug\OpenSim.ApplicationPlugins.LoadRegions.csprojResolveAssemblyReference.cache
+F:\Hyperion\Backup Last working version\OpenSim\ApplicationPlugins\LoadRegions\obj\Debug\OpenSim.ApplicationPlugins.LoadRegions.dll
+F:\Hyperion\Backup Last working version\OpenSim\ApplicationPlugins\LoadRegions\obj\Debug\OpenSim.ApplicationPlugins.LoadRegions.pdb

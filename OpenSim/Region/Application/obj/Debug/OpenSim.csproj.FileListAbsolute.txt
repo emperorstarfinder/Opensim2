@@ -1,0 +1,6 @@
+F:\Hyperion\Backup Last working version\bin\OpenSim.exe
+F:\Hyperion\Backup Last working version\bin\OpenSim.pdb
+F:\Hyperion\Backup Last working version\OpenSim\Region\Application\obj\Debug\OpenSim.exe
+F:\Hyperion\Backup Last working version\OpenSim\Region\Application\obj\Debug\OpenSim.pdb
+F:\Hyperion\Backup Last working version\OpenSim\Region\Application\obj\Debug\OpenSim.csprojAssemblyReference.cache
+F:\Hyperion\Backup Last working version\OpenSim\Region\Application\obj\Debug\OpenSim.csproj.CoreCompileInputs.cache

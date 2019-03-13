@@ -1,0 +1,12 @@
+F:\Hyperion\OpenSim\Framework\Console\bin\x64\Debug\OpenSim.Framework.Console.dll
+F:\Hyperion\OpenSim\Framework\Console\bin\x64\Debug\OpenSim.Framework.Console.pdb
+F:\Hyperion\OpenSim\Framework\Console\obj\x64\Debug\OpenSim.Framework.Console.csprojAssemblyReference.cache
+F:\Hyperion\OpenSim\Framework\Console\obj\x64\Debug\OpenSim.Framework.Console.csproj.CoreCompileInputs.cache
+F:\Hyperion\OpenSim\Framework\Console\obj\x64\Debug\OpenSim.Framework.Console.dll
+F:\Hyperion\OpenSim\Framework\Console\obj\x64\Debug\OpenSim.Framework.Console.pdb
+F:\Hyperion\Backup Last working version\OpenSim\Framework\Console\bin\x64\Debug\OpenSim.Framework.Console.dll
+F:\Hyperion\Backup Last working version\OpenSim\Framework\Console\bin\x64\Debug\OpenSim.Framework.Console.pdb
+F:\Hyperion\Backup Last working version\OpenSim\Framework\Console\obj\x64\Debug\OpenSim.Framework.Console.csprojAssemblyReference.cache
+F:\Hyperion\Backup Last working version\OpenSim\Framework\Console\obj\x64\Debug\OpenSim.Framework.Console.csproj.CoreCompileInputs.cache
+F:\Hyperion\Backup Last working version\OpenSim\Framework\Console\obj\x64\Debug\OpenSim.Framework.Console.dll
+F:\Hyperion\Backup Last working version\OpenSim\Framework\Console\obj\x64\Debug\OpenSim.Framework.Console.pdb

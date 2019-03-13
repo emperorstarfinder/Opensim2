@@ -1,0 +1,5 @@
+F:\Hyperion\Backup Last working version\bin\OpenSim.Data.MySQL.dll
+F:\Hyperion\Backup Last working version\bin\OpenSim.Data.MySQL.pdb
+F:\Hyperion\Backup Last working version\OpenSim\Data\MySQL\obj\Debug\OpenSim.Data.MySQL.csprojResolveAssemblyReference.cache
+F:\Hyperion\Backup Last working version\OpenSim\Data\MySQL\obj\Debug\OpenSim.Data.MySQL.dll
+F:\Hyperion\Backup Last working version\OpenSim\Data\MySQL\obj\Debug\OpenSim.Data.MySQL.pdb

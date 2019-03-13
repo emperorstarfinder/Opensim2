@@ -1,0 +1,12 @@
+F:\Hyperion\OpenSim\Services\Connectors\bin\x64\Debug\OpenSim.Services.Connectors.dll
+F:\Hyperion\OpenSim\Services\Connectors\bin\x64\Debug\OpenSim.Services.Connectors.pdb
+F:\Hyperion\OpenSim\Services\Connectors\obj\x64\Debug\OpenSim.Services.Connectors.csprojAssemblyReference.cache
+F:\Hyperion\OpenSim\Services\Connectors\obj\x64\Debug\OpenSim.Services.Connectors.csproj.CoreCompileInputs.cache
+F:\Hyperion\OpenSim\Services\Connectors\obj\x64\Debug\OpenSim.Services.Connectors.dll
+F:\Hyperion\OpenSim\Services\Connectors\obj\x64\Debug\OpenSim.Services.Connectors.pdb
+F:\Hyperion\Backup Last working version\OpenSim\Services\Connectors\bin\x64\Debug\OpenSim.Services.Connectors.dll
+F:\Hyperion\Backup Last working version\OpenSim\Services\Connectors\bin\x64\Debug\OpenSim.Services.Connectors.pdb
+F:\Hyperion\Backup Last working version\OpenSim\Services\Connectors\obj\x64\Debug\OpenSim.Services.Connectors.csprojAssemblyReference.cache
+F:\Hyperion\Backup Last working version\OpenSim\Services\Connectors\obj\x64\Debug\OpenSim.Services.Connectors.csproj.CoreCompileInputs.cache
+F:\Hyperion\Backup Last working version\OpenSim\Services\Connectors\obj\x64\Debug\OpenSim.Services.Connectors.dll
+F:\Hyperion\Backup Last working version\OpenSim\Services\Connectors\obj\x64\Debug\OpenSim.Services.Connectors.pdb

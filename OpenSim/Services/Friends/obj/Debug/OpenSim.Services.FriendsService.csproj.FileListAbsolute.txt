@@ -1,0 +1,5 @@
+F:\Hyperion\Backup Last working version\bin\OpenSim.Services.FriendsService.dll
+F:\Hyperion\Backup Last working version\bin\OpenSim.Services.FriendsService.pdb
+F:\Hyperion\Backup Last working version\OpenSim\Services\Friends\obj\Debug\OpenSim.Services.FriendsService.dll
+F:\Hyperion\Backup Last working version\OpenSim\Services\Friends\obj\Debug\OpenSim.Services.FriendsService.pdb
+F:\Hyperion\Backup Last working version\OpenSim\Services\Friends\obj\Debug\OpenSim.Services.FriendsService.csprojResolveAssemblyReference.cache

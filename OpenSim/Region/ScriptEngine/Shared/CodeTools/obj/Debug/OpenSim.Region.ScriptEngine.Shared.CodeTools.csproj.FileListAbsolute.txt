@@ -1,0 +1,5 @@
+F:\Hyperion\Backup Last working version\bin\OpenSim.Region.ScriptEngine.Shared.CodeTools.dll
+F:\Hyperion\Backup Last working version\bin\OpenSim.Region.ScriptEngine.Shared.CodeTools.pdb
+F:\Hyperion\Backup Last working version\OpenSim\Region\ScriptEngine\Shared\CodeTools\obj\Debug\OpenSim.Region.ScriptEngine.Shared.CodeTools.csprojResolveAssemblyReference.cache
+F:\Hyperion\Backup Last working version\OpenSim\Region\ScriptEngine\Shared\CodeTools\obj\Debug\OpenSim.Region.ScriptEngine.Shared.CodeTools.dll
+F:\Hyperion\Backup Last working version\OpenSim\Region\ScriptEngine\Shared\CodeTools\obj\Debug\OpenSim.Region.ScriptEngine.Shared.CodeTools.pdb

@@ -1,0 +1,4 @@
+F:\Hyperion\Backup Last working version\bin\OpenSim.Region.PhysicsModule.ConvexDecompositionDotNet.dll
+F:\Hyperion\Backup Last working version\bin\OpenSim.Region.PhysicsModule.ConvexDecompositionDotNet.pdb
+F:\Hyperion\Backup Last working version\OpenSim\Region\PhysicsModules\ConvexDecompositionDotNet\obj\Debug\OpenSim.Region.PhysicsModule.ConvexDecompositionDotNet.dll
+F:\Hyperion\Backup Last working version\OpenSim\Region\PhysicsModules\ConvexDecompositionDotNet\obj\Debug\OpenSim.Region.PhysicsModule.ConvexDecompositionDotNet.pdb

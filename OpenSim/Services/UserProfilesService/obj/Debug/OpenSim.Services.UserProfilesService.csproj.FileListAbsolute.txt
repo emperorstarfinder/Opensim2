@@ -1,0 +1,5 @@
+F:\Hyperion\Backup Last working version\bin\OpenSim.Services.UserProfilesService.dll
+F:\Hyperion\Backup Last working version\bin\OpenSim.Services.UserProfilesService.pdb
+F:\Hyperion\Backup Last working version\OpenSim\Services\UserProfilesService\obj\Debug\OpenSim.Services.UserProfilesService.dll
+F:\Hyperion\Backup Last working version\OpenSim\Services\UserProfilesService\obj\Debug\OpenSim.Services.UserProfilesService.pdb
+F:\Hyperion\Backup Last working version\OpenSim\Services\UserProfilesService\obj\Debug\OpenSim.Services.UserProfilesService.csprojResolveAssemblyReference.cache

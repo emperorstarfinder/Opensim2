@@ -1,0 +1,5 @@
+F:\Hyperion\Backup Last working version\bin\OpenSim.Services.GridService.dll
+F:\Hyperion\Backup Last working version\bin\OpenSim.Services.GridService.pdb
+F:\Hyperion\Backup Last working version\OpenSim\Services\GridService\obj\Debug\OpenSim.Services.GridService.dll
+F:\Hyperion\Backup Last working version\OpenSim\Services\GridService\obj\Debug\OpenSim.Services.GridService.pdb
+F:\Hyperion\Backup Last working version\OpenSim\Services\GridService\obj\Debug\OpenSim.Services.GridService.csprojResolveAssemblyReference.cache

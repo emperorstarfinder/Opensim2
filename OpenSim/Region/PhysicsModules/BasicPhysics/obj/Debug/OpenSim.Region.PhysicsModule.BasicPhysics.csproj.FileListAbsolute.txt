@@ -1,0 +1,5 @@
+F:\Hyperion\Backup Last working version\bin\OpenSim.Region.PhysicsModule.BasicPhysics.dll
+F:\Hyperion\Backup Last working version\bin\OpenSim.Region.PhysicsModule.BasicPhysics.pdb
+F:\Hyperion\Backup Last working version\OpenSim\Region\PhysicsModules\BasicPhysics\obj\Debug\OpenSim.Region.PhysicsModule.BasicPhysics.dll
+F:\Hyperion\Backup Last working version\OpenSim\Region\PhysicsModules\BasicPhysics\obj\Debug\OpenSim.Region.PhysicsModule.BasicPhysics.pdb
+F:\Hyperion\Backup Last working version\OpenSim\Region\PhysicsModules\BasicPhysics\obj\Debug\OpenSim.Region.PhysicsModule.BasicPhysics.csprojResolveAssemblyReference.cache

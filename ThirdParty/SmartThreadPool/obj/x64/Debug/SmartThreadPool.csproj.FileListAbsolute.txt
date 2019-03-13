@@ -1,0 +1,10 @@
+F:\Hyperion\ThirdParty\SmartThreadPool\bin\x64\Debug\SmartThreadPool.dll
+F:\Hyperion\ThirdParty\SmartThreadPool\bin\x64\Debug\SmartThreadPool.pdb
+F:\Hyperion\ThirdParty\SmartThreadPool\obj\x64\Debug\SmartThreadPool.csproj.CoreCompileInputs.cache
+F:\Hyperion\ThirdParty\SmartThreadPool\obj\x64\Debug\SmartThreadPool.dll
+F:\Hyperion\ThirdParty\SmartThreadPool\obj\x64\Debug\SmartThreadPool.pdb
+F:\Hyperion\Backup Last working version\ThirdParty\SmartThreadPool\bin\x64\Debug\SmartThreadPool.dll
+F:\Hyperion\Backup Last working version\ThirdParty\SmartThreadPool\bin\x64\Debug\SmartThreadPool.pdb
+F:\Hyperion\Backup Last working version\ThirdParty\SmartThreadPool\obj\x64\Debug\SmartThreadPool.csproj.CoreCompileInputs.cache
+F:\Hyperion\Backup Last working version\ThirdParty\SmartThreadPool\obj\x64\Debug\SmartThreadPool.dll
+F:\Hyperion\Backup Last working version\ThirdParty\SmartThreadPool\obj\x64\Debug\SmartThreadPool.pdb

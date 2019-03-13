@@ -1,0 +1,12 @@
+F:\Hyperion\OpenSim\Services\Interfaces\bin\x64\Debug\OpenSim.Services.Interfaces.dll
+F:\Hyperion\OpenSim\Services\Interfaces\bin\x64\Debug\OpenSim.Services.Interfaces.pdb
+F:\Hyperion\OpenSim\Services\Interfaces\obj\x64\Debug\OpenSim.Services.Interfaces.csprojAssemblyReference.cache
+F:\Hyperion\OpenSim\Services\Interfaces\obj\x64\Debug\OpenSim.Services.Interfaces.csproj.CoreCompileInputs.cache
+F:\Hyperion\OpenSim\Services\Interfaces\obj\x64\Debug\OpenSim.Services.Interfaces.dll
+F:\Hyperion\OpenSim\Services\Interfaces\obj\x64\Debug\OpenSim.Services.Interfaces.pdb
+F:\Hyperion\Backup Last working version\OpenSim\Services\Interfaces\bin\x64\Debug\OpenSim.Services.Interfaces.dll
+F:\Hyperion\Backup Last working version\OpenSim\Services\Interfaces\bin\x64\Debug\OpenSim.Services.Interfaces.pdb
+F:\Hyperion\Backup Last working version\OpenSim\Services\Interfaces\obj\x64\Debug\OpenSim.Services.Interfaces.csprojAssemblyReference.cache
+F:\Hyperion\Backup Last working version\OpenSim\Services\Interfaces\obj\x64\Debug\OpenSim.Services.Interfaces.csproj.CoreCompileInputs.cache
+F:\Hyperion\Backup Last working version\OpenSim\Services\Interfaces\obj\x64\Debug\OpenSim.Services.Interfaces.dll
+F:\Hyperion\Backup Last working version\OpenSim\Services\Interfaces\obj\x64\Debug\OpenSim.Services.Interfaces.pdb

@@ -1,0 +1,12 @@
+F:\Hyperion\OpenSim\Region\CoreModules\bin\x64\Debug\OpenSim.Region.CoreModules.dll
+F:\Hyperion\OpenSim\Region\CoreModules\bin\x64\Debug\OpenSim.Region.CoreModules.pdb
+F:\Hyperion\OpenSim\Region\CoreModules\obj\x64\Debug\OpenSim.Region.CoreModules.csprojAssemblyReference.cache
+F:\Hyperion\OpenSim\Region\CoreModules\obj\x64\Debug\OpenSim.Region.CoreModules.csproj.CoreCompileInputs.cache
+F:\Hyperion\OpenSim\Region\CoreModules\obj\x64\Debug\OpenSim.Region.CoreModules.dll
+F:\Hyperion\OpenSim\Region\CoreModules\obj\x64\Debug\OpenSim.Region.CoreModules.pdb
+F:\Hyperion\Backup Last working version\OpenSim\Region\CoreModules\bin\x64\Debug\OpenSim.Region.CoreModules.dll
+F:\Hyperion\Backup Last working version\OpenSim\Region\CoreModules\bin\x64\Debug\OpenSim.Region.CoreModules.pdb
+F:\Hyperion\Backup Last working version\OpenSim\Region\CoreModules\obj\x64\Debug\OpenSim.Region.CoreModules.csprojAssemblyReference.cache
+F:\Hyperion\Backup Last working version\OpenSim\Region\CoreModules\obj\x64\Debug\OpenSim.Region.CoreModules.csproj.CoreCompileInputs.cache
+F:\Hyperion\Backup Last working version\OpenSim\Region\CoreModules\obj\x64\Debug\OpenSim.Region.CoreModules.dll
+F:\Hyperion\Backup Last working version\OpenSim\Region\CoreModules\obj\x64\Debug\OpenSim.Region.CoreModules.pdb

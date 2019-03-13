@@ -1,0 +1,12 @@
+F:\Hyperion\OpenSim\Framework\Serialization\bin\x64\Debug\OpenSim.Framework.Serialization.dll
+F:\Hyperion\OpenSim\Framework\Serialization\bin\x64\Debug\OpenSim.Framework.Serialization.pdb
+F:\Hyperion\OpenSim\Framework\Serialization\obj\x64\Debug\OpenSim.Framework.Serialization.csprojAssemblyReference.cache
+F:\Hyperion\OpenSim\Framework\Serialization\obj\x64\Debug\OpenSim.Framework.Serialization.csproj.CoreCompileInputs.cache
+F:\Hyperion\OpenSim\Framework\Serialization\obj\x64\Debug\OpenSim.Framework.Serialization.dll
+F:\Hyperion\OpenSim\Framework\Serialization\obj\x64\Debug\OpenSim.Framework.Serialization.pdb
+F:\Hyperion\Backup Last working version\OpenSim\Framework\Serialization\bin\x64\Debug\OpenSim.Framework.Serialization.dll
+F:\Hyperion\Backup Last working version\OpenSim\Framework\Serialization\bin\x64\Debug\OpenSim.Framework.Serialization.pdb
+F:\Hyperion\Backup Last working version\OpenSim\Framework\Serialization\obj\x64\Debug\OpenSim.Framework.Serialization.csprojAssemblyReference.cache
+F:\Hyperion\Backup Last working version\OpenSim\Framework\Serialization\obj\x64\Debug\OpenSim.Framework.Serialization.csproj.CoreCompileInputs.cache
+F:\Hyperion\Backup Last working version\OpenSim\Framework\Serialization\obj\x64\Debug\OpenSim.Framework.Serialization.dll
+F:\Hyperion\Backup Last working version\OpenSim\Framework\Serialization\obj\x64\Debug\OpenSim.Framework.Serialization.pdb

@@ -1,0 +1,12 @@
+F:\Hyperion\OpenSim\Data\bin\x64\Debug\OpenSim.Data.dll
+F:\Hyperion\OpenSim\Data\bin\x64\Debug\OpenSim.Data.pdb
+F:\Hyperion\OpenSim\Data\obj\x64\Debug\OpenSim.Data.csprojAssemblyReference.cache
+F:\Hyperion\OpenSim\Data\obj\x64\Debug\OpenSim.Data.csproj.CoreCompileInputs.cache
+F:\Hyperion\OpenSim\Data\obj\x64\Debug\OpenSim.Data.dll
+F:\Hyperion\OpenSim\Data\obj\x64\Debug\OpenSim.Data.pdb
+F:\Hyperion\Backup Last working version\OpenSim\Data\bin\x64\Debug\OpenSim.Data.dll
+F:\Hyperion\Backup Last working version\OpenSim\Data\bin\x64\Debug\OpenSim.Data.pdb
+F:\Hyperion\Backup Last working version\OpenSim\Data\obj\x64\Debug\OpenSim.Data.csprojAssemblyReference.cache
+F:\Hyperion\Backup Last working version\OpenSim\Data\obj\x64\Debug\OpenSim.Data.csproj.CoreCompileInputs.cache
+F:\Hyperion\Backup Last working version\OpenSim\Data\obj\x64\Debug\OpenSim.Data.dll
+F:\Hyperion\Backup Last working version\OpenSim\Data\obj\x64\Debug\OpenSim.Data.pdb

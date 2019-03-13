@@ -1,0 +1,5 @@
+F:\Hyperion\Backup Last working version\bin\OpenSim.Services.PresenceService.dll
+F:\Hyperion\Backup Last working version\bin\OpenSim.Services.PresenceService.pdb
+F:\Hyperion\Backup Last working version\OpenSim\Services\PresenceService\obj\Debug\OpenSim.Services.PresenceService.dll
+F:\Hyperion\Backup Last working version\OpenSim\Services\PresenceService\obj\Debug\OpenSim.Services.PresenceService.pdb
+F:\Hyperion\Backup Last working version\OpenSim\Services\PresenceService\obj\Debug\OpenSim.Services.PresenceService.csprojResolveAssemblyReference.cache

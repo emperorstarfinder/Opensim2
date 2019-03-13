@@ -1,0 +1,5 @@
+F:\Hyperion\Backup Last working version\bin\OpenSim.Data.PGSQL.dll
+F:\Hyperion\Backup Last working version\bin\OpenSim.Data.PGSQL.pdb
+F:\Hyperion\Backup Last working version\OpenSim\Data\PGSQL\obj\Debug\OpenSim.Data.PGSQL.csprojResolveAssemblyReference.cache
+F:\Hyperion\Backup Last working version\OpenSim\Data\PGSQL\obj\Debug\OpenSim.Data.PGSQL.dll
+F:\Hyperion\Backup Last working version\OpenSim\Data\PGSQL\obj\Debug\OpenSim.Data.PGSQL.pdb

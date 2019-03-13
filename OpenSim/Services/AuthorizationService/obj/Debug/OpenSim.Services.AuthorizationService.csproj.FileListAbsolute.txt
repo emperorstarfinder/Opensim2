@@ -1,0 +1,5 @@
+F:\Hyperion\Backup Last working version\bin\OpenSim.Services.AuthorizationService.dll
+F:\Hyperion\Backup Last working version\bin\OpenSim.Services.AuthorizationService.pdb
+F:\Hyperion\Backup Last working version\OpenSim\Services\AuthorizationService\obj\Debug\OpenSim.Services.AuthorizationService.dll
+F:\Hyperion\Backup Last working version\OpenSim\Services\AuthorizationService\obj\Debug\OpenSim.Services.AuthorizationService.pdb
+F:\Hyperion\Backup Last working version\OpenSim\Services\AuthorizationService\obj\Debug\OpenSim.Services.AuthorizationService.csprojResolveAssemblyReference.cache

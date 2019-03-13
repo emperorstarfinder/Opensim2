@@ -1,0 +1,5 @@
+F:\Hyperion\Backup Last working version\bin\OpenSim.ConsoleClient.exe
+F:\Hyperion\Backup Last working version\bin\OpenSim.ConsoleClient.pdb
+F:\Hyperion\Backup Last working version\OpenSim\ConsoleClient\obj\Debug\OpenSim.ConsoleClient.exe
+F:\Hyperion\Backup Last working version\OpenSim\ConsoleClient\obj\Debug\OpenSim.ConsoleClient.pdb
+F:\Hyperion\Backup Last working version\OpenSim\ConsoleClient\obj\Debug\OpenSim.ConsoleClient.csprojResolveAssemblyReference.cache

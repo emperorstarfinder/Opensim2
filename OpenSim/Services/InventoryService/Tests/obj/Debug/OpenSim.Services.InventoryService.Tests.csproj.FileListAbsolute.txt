@@ -1,0 +1,5 @@
+F:\Hyperion\Backup Last working version\bin\OpenSim.Services.InventoryService.Tests.dll
+F:\Hyperion\Backup Last working version\bin\OpenSim.Services.InventoryService.Tests.pdb
+F:\Hyperion\Backup Last working version\OpenSim\Services\InventoryService\Tests\obj\Debug\OpenSim.Services.InventoryService.Tests.dll
+F:\Hyperion\Backup Last working version\OpenSim\Services\InventoryService\Tests\obj\Debug\OpenSim.Services.InventoryService.Tests.pdb
+F:\Hyperion\Backup Last working version\OpenSim\Services\InventoryService\Tests\obj\Debug\OpenSim.Services.InventoryService.Tests.csprojResolveAssemblyReference.cache

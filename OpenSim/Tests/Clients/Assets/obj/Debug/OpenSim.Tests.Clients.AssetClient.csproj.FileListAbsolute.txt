@@ -1,0 +1,5 @@
+F:\Hyperion\Backup Last working version\bin\OpenSim.Tests.Clients.AssetClient.exe
+F:\Hyperion\Backup Last working version\bin\OpenSim.Tests.Clients.AssetClient.pdb
+F:\Hyperion\Backup Last working version\OpenSim\Tests\Clients\Assets\obj\Debug\OpenSim.Tests.Clients.AssetClient.exe
+F:\Hyperion\Backup Last working version\OpenSim\Tests\Clients\Assets\obj\Debug\OpenSim.Tests.Clients.AssetClient.pdb
+F:\Hyperion\Backup Last working version\OpenSim\Tests\Clients\Assets\obj\Debug\OpenSim.Tests.Clients.AssetClient.csprojResolveAssemblyReference.cache

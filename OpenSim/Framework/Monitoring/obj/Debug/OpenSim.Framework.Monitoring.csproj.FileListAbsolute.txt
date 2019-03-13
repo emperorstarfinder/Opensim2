@@ -1,0 +1,6 @@
+F:\Hyperion\Backup Last working version\bin\OpenSim.Framework.Monitoring.dll
+F:\Hyperion\Backup Last working version\bin\OpenSim.Framework.Monitoring.pdb
+F:\Hyperion\Backup Last working version\OpenSim\Framework\Monitoring\obj\Debug\OpenSim.Framework.Monitoring.dll
+F:\Hyperion\Backup Last working version\OpenSim\Framework\Monitoring\obj\Debug\OpenSim.Framework.Monitoring.pdb
+F:\Hyperion\Backup Last working version\OpenSim\Framework\Monitoring\obj\Debug\OpenSim.Framework.Monitoring.csprojAssemblyReference.cache
+F:\Hyperion\Backup Last working version\OpenSim\Framework\Monitoring\obj\Debug\OpenSim.Framework.Monitoring.csproj.CoreCompileInputs.cache

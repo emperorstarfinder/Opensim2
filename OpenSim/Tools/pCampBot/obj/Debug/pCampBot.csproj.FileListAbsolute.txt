@@ -1,0 +1,5 @@
+F:\Hyperion\Backup Last working version\bin\pCampBot.exe
+F:\Hyperion\Backup Last working version\bin\pCampBot.pdb
+F:\Hyperion\Backup Last working version\OpenSim\Tools\pCampBot\obj\Debug\pCampBot.exe
+F:\Hyperion\Backup Last working version\OpenSim\Tools\pCampBot\obj\Debug\pCampBot.pdb
+F:\Hyperion\Backup Last working version\OpenSim\Tools\pCampBot\obj\Debug\pCampBot.csprojResolveAssemblyReference.cache

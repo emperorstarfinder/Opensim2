@@ -1,0 +1,5 @@
+F:\Hyperion\Backup Last working version\bin\OpenSim.Data.SQLite.dll
+F:\Hyperion\Backup Last working version\bin\OpenSim.Data.SQLite.pdb
+F:\Hyperion\Backup Last working version\OpenSim\Data\SQLite\obj\Debug\OpenSim.Data.SQLite.csprojResolveAssemblyReference.cache
+F:\Hyperion\Backup Last working version\OpenSim\Data\SQLite\obj\Debug\OpenSim.Data.SQLite.dll
+F:\Hyperion\Backup Last working version\OpenSim\Data\SQLite\obj\Debug\OpenSim.Data.SQLite.pdb
